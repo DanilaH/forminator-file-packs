@@ -1,0 +1,11 @@
+node_modules/
+vendor/
+dist/
+artifacts/
+.wp-env.override.json
+.env
+.env.*
+!.env.example
+*.log
+__pycache__/
+.DS_Store
