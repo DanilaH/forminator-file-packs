@@ -14,7 +14,7 @@ A WordPress plugin that exports selected saved Forminator submissions and local 
 
 PHP ZIP support and writable private temporary storage outside public web directories are required. The conservative per-export limits are 100 submissions, 500 attachments and 100 MiB of attachment bytes. These are safety limits, not a tested capacity guarantee for every hosting provider. No remote uploads are fetched. HTML, SVG and executable attachments are excluded with warnings.
 
-English and Russian UI/package translations are bundled. Dates remain visible on narrow screens. Native single-upload repeater groups are tested on Forminator 1.58.0; other repeater modes remain unverified.
+English and Russian UI/package translations are bundled. Dates remain visible on narrow screens. Six native repeater upload configurations are tested on Forminator 1.58.0: single, multiple and AJAX multiple uploads, each with and without Media Library storage. The combined 100-entry / 500-file / 100 MiB ceiling has passed a native lab export and a real browser download; host capacity still varies.
 
 ## Development
 

@@ -1,0 +1,23 @@
+{
+    "count": 11,
+    "checks": [
+        "Real 128 MiB PHP memory limit enabled for planning and assembly",
+        "Exact combined ceiling: 100 submissions, 500 files, 100 MiB",
+        "All 500 ZIP attachments match source SHA-256 hashes",
+        "500 distinct ZIP members",
+        "All 500 source files retain original bytes",
+        "Boundary rejection: between 1 and 100",
+        "Boundary rejection: 100 MiB or 500 files",
+        "Boundary rejection: 100 MiB or 500 files",
+        "Boundary rejection: field is too large",
+        "Boundary rejection: 8 MiB metadata",
+        "No private archive or lock remains"
+    ],
+    "resource": {
+        "seconds": 2.147,
+        "peak_memory_bytes": 78970880,
+        "zip_bytes": 105038794,
+        "php_memory_limit": "128M",
+        "api_seeded": true
+    }
+}

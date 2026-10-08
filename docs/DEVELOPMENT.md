@@ -17,7 +17,7 @@ npx @wordpress/env run cli wp plugin activate forminator
 npx @wordpress/env run cli wp plugin activate plugin
 ```
 
-The local source directory identifier is `plugin`; an installed ZIP uses `forminator-file-packs`. Open Tools → File Packs. Header minimum targets PHP 8.2 / WordPress 6.5 are provisional; the test matrix has not established them.
+The local source directory identifier is `plugin`; an installed ZIP uses `forminator-file-packs`. Open Tools → File Packs. Header minimum targets PHP 8.2 / WordPress 6.5 are provisional; the native test matrix covers WordPress 6.5.5 and PHP 8.2.32, not every patch release.
 
 ## Integration tests on a native disposable installation
 
@@ -39,7 +39,7 @@ wp plugin check forminator-file-packs --format=json
 
 Seed once; HTTP checks create real frontend submissions and update the generated fixture. Run security and browser checks afterwards. The security test intentionally corrupts additional synthetic metadata to exercise failure cases; it restores/deletes those synthetic changes. Test artifacts are ignored by Git.
 
-The browser test requires Playwright and Chromium. Optional `FFP_PLAYWRIGHT_MODULE` and `FFP_CHROMIUM_PATH` select existing installations. Plugin Check must be installed separately. CLI checks above cover static diagnostics; runtime Plugin Check tests are separate remaining release work.
+The browser test requires Playwright and Chromium. Optional `FFP_PLAYWRIGHT_MODULE` and `FFP_CHROMIUM_PATH` select existing installations. Plugin Check must be installed separately. CLI checks above cover static diagnostics; runtime Plugin Check requires its CLI setup (`--require=/absolute/path/to/plugin-check/cli.php`) and was run separately for the beta.
 
 ## Packaging and validation
 
@@ -58,10 +58,18 @@ References: [wp-env](https://developer.wordpress.org/block-editor/reference-guid
 
 ## Beta checks
 
-`tests/resilience-integration.php` adds test-only namespace wrappers for failures; never load it from the plugin. Seed the repeater with `FFP_REPEATER_FIXTURE` pointing to a private generated JSON file, then run `tests/repeater-browser.cjs`. Its ZIP is checked separately for exact attachment bytes.
+`tests/resilience-integration.php` adds test-only namespace wrappers for failures; never load it from the plugin. Seed the repeater with `FFP_REPEATER_FIXTURE` pointing to a private generated JSON file, then run `tests/repeater-browser.cjs`. Its ZIP is checked for exact attachment bytes and unique members. `FFP_REPEATER_MODE` accepts `single`, `single-media`, `multiple`, `multiple-media`, `ajax`, `ajax-media` (default `single`).
 
 `tests/lifecycle.py` drives real ZIP upgrades, uninstall/reinstall, child-process exit/fatal/SIGKILL and Russian UI states. It requires `FFP_WP_COMMAND` as a JSON array (for example `["wp", "--path=/absolute/disposable/wordpress"]`), `FFP_WP_PATH`, the common lab/fixture/credentials/artifact variables, Playwright/Chromium and a built ZIP. Set `FFP_PREVIOUS_ZIP` to the previous build to verify an actual upgrade; without it, that comparison is skipped. The test temporarily sets the synthetic admin locale to Russian and restores English. It intentionally adds a missing-file entry and only reclaims its own stale private job after terminating the child process.
 
 `tests/resource-environment.php` runs under `FFP_RESOURCE_MODE=memory` or `nozip`. Memory mode sets a real 80M PHP limit and allocates synthetic pressure before checking the guard. No-ZIP mode requires a PHP configuration with ZIP actually disabled. Keep vendor/bootstrap failures distinct from exporter behavior.
 
 Compile bundled translations with `python3 scripts/compile-translations.py`; the build script runs it automatically. The compiler handles the project's simple singular PO catalog; general plural/context catalogs require a standard gettext compiler.
+
+## Extended native lab checks
+
+Run `python3 tests/extended.py` after the ordinary HTTP fixtures exist. It requires the common test variables above, Playwright/Chromium and `FFP_WP_COMMAND` as a JSON array including the disposable WordPress path. It creates six real repeater forms and a synthetic capacity form with 100 entries / 500 random attachments / 100 MiB. Allow several hundred MiB of local disk space for sources, private snapshots, ZIP and browser download.
+
+The capacity test explicitly sets PHP memory to 128M during planning/assembly, then restores the CLI limit for separate boundary fixtures. The browser test selects all four pages and downloads through the shipped Blob route. It inspects Chromium accessible names, live regions, focus, computed text contrast on solid backgrounds and 320 px layout; this is a focused check, not a WCAG or screen-reader audit. `permissions-http.py` grants/revokes synthetic user capabilities and changes Forminator's permission option, restoring the original option and deleting its synthetic user and test role in `finally`. Do not run these tests concurrently or against real data.
+
+The suite compares complete source snapshots before/after capacity and permission HTTP checks. Generated fixture JSON, credentials and ZIPs stay outside Git. Publish only sanitized result JSON. These tests add evidence to beta 0.2.0; no new plugin build is needed when production code is unchanged.

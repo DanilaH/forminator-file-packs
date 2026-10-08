@@ -14,13 +14,13 @@ Beta v0.2.0 exists. Three compatibility combinations, failure/cleanup, native re
 
 ## Next milestone
 
-Test actual hosting providers, remaining repeater modes/offload configurations, maximum ceilings and screen readers; finalize release naming/license/materials. Disk/memory/time/write failures, process termination, specific-user permissions and Russian UI already have recorded checks. Do not turn one successful lab into a broad release compatibility claim.
+Test actual hosting providers, offload configurations and screen readers; finalize release naming/license/materials. Six repeater configurations, the combined maximum ceiling, boundary rejection, existing-session permission revocation and focused automated accessibility checks now have recorded native-lab evidence. Disk/memory/time/write failures, process termination, specific-user permissions and Russian UI already have recorded checks. Do not turn one successful lab into a broad release compatibility claim.
 
 ## Architecture
 
 Admin controller → authorization → Forminator adapter → export planner → package builder → private temporary storage → authorized download and cleanup.
 
-Keep the UI in standard WordPress admin components with minimal JavaScript. Data permissions follow Forminator's actual entries capability. Guests and subscribers are rejected; custom permission configurations need further coverage.
+Keep the UI in standard WordPress admin components with minimal JavaScript. Data permissions follow Forminator's actual entries capability. Guests and ordinary subscribers are rejected. HTTP checks cover specifically permitted users, permitted roles, excluded users and capability revocation in an existing session. Concurrent mid-request revocation remains untested.
 
 Local attachments only initially. Remote/offloaded/missing files need explicit warnings. Do not retrieve arbitrary URLs or silently claim a complete export.
 

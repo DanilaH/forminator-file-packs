@@ -19,5 +19,9 @@ Evidence: [first report](TEST_REPORT_2026-10-08.md) and [beta report](BETA_TEST_
 - [x] Static and runtime Plugin Check executed; beta has zero errors and one explained warning for bundled translation registration. Narrow native filesystem/SQL annotations retained.
 - [x] Runtime Plugin Check and three documented WordPress/PHP/Forminator combinations completed.
 - [x] Focused keyboard/focus, Russian translation and 15 empty/error/retry/partial/narrow UI-state checks completed.
-- [ ] Screen-reader audit, additional repeater modes/offload configurations, actual shared hosting and ceiling-size stress tests.
+- [x] Six actual repeater upload configurations (single/multiple/AJAX, with/without Media Library) on Forminator 1.58.0; exact ZIP attachment bytes verified.
+- [x] Combined 100-entry / 500-file / 100 MiB ceiling under a real 128 MiB PHP limit, actual browser download and rejection beyond each ceiling/text limit.
+- [x] Custom user/role permissions, excluded users and capability revocation block all four HTTP endpoints with an existing session/nonce.
+- [x] Focused Chromium accessibility-tree names, live regions, heading focus, sampled computed text contrast and 320 px layout checks.
+- [ ] Screen-reader audit, offload configurations, actual shared hosting, Windows and concurrent mid-request permission revocation.
 - [ ] License/dependency audit, final name and WordPress.org submission materials finalized.

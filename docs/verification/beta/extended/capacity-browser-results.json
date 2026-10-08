@@ -1,0 +1,21 @@
+{
+  "checks": [
+    "Selection persists across all four pages: 100 entries",
+    "Actual preview shows 500 files and 100 MiB",
+    "Browser accessibility tree exposes named controls and package summaries",
+    "Result and selection updates have live regions",
+    "Computed text contrast passes sampled plugin labels, rows, summaries and primary buttons",
+    "Preview heading accepts focus",
+    "Plugin layout fits 320px viewport at maximum selection",
+    "100 MiB package downloaded through actual browser Blob route",
+    "Downloaded ZIP: 100 cards, 500 distinct members, all attachment hashes and CRC valid",
+    "No browser JavaScript errors at maximum selection"
+  ],
+  "count": 10,
+  "browser_download_seconds": 2.666,
+  "zip_bytes": 105038794,
+  "named_accessible_controls": 138,
+  "contrast_samples": 190,
+  "accessibility_scope": "Chromium accessible names, live regions, focus, computed text contrast on solid backgrounds, 320px reflow; no screen reader or full WCAG audit",
+  "browser_memory": "Not measured; successful Blob download is not a universal capacity guarantee"
+}
