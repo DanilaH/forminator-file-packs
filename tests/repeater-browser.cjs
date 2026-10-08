@@ -24,11 +24,19 @@ if(process.env.FFP_TEST_LAB!=='1')throw Error('Disposable lab only');
    const result=await r.json();return typeof result.data==='object'&&!result.data?.access_token;
   });
   await page.locator('button.forminator-button-submit').click();
-  const result=await(await response).json();if(!result.success||!result.data.entry_id)throw Error(JSON.stringify(result));
-  fixture.entry=result.data.entry_id;fs.writeFileSync(process.env.FFP_REPEATER_FIXTURE,JSON.stringify(fixture));
+  const result=await(await response).json();if(!result.success)throw Error(JSON.stringify(result));
   await page.goto(base+'/wp-login.php');await page.locator('#user_login').fill(process.env.FFP_TEST_USER||'lab');await page.locator('#user_pass').fill(process.env.FFP_TEST_PASSWORD);
   await Promise.all([page.waitForURL(/wp-admin/),page.locator('#wp-submit').click()]);
   await page.goto(base+'/wp-admin/tools.php?page=forminator-file-packs');
+  // Older Forminator responses omit entry_id. Require exactly one saved entry
+  // with our marker in this freshly seeded form, rather than guessing an ID.
+  const saved=await page.evaluate(async form=>{
+   const response=await fetch(FFP.url,{method:'POST',credentials:'same-origin',body:new URLSearchParams({action:'ffp_entries',nonce:FFP.nonce,form_id:form})});
+   const result=await response.json();if(!response.ok||!result.success)throw Error(JSON.stringify(result));
+   return result.data.entries.filter(row=>row.summary==='REPEATER-TEST'||row.summary.startsWith('REPEATER-TEST ·')).map(row=>row.id);
+  },fixture.form);
+  if(saved.length!==1||(result.data.entry_id&&Number(result.data.entry_id)!==saved[0]))throw Error('Expected one matching persisted repeater submission');
+  fixture.entry=saved[0];fs.writeFileSync(process.env.FFP_REPEATER_FIXTURE,JSON.stringify(fixture));
   const outcome=await page.evaluate(async f=>{
    const request=async(action,extra)=>fetch(FFP.url,{method:'POST',credentials:'same-origin',body:new URLSearchParams({action:'ffp_'+action,nonce:FFP.nonce,form_id:f.form,ids:JSON.stringify([f.entry]),...extra})});
    const result=await(await request('preview',{})).json();if(!result.success)throw Error(JSON.stringify(result));
