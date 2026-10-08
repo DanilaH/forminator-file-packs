@@ -53,7 +53,8 @@ verify( 1 === count( $damaged['warnings'] ) && 0 === $damaged['file_count'], 'mi
 $pkg = new Package( $damaged, true ); $zip = new ZipArchive(); $zip->open( $pkg->path() );
 verify( str_contains( $zip->getFromName( 'index.html' ), 'Incomplete package' ) && str_contains( $zip->getFromName( 'warnings.json' ), 'missing' ), 'incomplete archive includes warnings' );
 verify( str_contains( $zip->getFromName( 'register.csv' ), "'=HYPERLINK" ), 'CSV formula escaped' ); $zip->close(); $pkg->cleanup();
-$collision = Forminator_API::add_form_entry( $form, array( array( 'name' => 'upload-2', 'value' => array( 'file' => array( 'file_path' => array( $known['source'], $known['source'] ), 'file_url' => array( '', '' ) ) ) ) ) );
+$collision_source = $root . '/ffp-collision.txt'; copy( $known['source'], $collision_source );
+$collision = Forminator_API::add_form_entry( $form, array( array( 'name' => 'upload-2', 'value' => array( 'file' => array( 'file_path' => array( $collision_source, $collision_source ), 'file_url' => array( '', '' ) ) ) ) ) );
 $dupe = Planner::build( $form, array( $collision ) );
 verify( 2 === $dupe['file_count'] && $dupe['entries'][0]['files'][0]['name'] !== $dupe['entries'][0]['files'][1]['name'], 'identical attachment names get unique members' );
 $unsafe = Planner::name( '../../CON<>:"test?.txt' ); verify( ! str_contains( $unsafe, '/' ) && ! str_contains( $unsafe, '..' ) && ! str_contains( $unsafe, ':' ), 'ZIP member names normalized' );
@@ -73,6 +74,7 @@ verify( $pkg->plan['bytes'] === filesize( $large ), '20 MiB resource fixture ful
 verify( ! glob( Package::private_root() . '/job-*' ) && ! glob( Package::private_root() . '/lock-*' ), 'private jobs and locks cleaned after failures and successes' );
 // Restore synthetic fixtures; no uninstall hook deletes source submissions.
 foreach ( array( $broken, $collision, $race_id, $large_id ) as $fixture_id ) { Forminator_API::delete_entry( $form, $fixture_id ); }
+verify( $before === source_state( $form, $id ), 'original source still intact after negative fixture cleanup' );
 require_once ABSPATH . 'wp-admin/includes/user.php'; wp_delete_user( $subscriber );
 $artifacts = getenv( 'FFP_TEST_ARTIFACTS' );
 if ( $artifacts ) { file_put_contents( $artifacts . '/security-results.json', wp_json_encode( array( 'checks' => $GLOBALS['ffp_test_checks'], 'count' => count( $GLOBALS['ffp_test_checks'] ), 'resource' => $resource ), JSON_PRETTY_PRINT ) ); }

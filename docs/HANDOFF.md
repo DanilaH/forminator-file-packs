@@ -10,11 +10,11 @@ This is an exporter, not Forminator Transfer/Recovery, a filesystem browser, or 
 
 ## Current state
 
-First working development build v0.1.0 exists. Stages 1–3 have a verified first pass on one native lab; reliability and release work remain. Read [test report](TEST_REPORT_2026-10-08.md) and [adapter notes](ADAPTER.md) before modifying integration.
+Beta v0.2.0 exists. Three compatibility combinations, failure/cleanup, native repeater, Russian UI and installation lifecycle are verified; real-hosting and release work remain. Read [beta report](BETA_TEST_REPORT_2026-10-08.md). Read [test report](TEST_REPORT_2026-10-08.md) and [adapter notes](ADAPTER.md) before modifying integration.
 
 ## Next milestone
 
-Expand compatibility and hosting coverage, repeaters and custom permissions; test low disk/memory/time and interrupted requests; improve UX accessibility and localization. Do not turn one successful lab into a broad release compatibility claim.
+Test actual hosting providers, remaining repeater modes/offload configurations, maximum ceilings and screen readers; finalize release naming/license/materials. Disk/memory/time/write failures, process termination, specific-user permissions and Russian UI already have recorded checks. Do not turn one successful lab into a broad release compatibility claim.
 
 ## Architecture
 

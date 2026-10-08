@@ -13,7 +13,7 @@ The adapter was built after reading the official distribution and inspecting met
 
 ## Package and limits
 
-`Request-ID/request.html` and unique field-prefixed attachment names; root `index.html`, UTF-8 BOM `register.csv` and `warnings.json`. CSV has entry ID, creation time, card path, attachment count, warnings and the union of selected field columns. Selected-entry order is preserved.
+`Request-ID/request.html` and unique field-prefixed attachment names; root `index.html`, UTF-8 BOM `register.csv` and `warnings.json`. CSV has entry ID, creation time, card path, attachment count, warnings and the union of selected field columns. Entries are ordered numerically by ID within the package.
 
 Preview contains counts, member names and warnings, without source paths or URLs. Download re-reads sources and compares a fingerprint of field metadata and file stat information; it is not a full byte hash of every source during preview. A stale preview is rejected. The builder makes private local snapshots and streams copies in 1 MiB chunks; allowed attachment bytes are preserved.
 
@@ -21,4 +21,4 @@ Per export: 100 entries, 500 files, 100 MiB attachments, 1 MiB per textual field
 
 Native filesystem operations are needed for atomic local locks, restrictive permissions and stream copies; narrowly documented Plugin Check exceptions reflect that design. Private storage defaults to system temporary storage. A host may define `FFP_PRIVATE_TEMP_DIR` as an existing private writable directory; public web roots are rejected.
 
-Repeater uploads, offload plugins and other Forminator versions remain unverified. Unknown storage is reported as unsupported. The authorization model is tested for admin, subscriber and guest; custom Forminator permission configurations need additional coverage.
+Native single-upload repeater groups are verified through the real Forminator 1.58.0 UI. Forminator 1.57.1 also passed native single/multi, AJAX and Media Library cases on WP 6.5.5/PHP 8.2.32. Other repeater modes, offload plugins and additional versions remain unverified. Unknown storage is reported as unsupported. The authorization model is tested for admin, subscriber and guest; a specific-user entries permission and its revocation are also checked on 1.58.0; other custom role/exclusion configurations need additional coverage.

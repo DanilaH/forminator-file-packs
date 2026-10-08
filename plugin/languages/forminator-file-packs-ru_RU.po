@@ -1,0 +1,330 @@
+msgid ""
+msgstr "Project-Id-Version: File Packs 0.2.0\nLanguage: ru_RU\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+
+msgid "%1$d submissions · %2$d attachments"
+msgstr "Заявки: %1$d · Вложения: %2$d"
+
+msgid "1. Choose a form"
+msgstr "1. Выберите форму"
+
+msgid "2. Select submissions"
+msgstr "2. Выберите заявки"
+
+msgid "3. Review and download"
+msgstr "3. Проверьте и скачайте"
+
+msgid "A selected submission is unavailable or does not belong to this form. Refresh the list."
+msgstr "Выбранная заявка недоступна или относится к другой форме. Обновите список."
+
+msgid "A submission field is too large or unsupported."
+msgstr "Поле заявки слишком большое или имеет неподдерживаемый формат."
+
+msgid "Access denied."
+msgstr "Доступ запрещён."
+
+msgid "Activate Forminator to start exporting."
+msgstr "Активируйте Forminator, чтобы начать экспорт."
+
+msgid "Activate Forminator to use File Packs."
+msgstr "Для работы File Packs активируйте Forminator."
+
+msgid "An export is already running for your account. Please wait."
+msgstr "Для вашей учётной записи уже выполняется экспорт. Подождите."
+
+msgid "Another plugin interrupted the download. Please try again."
+msgstr "Другой плагин прервал скачивание. Попробуйте ещё раз."
+
+msgid "Apply period"
+msgstr "Применить период"
+
+msgid "Attachments"
+msgstr "Вложения"
+
+msgid "Build and download ZIP"
+msgstr "Собрать и скачать ZIP"
+
+msgid "Building your ZIP. Keep this page open…"
+msgstr "Собираем ZIP. Оставьте страницу открытой…"
+
+msgid "Cannot create private temporary storage."
+msgstr "Не удалось создать закрытое временное хранилище."
+
+msgid "Cannot create the ZIP archive."
+msgstr "Не удалось создать ZIP-архив."
+
+msgid "Cannot prepare the package."
+msgstr "Не удалось подготовить пакет."
+
+msgid "Checking submissions and files…"
+msgstr "Проверяем заявки и файлы…"
+
+msgid "Choose a form"
+msgstr "Выберите форму"
+
+msgid "Clear selection"
+msgstr "Снять выбор"
+
+msgid "Could not add an attachment to the archive."
+msgstr "Не удалось добавить вложение в архив."
+
+msgid "Could not add package metadata."
+msgstr "Не удалось добавить данные пакета."
+
+msgid "Could not create the CSV register."
+msgstr "Не удалось создать реестр CSV."
+
+msgid "Could not finish the ZIP archive."
+msgstr "Не удалось завершить сборку ZIP."
+
+msgid "Could not read an attachment."
+msgstr "Не удалось прочитать вложение."
+
+msgid "Could not write an attachment to temporary storage."
+msgstr "Не удалось записать вложение во временное хранилище."
+
+msgid "Created"
+msgstr "Создана"
+
+msgid "Current safety limits: 100 submissions, 500 attachments, 100 MiB of attachment data per package. Use smaller batches on limited hosting."
+msgstr "Пределы одного пакета: 100 заявок, 500 вложений, 100 МиБ файлов. На ограниченном хостинге выбирайте меньше заявок."
+
+msgid "Dates use the site timezone:"
+msgstr "Часовой пояс дат:"
+
+msgid "Enter valid dates."
+msgstr "Введите корректные даты."
+
+msgid "Explicit acceptance is required for an incomplete package."
+msgstr "Для неполного пакета требуется ваше явное согласие."
+
+msgid "File Packs"
+msgstr "File Packs"
+
+msgid "File Packs for Forminator"
+msgstr "File Packs для Forminator"
+
+msgid "File became unreadable during export."
+msgstr "Во время экспорта файл стал недоступен для чтения."
+
+msgid "File cannot be verified as an attachment of this submission."
+msgstr "Не удалось подтвердить, что файл относится к этой заявке."
+
+msgid "File changed during export. Refresh the preview."
+msgstr "Во время экспорта файл изменился. Повторите предпросмотр."
+
+msgid "File is missing, unreadable, or outside allowed storage."
+msgstr "Файл отсутствует, недоступен для чтения или находится за пределами разрешённого хранилища."
+
+msgid "File size changed during export. Refresh the preview."
+msgstr "Во время экспорта изменился размер файла. Повторите предпросмотр."
+
+msgid "File size could not be read."
+msgstr "Не удалось определить размер файла."
+
+msgid "Files grew beyond the export safety limit. Refresh the preview."
+msgstr "Размер файлов превысил предел экспорта. Повторите предпросмотр."
+
+msgid "Find a form"
+msgstr "Найти форму"
+
+msgid "Form"
+msgstr "Форма"
+
+msgid "From"
+msgstr "С даты"
+
+msgid "I understand that the package will be incomplete. Export the available files."
+msgstr "Я понимаю, что пакет будет неполным. Экспортировать доступные файлы."
+
+msgid "Incomplete ZIP ready. Download started. See the warnings in the package index."
+msgstr "Неполный ZIP готов. Скачивание началось. Причины пропусков указаны в индексе пакета."
+
+msgid "Incomplete package — some attachments were omitted"
+msgstr "Неполный пакет — часть вложений пропущена"
+
+msgid "Invalid identifier."
+msgstr "Некорректный идентификатор."
+
+msgid "Invalid page."
+msgstr "Некорректная страница."
+
+msgid "Invalid submission selection."
+msgstr "Некорректный выбор заявок."
+
+msgid "Loading…"
+msgstr "Загрузка…"
+
+msgid "Next"
+msgstr "Следующая"
+
+msgid "No attachments included."
+msgstr "Вложений в пакете нет."
+
+msgid "No completed submissions match this period."
+msgstr "За этот период нет сохранённых заявок."
+
+msgid "No forms found."
+msgstr "Формы не найдены."
+
+msgid "Not enough PHP memory for this package. Select a smaller batch or ask your host to raise the memory limit."
+msgstr "Недостаточно памяти PHP для пакета. Выберите меньше заявок или попросите хостинг увеличить лимит памяти."
+
+msgid "Not enough temporary disk space for this package."
+msgstr "Для пакета недостаточно места во временном хранилище."
+
+msgid "Only completed, non-spam submissions are shown. Applying a period clears the current selection."
+msgstr "Показаны сохранённые заявки без спама. Применение периода снимает текущий выбор."
+
+msgid "Open CSV register"
+msgstr "Открыть реестр CSV"
+
+msgid "PHP ZIP support is required. Ask your host to enable it."
+msgstr "Требуется расширение ZIP для PHP. Попросите хостинг включить его."
+
+msgid "Package index"
+msgstr "Индекс пакета"
+
+msgid "Page"
+msgstr "Страница"
+
+msgid "Preview package"
+msgstr "Предпросмотр пакета"
+
+msgid "Previous"
+msgstr "Предыдущая"
+
+msgid "Private temporary storage is unavailable."
+msgstr "Закрытое временное хранилище недоступно."
+
+msgid "Remote storage is not supported in this version."
+msgstr "Удалённое хранилище в этой версии не поддерживается."
+
+msgid "Review the warnings and explicitly accept an incomplete package."
+msgstr "Проверьте предупреждения и подтвердите экспорт неполного пакета."
+
+msgid "Search"
+msgstr "Найти"
+
+msgid "Select"
+msgstr "Выбор"
+
+msgid "Select between 1 and %d submissions per package."
+msgstr "Выберите от 1 до %d заявок для пакета."
+
+msgid "Select no more than 100 submissions per package."
+msgstr "Выберите не более 100 заявок для пакета."
+
+msgid "Select submission"
+msgstr "Выбрать заявку"
+
+msgid "Select this page"
+msgstr "Выбрать эту страницу"
+
+msgid "Selected submissions:"
+msgstr "Выбрано заявок:"
+
+msgid "Selection is too large."
+msgstr "Выбрано слишком много заявок."
+
+msgid "Showing the first 100 matching forms. Refine your search."
+msgstr "Показаны первые 100 подходящих форм. Уточните поиск."
+
+msgid "Submission"
+msgstr "Заявка"
+
+msgid "Submission data exceeds the 8 MiB metadata safety limit. Select a smaller batch."
+msgstr "Данные заявок превышают предел 8 МиБ. Выберите меньше заявок."
+
+msgid "Summary"
+msgstr "Содержание"
+
+msgid "Temporary storage is not writable."
+msgstr "Запись во временное хранилище недоступна."
+
+msgid "Temporary storage must be outside all public web directories."
+msgstr "Временное хранилище должно находиться за пределами публичных веб-каталогов."
+
+msgid "Temporary storage permissions are unsafe."
+msgstr "Права временного хранилища не обеспечивают приватность."
+
+msgid "The export could not be completed. Check the environment and try again."
+msgstr "Не удалось завершить экспорт. Проверьте настройки сервера и попробуйте ещё раз."
+
+msgid "The export reached its time limit. Select a smaller batch and try again."
+msgstr "Экспорт достиг ограничения времени. Выберите меньше заявок и попробуйте ещё раз."
+
+msgid "The list changed. Apply the period to reload submissions."
+msgstr "Период изменён. Примените его, чтобы обновить список заявок."
+
+msgid "The operation failed. Try again or refresh this page."
+msgstr "Операция не выполнена. Попробуйте ещё раз или обновите страницу."
+
+msgid "The request was interrupted. Check your connection and refresh the preview before retrying."
+msgstr "Запрос прерван. Проверьте подключение и повторите предпросмотр перед новой попыткой."
+
+msgid "The selected data changed. Refresh the preview before exporting."
+msgstr "Выбранные данные изменились. Повторите предпросмотр перед экспортом."
+
+msgid "The selected data changed. Refresh the preview."
+msgstr "Выбранные данные изменились. Повторите предпросмотр."
+
+msgid "The selected form is unavailable."
+msgstr "Выбранная форма недоступна."
+
+msgid "The start date must precede the end date."
+msgstr "Начало периода не может быть позже его конца."
+
+msgid "This file type is not supported for safe export."
+msgstr "Этот тип файла исключён из безопасного экспорта."
+
+msgid "This package exceeds the synchronous export safety limit (100 MiB or 500 files). Select a smaller batch."
+msgstr "Пакет превышает предел экспорта: 100 МиБ или 500 файлов. Выберите меньше заявок."
+
+msgid "Through"
+msgstr "По дату"
+
+msgid "Turn submissions and their attachments into a ready-to-share ZIP. Originals stay untouched."
+msgstr "Соберите заявки и вложения в ZIP для дальнейшей работы. Исходные данные останутся без изменений."
+
+msgid "Unsupported or remote file reference."
+msgstr "Неподдерживаемая или удалённая ссылка на файл."
+
+msgid "Upload has no supported local file reference."
+msgstr "У вложения нет поддерживаемой ссылки на локальный файл."
+
+msgid "Upload metadata is unsupported or the original upload field was removed."
+msgstr "Данные вложения не поддерживаются или исходное поле загрузки удалено."
+
+msgid "You do not have permission to export submissions."
+msgstr "У вас нет прав на экспорт заявок."
+
+msgid "Your session expired or the request is invalid. Refresh this page."
+msgstr "Сессия истекла или запрос некорректен. Обновите страницу."
+
+msgid "ZIP includes index.html, register.csv, warnings.json and one folder per submission with its card and attachments."
+msgstr "В ZIP входят index.html, register.csv, warnings.json и отдельная папка каждой заявки с карточкой и вложениями."
+
+msgid "ZIP ready. Download started; original submissions and files were not changed."
+msgstr "ZIP готов. Скачивание началось; исходные заявки и файлы не изменены."
+
+msgid "files"
+msgstr "файлов"
+
+msgid "of"
+msgstr "из"
+
+msgid "submissions"
+msgstr "заявок"
+
+msgid "warnings"
+msgstr "предупреждений"
+
+
+msgid "Submissions"
+msgstr "Заявки"
+
+msgid "Files"
+msgstr "Файлы"
+
+msgid "Warnings"
+msgstr "Предупреждения"

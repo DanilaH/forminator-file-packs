@@ -1,0 +1,23 @@
+{
+    "checks": [
+        "disk: no filesystem paths in error",
+        "disk: abort even with partial consent",
+        "disk: no leftover archive or lock",
+        "memory: no filesystem paths in error",
+        "memory: abort even with partial consent",
+        "memory: no leftover archive or lock",
+        "time: no filesystem paths in error",
+        "time: abort even with partial consent",
+        "time: no leftover archive or lock",
+        "write: no filesystem paths in error",
+        "write: abort even with partial consent",
+        "write: no leftover archive or lock",
+        "abandoned old job removed on next export",
+        "specific permitted user can export",
+        "removed capability immediately blocks export",
+        "raw hostile HTML escaped in card",
+        "API repeated upload key maps through upstream get_field"
+    ],
+    "count": 17,
+    "faults": "disk\/memory\/time\/write simulated through test-only namespace wrappers; not actual host exhaustion"
+}

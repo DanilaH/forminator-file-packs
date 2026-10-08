@@ -1,0 +1,20 @@
+{
+  "checks": [
+    "Russian page labels loaded",
+    "no forms search state",
+    "empty selection cannot preview",
+    "keyboard selects submission",
+    "preview heading receives focus",
+    "date edit invalidates selection and preview",
+    "outdated rows cannot be selected",
+    "no entries state",
+    "network failure does not show ready package",
+    "retry after network interruption works",
+    "Russian 390px layout does not overflow",
+    "date remains visible on narrow screen",
+    "warnings require explicit consent",
+    "partial download has distinct Russian result",
+    "no JavaScript exceptions"
+  ],
+  "count": 15
+}

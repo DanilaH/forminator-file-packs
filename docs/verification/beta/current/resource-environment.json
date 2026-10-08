@@ -1,0 +1,11 @@
+{
+  "actual_php_memory_limit": "80M",
+  "synthetic_pressure_retained": true,
+  "memory_rejected_before_archive": true,
+  "zip_extension_actually_disabled": true,
+  "missing_zip_error_controlled": true,
+  "normal_shutdown_cleanup": true,
+  "fatal_shutdown_cleanup": true,
+  "sigkill_private_abandoned_job": true,
+  "sigkill_stale_recovery_on_next_export": true
+}

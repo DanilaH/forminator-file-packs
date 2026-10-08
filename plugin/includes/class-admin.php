@@ -22,14 +22,15 @@ final class Admin {
    'loading' => __( 'Loading…', 'forminator-file-packs' ), 'choose' => __( 'Choose a form', 'forminator-file-packs' ), 'noForms' => __( 'No forms found.', 'forminator-file-packs' ),
    'truncated' => __( 'Showing the first 100 matching forms. Refine your search.', 'forminator-file-packs' ), 'noEntries' => __( 'No completed submissions match this period.', 'forminator-file-packs' ),
    'selected' => __( 'Selected submissions:', 'forminator-file-packs' ), 'max' => __( 'Select no more than 100 submissions per package.', 'forminator-file-packs' ),
-   'page' => __( 'Page', 'forminator-file-packs' ), 'of' => __( 'of', 'forminator-file-packs' ), 'total' => __( 'submissions', 'forminator-file-packs' ),
+   'page' => __( 'Page', 'forminator-file-packs' ), 'of' => __( 'of', 'forminator-file-packs' ), 'total' => __( 'Submissions', 'forminator-file-packs' ),
    'dateZone' => __( 'Dates use the site timezone:', 'forminator-file-packs' ), 'building' => __( 'Building your ZIP. Keep this page open…', 'forminator-file-packs' ),
    'previewing' => __( 'Checking submissions and files…', 'forminator-file-packs' ), 'error' => __( 'The operation failed. Try again or refresh this page.', 'forminator-file-packs' ),
    'network' => __( 'The request was interrupted. Check your connection and refresh the preview before retrying.', 'forminator-file-packs' ),
    'complete' => __( 'ZIP ready. Download started; original submissions and files were not changed.', 'forminator-file-packs' ),
    'incomplete' => __( 'Incomplete ZIP ready. Download started. See the warnings in the package index.', 'forminator-file-packs' ),
-   'submissions' => __( 'submissions', 'forminator-file-packs' ), 'files' => __( 'files', 'forminator-file-packs' ), 'warnings' => __( 'warnings', 'forminator-file-packs' ),
+   'submissions' => __( 'Submissions', 'forminator-file-packs' ), 'files' => __( 'Files', 'forminator-file-packs' ), 'warnings' => __( 'Warnings', 'forminator-file-packs' ),
    'noFiles' => __( 'No attachments included.', 'forminator-file-packs' ), 'previewChanged' => __( 'The selected data changed. Refresh the preview.', 'forminator-file-packs' ),
+   'listChanged' => __( 'The list changed. Apply the period to reload submissions.', 'forminator-file-packs' ),
    'selectEntry' => __( 'Select submission', 'forminator-file-packs' ),
   ) ) );
  }

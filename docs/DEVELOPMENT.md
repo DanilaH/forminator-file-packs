@@ -55,3 +55,13 @@ npx @wordpress/env stop
 ```
 
 References: [wp-env](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-env/), [Forminator](https://wordpress.org/plugins/forminator/), [Plugin Check](https://wordpress.org/plugins/plugin-check/).
+
+## Beta checks
+
+`tests/resilience-integration.php` adds test-only namespace wrappers for failures; never load it from the plugin. Seed the repeater with `FFP_REPEATER_FIXTURE` pointing to a private generated JSON file, then run `tests/repeater-browser.cjs`. Its ZIP is checked separately for exact attachment bytes.
+
+`tests/lifecycle.py` drives real ZIP upgrades, uninstall/reinstall, child-process exit/fatal/SIGKILL and Russian UI states. It requires `FFP_WP_COMMAND` as a JSON array (for example `["wp", "--path=/absolute/disposable/wordpress"]`), `FFP_WP_PATH`, the common lab/fixture/credentials/artifact variables, Playwright/Chromium and a built ZIP. Set `FFP_PREVIOUS_ZIP` to the previous build to verify an actual upgrade; without it, that comparison is skipped. The test temporarily sets the synthetic admin locale to Russian and restores English. It intentionally adds a missing-file entry and only reclaims its own stale private job after terminating the child process.
+
+`tests/resource-environment.php` runs under `FFP_RESOURCE_MODE=memory` or `nozip`. Memory mode sets a real 80M PHP limit and allocates synthetic pressure before checking the guard. No-ZIP mode requires a PHP configuration with ZIP actually disabled. Keep vendor/bootstrap failures distinct from exporter behavior.
+
+Compile bundled translations with `python3 scripts/compile-translations.py`; the build script runs it automatically. The compiler handles the project's simple singular PO catalog; general plural/context catalogs require a standard gettext compiler.

@@ -62,6 +62,23 @@ def check(condition, name):
     print('PASS', name, flush=True)
 
 
+def saved_entry_id(result, form, serial):
+    if result.get('data', {}).get('entry_id'):
+        return result['data']['entry_id']
+    # Older upstream releases do not disclose the saved ID in the frontend response.
+    # Resolve only our unique synthetic serial through the authenticated export list.
+    lookup = urllib.request.build_opener(urllib.request.ProxyHandler({}), urllib.request.HTTPCookieProcessor(CookieJar()))
+    get('/wp-login.php', opener=lookup)
+    post('/wp-login.php', {'log': os.environ.get('FFP_TEST_USER', 'lab'), 'pwd': os.environ['FFP_TEST_PASSWORD'], 'wp-submit': 'Log In', 'redirect_to': BASE + '/wp-admin/', 'testcookie': '1'}, opener=lookup)
+    html = get('/wp-admin/tools.php?page=forminator-file-packs', opener=lookup)
+    config = json.loads(re.search(r'var FFP = (\{.*?\});', html).group(1))
+    status, _, raw = post('/wp-admin/admin-ajax.php', {'action': 'ffp_entries', 'nonce': config['nonce'], 'form_id': form['form']}, opener=lookup)
+    rows = json.loads(raw)['data']['entries']
+    matches = [row['id'] for row in rows if row['summary'].startswith(serial + ' ·') or row['summary'] == serial]
+    assert status == 200 and len(matches) == 1, 'Unique synthetic entry not saved'
+    return matches[0]
+
+
 # Real frontend submissions: native single/multi, AJAX multi, Media Library, and empty uploads.
 for mode, form in fixture.items():
     parser = Inputs()
@@ -74,22 +91,24 @@ for mode, form in fixture.items():
         for i in range(2):
             status, headers, raw = post('/wp-admin/admin-ajax.php', {'action': 'forminator_multiple_file_upload', 'form_id': form['form'], 'element_id': 'upload-2', 'nonce': data['forminator_nonce'], 'totalFiles': i + 1}, [('upload-2', 'invoice.txt', f'Synthetic invoice {i}'.encode())])
             result = json.loads(raw)
-            check(status == 200 and result.get('success') and result['data'].get('access_token'), f'{mode}: AJAX upload {i}')
-            uploaded.append({'success': True, 'file_name': 'invoice.txt', 'access_token': result['data']['access_token'], 'mime_type': 'text/plain'})
+            check(status == 200 and result.get('success') and (result['data'].get('access_token') or result['data'].get('file_url')), f'{mode}: AJAX upload {i}')
+            uploaded.append({**result['data'], 'success': True, 'mime_type': 'text/plain'})
         data['forminator-multifile-hidden'] = json.dumps({'upload-2_synthetic': uploaded})
     else:
         files += [('upload-2[]', 'invoice.txt', b'Synthetic invoice 0'), ('upload-2[]', 'invoice.txt', b'Synthetic invoice 1')]
         data['forminator-multifile-hidden'] = '{}'
     status, headers, raw = post('/wp-admin/admin-ajax.php', data, files)
     result = json.loads(raw)
-    check(status == 200 and result.get('success') and result['data'].get('entry_id'), f'{mode}: real frontend submission')
-    form['entry'] = result['data']['entry_id']
+    if not result.get('success'):
+        raise AssertionError(f'{mode}: frontend rejected: {result}')
+    check(status == 200, f'{mode}: real frontend submission')
+    form['entry'] = saved_entry_id(result, form, 'SN-781-' + mode)
     data['text-1'] = 'EMPTY-' + mode
     data['forminator-multifile-hidden'] = '{}'
     status, headers, raw = post('/wp-admin/admin-ajax.php', data)
     result = json.loads(raw)
-    check(result.get('success') and result['data'].get('entry_id'), f'{mode}: submission without uploads')
-    form['empty_entry'] = result['data']['entry_id']
+    check(result.get('success'), f'{mode}: submission without uploads')
+    form['empty_entry'] = saved_entry_id(result, form, 'EMPTY-' + mode)
 
 get('/wp-login.php')
 post('/wp-login.php', {'log': os.environ.get('FFP_TEST_USER', 'lab'), 'pwd': os.environ['FFP_TEST_PASSWORD'], 'wp-submit': 'Log In', 'redirect_to': BASE + '/wp-admin/', 'testcookie': '1'})

@@ -1,0 +1,22 @@
+{
+  "checks": [
+    "normal: private archive built",
+    "normal: archive cleaned",
+    "fatal: private archive built",
+    "fatal: archive cleaned",
+    "kill: private archive built",
+    "SIGKILL leaves only private abandoned job",
+    "kill: archive cleaned",
+    "source intact after process shutdown failures",
+    "installed version verified 0.1.0",
+    "source intact after installing 0.1.0",
+    "installed version verified 0.2.0",
+    "source intact after installing 0.2.0",
+    "plugin files actually removed",
+    "source intact after plugin uninstall",
+    "source intact after reinstall",
+    "Russian warning inside real partial ZIP"
+  ],
+  "count": 16,
+  "previous_zip_checked": true
+}
