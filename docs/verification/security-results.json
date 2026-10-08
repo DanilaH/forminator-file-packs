@@ -1,0 +1,42 @@
+{
+    "checks": [
+        "archive outside WordPress web root",
+        "private job permissions",
+        "concurrent export lock",
+        "archive removed after cleanup",
+        "form, entry, metadata and original hashes unchanged",
+        "no-file entry is complete",
+        "empty selection rejected",
+        "entry safety limit",
+        "cross-form ownership check",
+        "anonymous planner access rejected",
+        "subscriber access rejected",
+        "outside upload storage rejected",
+        "symlink escape rejected",
+        "remote stream rejected",
+        "remote URL rejected without retrieval",
+        "unrelated form file rejected",
+        "active HTML attachment excluded",
+        "missing attachment explicitly reported",
+        "incomplete archive includes warnings",
+        "CSV formula escaped",
+        "identical attachment names get unique members",
+        "ZIP member names normalized",
+        "CSV injection case: \"=1+1\"",
+        "CSV injection case: \" +SUM(A1)\"",
+        "CSV injection case: \"\\t=1\"",
+        "CSV injection case: \"@SUM(A1)\"",
+        "CSV injection case: \"-2\"",
+        "new omission fails strict export",
+        "new omission marked in partial export",
+        "20 MiB resource fixture fully exported",
+        "private jobs and locks cleaned after failures and successes"
+    ],
+    "count": 31,
+    "resource": {
+        "input_bytes": 20971520,
+        "zip_bytes": 20976773,
+        "seconds": 0.406,
+        "peak_memory_bytes": 74776576
+    }
+}

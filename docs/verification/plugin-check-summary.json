@@ -1,0 +1,9 @@
+{
+  "tool": "Plugin Check",
+  "version": "2.1.0",
+  "scope": "static CLI checks",
+  "date": "2026-10-08",
+  "diagnostics": 0,
+  "exit_code": 0,
+  "exceptions": "Narrowly documented native filesystem and read-only prepared SQL annotations in source"
+}

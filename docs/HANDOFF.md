@@ -10,22 +10,17 @@ This is an exporter, not Forminator Transfer/Recovery, a filesystem browser, or 
 
 ## Current state
 
-Repository initialized with a status-page scaffold, development-environment configuration, packaging script, and acceptance plan. No adapter, preview, ZIP export, or download endpoint exists yet. No WordPress installation test or Plugin Check has passed yet.
+First working development build v0.1.0 exists. Stages 1–3 have a verified first pass on one native lab; reliability and release work remain. Read [test report](TEST_REPORT_2026-10-08.md) and [adapter notes](ADAPTER.md) before modifying integration.
 
 ## Next milestone
 
-1. Start a disposable WordPress environment with Forminator; record exact WordPress, PHP, Forminator, and tooling versions.
-2. Create synthetic submissions through the actual form frontend: one upload, multiple uploads, multiple upload fields, no files, Unicode names, and duplicate names. Include AJAX and Media Library modes where applicable.
-3. Inspect the current Forminator source and persisted metadata. Record provenance and the exact relationship between a form, entry, upload field, and permitted local file.
-4. Implement a narrow read-only adapter. Reject unknown shapes rather than guessing paths.
-5. Produce a standard package from real synthetic submissions. Verify attachment bytes and unchanged source data.
-6. Add one admin flow: form → submissions/period → preview/warnings → authorized download.
+Expand compatibility and hosting coverage, repeaters and custom permissions; test low disk/memory/time and interrupted requests; improve UX accessibility and localization. Do not turn one successful lab into a broad release compatibility claim.
 
 ## Architecture
 
 Admin controller → authorization → Forminator adapter → export planner → package builder → private temporary storage → authorized download and cleanup.
 
-Keep the UI in standard WordPress admin components with minimal JavaScript. Define the actual authorization matrix after inspecting Forminator. The scaffold's manage_options permission is only for its status page.
+Keep the UI in standard WordPress admin components with minimal JavaScript. Data permissions follow Forminator's actual entries capability. Guests and subscribers are rejected; custom permission configurations need further coverage.
 
 Local attachments only initially. Remote/offloaded/missing files need explicit warnings. Do not retrieve arbitrary URLs or silently claim a complete export.
 

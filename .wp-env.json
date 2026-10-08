@@ -1,8 +1,9 @@
 {
-  "phpVersion": "8.2",
+  "core": "https://wordpress.org/wordpress-7.1.3.zip",
+  "phpVersion": "8.3",
   "plugins": [
     "./plugin",
-    "https://downloads.wordpress.org/plugin/forminator.latest-stable.zip"
+    "https://downloads.wordpress.org/plugin/forminator.1.58.0.zip"
   ],
   "config": {
     "WP_DEBUG": true,
