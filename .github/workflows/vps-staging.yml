@@ -1,0 +1,66 @@
+name: VPS staging
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Inspect the host or deploy and test the isolated staging stack
+        type: choice
+        options: [inspect, deploy]
+        default: inspect
+        required: true
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ffp-vps-staging
+  cancel-in-progress: false
+jobs:
+  staging:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      FFP_SSH_HOST: ${{ secrets.FFP_SSH_HOST }}
+      FFP_SSH_PORT: ${{ secrets.FFP_SSH_PORT }}
+      FFP_SSH_USER: ${{ secrets.FFP_SSH_USER }}
+      FFP_SSH_PRIVATE_KEY: ${{ secrets.FFP_SSH_PRIVATE_KEY }}
+      FFP_SSH_KNOWN_HOSTS: ${{ secrets.FFP_SSH_KNOWN_HOSTS }}
+      FFP_STAGING_URL: ${{ vars.FFP_STAGING_URL }}
+      FFP_CADDY_NETWORK: ${{ vars.FFP_CADDY_NETWORK }}
+      FFP_PLAYWRIGHT_MODULE: ${{ runner.temp }}/ffp-browser/node_modules/playwright
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Inspect host without changing services
+        if: inputs.action == 'inspect'
+        run: python3 scripts/vps.py inspect
+      - name: Require tested main commit
+        if: inputs.action == 'deploy'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/require-verified.py
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        if: inputs.action == 'deploy'
+        with:
+          node-version: '22'
+      - name: Install test browser and package
+        if: inputs.action == 'deploy'
+        run: |
+          npm install --prefix "$RUNNER_TEMP/ffp-browser" --no-audit --no-fund playwright@1.51.1
+          "$RUNNER_TEMP/ffp-browser/node_modules/.bin/playwright" install --with-deps chromium
+          python3 scripts/build.py
+          python3 scripts/check-package.py
+      - name: Deploy dedicated stack and run hosting checks
+        if: inputs.action == 'deploy'
+        run: python3 scripts/vps.py deploy
+      - name: Save synthetic hosting evidence
+        if: always() && inputs.action == 'deploy'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: vps-staging-evidence
+          path: |
+            artifacts/staging/*-results.json
+            artifacts/staging/*.png
+            artifacts/staging/environment.json
+          if-no-files-found: warn
+          retention-days: 7

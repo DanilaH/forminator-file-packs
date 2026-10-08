@@ -8,4 +8,6 @@ artifacts/
 !.env.example
 *.log
 __pycache__/
+.staging-state/
+.ffp-staging-owned
 .DS_Store

@@ -14,6 +14,8 @@ Beta v0.3.0 adds `data.json` with structured field values, final attachment refe
 
 ## Next milestone
 
+Docker/VPS staging implementation: [STAGING.md](STAGING.md), `staging-check.yml` (automatic Docker verification) and `vps-staging.yml` (manual inspect/deploy). User's actual host, Caddy route and DNS still need an authenticated inspection and real deployment. VPS deploy requires successful native and Docker CI for the exact main commit and verified SSH known_hosts. Start with private loopback/SSH tunnel; select Caddy host/network configuration after inspection. Do not claim VPS readiness from local or Actions Docker success.
+
 Test actual hosting providers, offload configurations and screen readers; finalize release naming/license/materials. Six repeater configurations, the combined maximum ceiling, boundary rejection, existing-session permission revocation and focused automated accessibility checks now have recorded native-lab evidence. Disk/memory/time/write failures, process termination, specific-user permissions and Russian UI already have recorded checks. Do not turn one successful lab into a broad release compatibility claim.
 
 ## Architecture

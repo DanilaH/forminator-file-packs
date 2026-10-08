@@ -1,0 +1,56 @@
+name: ffp-staging
+services:
+  database:
+    image: mariadb:10.11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: filepacks
+      MARIADB_USER: filepacks
+      MARIADB_PASSWORD_FILE: /run/secrets/database_password
+      MARIADB_ROOT_PASSWORD_FILE: /run/secrets/root_password
+    secrets: [database_password, root_password]
+    volumes: [database:/var/lib/mysql]
+    networks: [backend]
+    mem_limit: 512m
+    cpus: 0.5
+    healthcheck:
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  wordpress:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
+    ports: ['127.0.0.1:18080:80']
+    environment:
+      WORDPRESS_DB_HOST: database
+      WORDPRESS_DB_USER: filepacks
+      WORDPRESS_DB_NAME: filepacks
+      WORDPRESS_DB_PASSWORD_FILE: /run/secrets/database_password
+      WP_CLI_CACHE_DIR: /tmp/wp-cli-cache
+      WORDPRESS_CONFIG_EXTRA: |
+        if (isset($$_SERVER['HTTP_X_FORWARDED_PROTO']) && $$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') { $$_SERVER['HTTPS'] = 'on'; }
+        define('DISABLE_WP_CRON', true);
+        define('WP_ENVIRONMENT_TYPE', 'staging');
+    secrets: [database_password]
+    volumes:
+      - wordpress:/var/www/html
+      - ../../tests:/opt/ffp/tests:ro
+      - ../../dist:/opt/ffp/packages:ro
+      - ../../artifacts/staging:/opt/ffp/artifacts
+    networks: [backend]
+    mem_limit: 768m
+    cpus: 1.0
+networks:
+  backend:
+volumes:
+  database:
+  wordpress:
+secrets:
+  database_password:
+    file: ../../.staging-state/database_password
+  root_password:
+    file: ../../.staging-state/root_password

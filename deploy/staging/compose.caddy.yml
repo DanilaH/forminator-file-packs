@@ -1,0 +1,10 @@
+# Optional: activate only after identifying the existing Caddy Docker network.
+services:
+  wordpress:
+    networks:
+      proxy:
+        aliases: [ffp-staging-wordpress]
+networks:
+  proxy:
+    external: true
+    name: ${FFP_CADDY_NETWORK:?Set the verified existing Caddy network}

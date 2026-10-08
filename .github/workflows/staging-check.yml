@@ -1,0 +1,49 @@
+name: Verify Docker staging
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: staging-check-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  docker:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install test browser
+        run: |
+          npm install --prefix "$RUNNER_TEMP/ffp-browser" --no-audit --no-fund playwright@1.51.1
+          "$RUNNER_TEMP/ffp-browser/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Build and lint staging scripts
+        run: |
+          python3 -m compileall -q scripts tests
+          python3 scripts/build.py
+          python3 scripts/check-package.py
+      - name: Install Docker staging and exercise repeat deployment
+        env:
+          FFP_PLAYWRIGHT_MODULE: ${{ runner.temp }}/ffp-browser/node_modules/playwright
+        run: |
+          python3 scripts/staging.py deploy
+          python3 scripts/staging.py test
+          python3 scripts/staging.py deploy
+          python3 scripts/staging.py test
+      - name: Save hosting check evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: docker-staging-evidence
+          path: |
+            artifacts/staging/*-results.json
+            artifacts/staging/*.png
+            artifacts/staging/environment.json
+          retention-days: 7
+          if-no-files-found: warn

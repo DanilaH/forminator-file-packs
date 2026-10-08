@@ -30,4 +30,5 @@ if ( ! $rejected || glob( Package::private_root() . '/job-*' ) || glob( Package:
 if ( $before !== serialize( Forminator_API::get_entry( $form, $id )->meta_data ) ) { throw new RuntimeException( 'Export changed saved metadata.' ); }
 file_put_contents( $out . '/json-php-results.json', wp_json_encode( array( 'malformed_utf8_aborts' => true, 'private_cleanup' => true, 'saved_metadata_unchanged' => true, 'partial_source_removed_by_test_only' => true ) ) );
 Forminator_API::delete_entry( $form, $id );
+Forminator_API::delete_form( $form );
 echo "PASS structured saved JSON, omission after preview, invalid UTF-8 abort and cleanup, unchanged metadata\n";
