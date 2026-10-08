@@ -1,0 +1,109 @@
+name: Verify and build plugin
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: file-packs-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: WP ${{ matrix.wordpress }} / PHP ${{ matrix.php }} / Forminator ${{ matrix.forminator }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - wordpress: '7.1.3'
+            php: '8.3'
+            forminator: '1.58.0'
+          - wordpress: '6.5.5'
+            php: '8.2'
+            forminator: '1.58.0'
+          - wordpress: '6.5.5'
+            php: '8.2'
+            forminator: '1.57.1'
+    services:
+      database:
+        image: mariadb:10.11
+        env:
+          MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: '1'
+          MARIADB_DATABASE: filepacks
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mysqli, zip, mbstring, curl, dom, xml, fileinfo
+          tools: wp-cli:2.12.0
+          coverage: none
+          ini-values: memory_limit=256M, post_max_size=32M, upload_max_filesize=16M, max_execution_time=60
+        env:
+          fail-fast: 'true'
+      - name: Install pinned browser
+        run: |
+          npm install --prefix "$RUNNER_TEMP/ffp-browser" --no-audit --no-fund playwright@1.51.1
+          "$RUNNER_TEMP/ffp-browser/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Lint and build installable ZIP
+        run: |
+          find plugin tests -name '*.php' -print0 | xargs -0 -n1 php -l
+          for script in plugin/assets/*.js tests/*.cjs; do node --check "$script"; done
+          python3 -m compileall -q scripts tests
+          python3 scripts/build.py
+          git diff --exit-code -- plugin
+      - name: Run real WordPress integration suite
+        env:
+          FFP_TEST_LAB: '1'
+          FFP_CI_WORDPRESS: ${{ matrix.wordpress }}
+          FFP_CI_FORMINATOR: ${{ matrix.forminator }}
+          FFP_PLAYWRIGHT_MODULE: ${{ runner.temp }}/ffp-browser/node_modules/playwright
+        run: python3 scripts/ci.py
+      - name: Save verification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: verification-wp${{ matrix.wordpress }}-php${{ matrix.php }}-forminator${{ matrix.forminator }}
+          path: |
+            artifacts/ci/*-results.json
+            artifacts/ci/*.png
+            artifacts/ci/plugin-check.json
+            artifacts/ci/environment.json
+            artifacts/ci/server.log
+          if-no-files-found: warn
+          retention-days: 7
+
+  package:
+    name: Tested installable ZIP
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - run: python3 scripts/build.py
+      - name: Check ZIP contents and source bytes
+        run: python3 scripts/check-package.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: installable-plugin
+          path: dist/*.zip
+          if-no-files-found: error
+          retention-days: 14
