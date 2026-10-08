@@ -2,6 +2,16 @@
 
 Use a disposable local WordPress installation and synthetic data. Tests create forms, entries, attachments and a synthetic user; never point them at production.
 
+## GitHub Actions
+
+The [Verify and build plugin workflow](../.github/workflows/verify.yml) runs on pushes, pull requests and manual dispatch. Each matrix job provisions its own disposable MariaDB/WordPress installation, installs the actual development ZIP, and runs the HTTP, security, resilience, Chromium, JSON, six repeater configurations, capacity, permission and lifecycle suites. The previous 0.2.0 package is reconstructed from its exact recorded Git revision for the installer upgrade check. Plugin Check errors fail the job; warnings remain visible in the evidence.
+
+The matrix specifies WordPress 7.1.3 / PHP 8.3 / Forminator 1.58.0 and WordPress 6.5.5 / PHP 8.2 / Forminator 1.58.0 and 1.57.1. PHP patch versions and the MariaDB 10.11 image can advance; `environment.json` records the actual PHP/core/plugin versions. Browser testing uses Playwright 1.51.1. Action implementations are pinned to commit SHAs, permissions are read-only, and repository credentials are not retained in the checkout. Fork pull requests use `pull_request`, never `pull_request_target`, and need no account secrets.
+
+Verification artifacts retain result JSON, screenshots and a synthetic lab server log for seven days, including on failure. Raw fixture files and exported submission ZIPs are excluded. Only when **every matrix job succeeds** does the packaging job validate exact ZIP members/source bytes/license and upload `installable-plugin` for fourteen days. Open the successful run in the repository's **Actions** tab, then download that artifact and extract the installable plugin ZIP from it. This is a development build, not automatic publication to WordPress.org or a production site.
+
+The orchestration script is `scripts/ci.py`; it requires WP-CLI, PHP, Python, Node, Playwright and an empty `filepacks` MariaDB database on localhost:3306. It creates its own temporary WordPress root and random disposable admin password. Do not adapt it to an existing site. Local native reports remain historical evidence; CI outcomes are linked separately and do not certify shared hosting, offload or screen-reader behavior.
+
 ## Environment
 
 The completed native lab used WordPress 7.1.3, Forminator 1.58.0, PHP 8.3.6, MariaDB 10.11.14 and WP-CLI 2.12.0. The checked-in `.wp-env.json` pins those WordPress/Forminator distributions and PHP 8.3. Docker/wp-env itself was not available in that lab, so that launch route remains unverified.

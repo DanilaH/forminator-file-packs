@@ -26,7 +26,7 @@ for mode in ['normal','fatal','kill']:
  else:child.wait(timeout=10)
  check(not archive.exists(),mode+': archive cleaned')
 check(before==source(),'source intact after process shutdown failures')
-# Upgrade from recorded 0.1.0 build to 0.2.0 via the actual WordPress ZIP installer.
+# Upgrade from the supplied previous build to the current ZIP through WordPress.
 previous=os.environ.get('FFP_PREVIOUS_ZIP')
 for archive_path in ([pathlib.Path(previous)] if previous else []) + [package]:
  with zipfile.ZipFile(archive_path) as z:

@@ -2,7 +2,8 @@
 /** Configure only synthetic permissions; caller MUST invoke cleanup in finally. */
 if ( ! defined( 'WP_CLI' ) || ! WP_CLI || '1' !== getenv( 'FFP_TEST_LAB' ) ) { throw new RuntimeException( 'Disposable lab only.' ); }
 $path = getenv( 'FFP_PERMISSIONS_FIXTURE' ); $mode = getenv( 'FFP_PERMISSIONS_MODE' );
-$cap = forminator_get_permission_cap_map()['forminator-entries'];
+// Verified against the actual 1.57.1 permission switch; 1.58.0 exposes a map helper.
+$cap = function_exists( 'forminator_get_permission_cap_map' ) ? forminator_get_permission_cap_map()['forminator-entries'] : 'manage_forminator_submissions';
 if ( 'setup' === $mode ) {
  if ( get_user_by( 'login', 'ffp-http-reader' ) || get_role( 'ffp_lab_reader' ) ) { throw new RuntimeException( 'Prior synthetic user/role exists; clean it up first.' ); }
  add_role( 'ffp_lab_reader', 'Disposable File Packs reader', array( 'read' => true ) );

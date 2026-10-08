@@ -35,7 +35,8 @@ namespace {
  Package::private_root(); beta_check( ! file_exists( $old ), 'abandoned old job removed on next export' );
  $original = get_option( 'forminator_permissions', array() );
  $user = wp_insert_user( array( 'user_login' => 'ffp-cap-' . time(), 'user_pass' => wp_generate_password(), 'role' => 'subscriber' ) );
- $cap = forminator_get_permission_cap_map()['forminator-entries'];
+ // 1.57.1 resolves this capability in get_permission's switch; the map helper arrived in 1.58.0.
+ $cap = function_exists( 'forminator_get_permission_cap_map' ) ? forminator_get_permission_cap_map()['forminator-entries'] : 'manage_forminator_submissions';
  update_option( 'forminator_permissions', array( array( 'permission_type' => 'specific', 'specific_user' => array( $user ), $cap => true ) ) );
  $reader = get_user_by( 'id', $user ); $reader->add_cap( $cap ); wp_set_current_user( $user );
  beta_check( Adapter::capability() === $cap && Planner::build( $form, array( $id ) )['file_count'] === 3, 'specific permitted user can export' );

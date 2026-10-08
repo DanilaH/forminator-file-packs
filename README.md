@@ -18,6 +18,8 @@ English and Russian UI/package translations are bundled. Dates remain visible on
 
 ## Development
 
+GitHub Actions automatically runs the real WordPress regression matrix on pushes and pull requests. A successful run provides an `installable-plugin` ZIP artifact; failed checks prevent that artifact from being published. See [Actions](https://github.com/DanilaH/forminator-file-packs/actions/workflows/verify.yml) and [CI details](docs/DEVELOPMENT.md#github-actions).
+
 See [setup and tests](docs/DEVELOPMENT.md), [verification report](docs/TEST_REPORT_2026-10-08.md), [integration notes](docs/ADAPTER.md), [roadmap](ROADMAP.md), [v1 specification](docs/V1_SPEC.md) and [remaining acceptance work](docs/ACCEPTANCE.md).
 
 Build the installable ZIP with `python3 scripts/build.py`. The output is `dist/forminator-file-packs-0.3.0-dev.zip`; development tests and fixtures are excluded.
