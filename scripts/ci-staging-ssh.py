@@ -17,7 +17,7 @@ with tempfile.TemporaryDirectory(prefix='ffp-ssh-ci-') as directory:
         subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(root / name)], check=True)
     (root / 'authorized_keys').write_bytes((root / 'identity.pub').read_bytes())
     user = getpass.getuser()
-    (root / 'sshd_config').write_text(f'Port 2222\nListenAddress 127.0.0.1\nHostKey {root / "host"}\nPidFile {root / "pid"}\nAuthorizedKeysFile {root / "authorized_keys"}\nPasswordAuthentication no\nKbdInteractiveAuthentication no\nUsePAM no\nAllowUsers {user}\nLogLevel ERROR\n')
+    (root / 'sshd_config').write_text(f'Port 2222\nListenAddress 127.0.0.1\nHostKey {root / "host"}\nPidFile {root / "pid"}\nAuthorizedKeysFile {root / "authorized_keys"}\nPasswordAuthentication no\nKbdInteractiveAuthentication no\nUsePAM yes\nAllowUsers {user}\nLogLevel VERBOSE\n')
     subprocess.run(['sudo', 'mkdir', '-p', '/run/sshd'], check=True)
     log = (root / 'sshd.log').open('w')
     server = subprocess.Popen(['sudo', '/usr/sbin/sshd', '-D', '-e', '-f', str(root / 'sshd_config')], stdout=log, stderr=log)
@@ -41,6 +41,9 @@ with tempfile.TemporaryDirectory(prefix='ffp-ssh-ci-') as directory:
         for _ in range(2):
             subprocess.run(['python3', 'scripts/vps.py', 'deploy'], cwd=repo, env=env, check=True)
         print('PASS SSH host-key verification, transfer, Docker install, HTTP/browser/JSON checks and repeat deployment', flush=True)
+    except Exception:
+        print((root / 'sshd.log').read_text(), flush=True)
+        raise
     finally:
         if (root / 'pid').exists():
             subprocess.run(['sudo', 'kill', (root / 'pid').read_text().strip()], check=False)
