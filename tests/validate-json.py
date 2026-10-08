@@ -1,5 +1,6 @@
 """Independent ZIP reader: validate actual JSON against original fixture and other formats."""
 import csv, hashlib, io, json, os
+from collections import Counter
 from pathlib import Path
 from zipfile import ZipFile
 assert os.environ.get('FFP_TEST_LAB') == '1', 'Disposable lab only'
@@ -28,6 +29,10 @@ for path in sorted(out.glob('*.zip')):
         check([int(r['entry_id']) for r in register]==[r['id'] for r in rows] and [int(r['attachment_count']) for r in register]==[len(r['attachments']) for r in rows],path.name+': CSV and JSON entry/attachment counts agree')
         check(not any(key in raw.decode() for key in ['"file_path"','"file_url"','"attachment_id"','"fingerprint"','"mtime"','SYNTHETIC-INTERNAL-SENTINEL','SYNTHETIC-ADDON-SENTINEL']),path.name+': no operational upload metadata or internal sentinel values')
         check(archive.testzip() is None,path.name+': valid ZIP CRC')
+        if path.name.startswith('repeater-'):
+            mode=path.stem.removeprefix('repeater-')
+            saved=json.loads((out/('repeater-'+mode+'-metadata-results.json')).read_text())
+            check(Counter(f['field'] for f in attachments)==Counter({key:saved['files']//2 for key in saved['persisted_upload_fields']}),path.name+': attachment field references match both real saved repeater keys')
         if path.name=='json-complete.zip':
             expected=json.loads((out/'json-expected.json').read_text())
             fields={f['key']:f['value'] for f in rows[0]['fields']}
@@ -35,6 +40,7 @@ for path in sorted(out.glob('*.zip')):
             nested=fields['address-1']['nested']
             check(type(nested['integer']) is int and type(nested['float']) is float and type(nested['zero_float']) is float and nested['false'] is False and nested['null'] is None and nested['empty']==[], 'JSON preserves stored scalar and collection types')
             check(hashlib.sha256(archive.read(attachments[0]['path'])).hexdigest()==expected['attachment_hash'],'JSON attachment reference preserves original bytes')
+            check(attachments[0]['field']=='upload-1' and {f['key']:f['type'] for f in rows[0]['fields']}=={'text-1':'text','text-1-2':'text','name-1':'name','checkbox-1':'checkbox','address-1':'address'}, 'Attachment source-field key and current non-upload field types match fixture definitions')
         if path.name=='json-partial.zip':
             check(not attachments and data['status']=='incomplete' and bool(rows[0]['warnings']),'Omission after preview removes reference and updates JSON warnings/status')
         if path.name=='json-metadata-ceiling.zip':
