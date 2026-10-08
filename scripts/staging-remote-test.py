@@ -16,6 +16,7 @@ def wp(*args):
     return subprocess.run(command + list(args), check=True, capture_output=True, text=True).stdout
 
 
+wp('eval', "if(file_exists(getenv('FFP_TEST_FIXTURE'))){throw new RuntimeException('Previous staging fixture remains; inspect it before retrying.');}foreach(glob(getenv('FFP_TEST_ARTIFACTS').'/*.zip') as $p){unlink($p);}")
 wp('eval-file', '/opt/ffp/tests/seed-lab.php')
 wp('eval', "$f=json_decode(file_get_contents(getenv('FFP_TEST_FIXTURE')),true);foreach($f as $r){update_post_meta($r['form'],'_ffp_staging_fixture','1');}")
 Path(os.environ['FFP_TEST_FIXTURE']).write_text(wp('eval', "echo file_get_contents(getenv('FFP_TEST_FIXTURE'));"))
