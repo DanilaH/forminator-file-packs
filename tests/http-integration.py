@@ -132,7 +132,7 @@ for mode, form in fixture.items():
     status, headers, archive = api('download', {**params, 'fingerprint': preview['fingerprint']})
     check(status == 200 and headers.get_content_type() == 'application/zip', f'{mode}: authorized ZIP download')
     with ZipFile(io.BytesIO(archive)) as z:
-        check(z.testzip() is None and len(z.namelist()) == 8, f'{mode}: ZIP structure and CRC')
+        check(z.testzip() is None and len(z.namelist()) == 9, f'{mode}: ZIP structure and CRC')
         attachments = [name for name in z.namelist() if name.endswith('.txt')]
         check(set(z.read(n) for n in attachments) == {b'Synthetic equipment record', b'Synthetic invoice 0', b'Synthetic invoice 1'}, f'{mode}: original attachment bytes preserved')
         check(len(set(n.casefold() for n in z.namelist())) == len(z.namelist()), f'{mode}: no filename collisions')

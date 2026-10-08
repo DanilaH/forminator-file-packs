@@ -31,7 +31,7 @@ final class Planner {
        while ( isset( $used[strtolower( $name )] ) ) { $name = pathinfo( $base, PATHINFO_FILENAME ) . '-' . $suffix++ . '.' . pathinfo( $base, PATHINFO_EXTENSION ); }
        $used[strtolower( $name )] = true; $size = filesize( $real );
        if ( false === $size ) { throw new \RuntimeException( esc_html__( 'File size could not be read.', 'forminator-file-packs' ) ); }
-       $row['files'][] = array( 'name' => $name, 'label' => $label, 'path' => $real, 'source' => $path, 'url' => $urls[$i] ?? '', 'attachment_id' => absint( $media[$i] ?? 0 ), 'size' => $size, 'mtime' => filemtime( $real ) );
+       $row['files'][] = array( 'field' => $key, 'name' => $name, 'label' => $label, 'path' => $real, 'source' => $path, 'url' => $urls[$i] ?? '', 'attachment_id' => absint( $media[$i] ?? 0 ), 'size' => $size, 'mtime' => filemtime( $real ) );
        $plan['bytes'] += $size; ++$plan['file_count'];
       } catch ( \RuntimeException $e ) { self::warn( $row, $label . ' #' . ($i + 1), $e->getMessage() ); }
      }
@@ -40,13 +40,22 @@ final class Planner {
      if ( ! is_string( $text ) || strlen( $text ) > 1048576 ) { throw new \RuntimeException( esc_html__( 'A submission field is too large or unsupported.', 'forminator-file-packs' ) ); }
      $plan['metadata_bytes'] += strlen( $text );
      if ( $plan['metadata_bytes'] > 8388608 ) { throw new \RuntimeException( esc_html__( 'Submission data exceeds the 8 MiB metadata safety limit. Select a smaller batch.', 'forminator-file-packs' ) ); }
-     $row['fields'][] = array( 'key' => $key, 'label' => $label, 'value' => $text );
+     $row['fields'][] = array( 'key' => $key, 'label' => $label, 'type' => $settings['type'] ?? null, 'value' => $text, 'data' => $value );
     }
    }
    $plan['warnings'] = array_merge( $plan['warnings'], $row['warnings'] ); $plan['entries'][] = $row;
   }
   if ( $plan['bytes'] > MAX_BYTES || $plan['file_count'] > MAX_FILES ) { throw new \RuntimeException( esc_html__( 'This package exceeds the synchronous export safety limit (100 MiB or 500 files). Select a smaller batch.', 'forminator-file-packs' ) ); }
-  $plan['fingerprint'] = hash( 'sha256', wp_json_encode( $plan ) ); return $plan;
+  // Hash bounded pieces: a whole-plan JSON string can expand control characters sixfold.
+  $hash = hash_init( 'sha256' ); $header = $plan; unset( $header['entries'] );
+  hash_update( $hash, serialize( $header ) );
+  foreach ( $plan['entries'] as $row ) {
+   $identity = $row; unset( $identity['fields'], $identity['files'] );
+   hash_update( $hash, 'entry:' . serialize( $identity ) );
+   foreach ( $row['fields'] as $field ) { hash_update( $hash, 'field:' . serialize( $field ) ); }
+   foreach ( $row['files'] as $file ) { hash_update( $hash, 'file:' . serialize( $file ) ); }
+  }
+  $plan['fingerprint'] = hash_final( $hash ); return $plan;
  }
  public static function warn( &$row, $label, $reason ) { $row['warnings'][] = array( 'entry' => $row['id'], 'field' => $label, 'reason' => $reason ); }
  public static function name( $name ) {

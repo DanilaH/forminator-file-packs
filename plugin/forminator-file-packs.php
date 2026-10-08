@@ -2,7 +2,7 @@
 /**
  * Plugin Name: File Packs for Forminator
  * Description: Preview and export Forminator submissions and local attachments as organized ZIP packages.
- * Version: 0.2.0
+ * Version: 0.3.0
  * Requires at least: 6.5
  * Requires PHP: 8.2
  * Requires Plugins: forminator
@@ -15,7 +15,7 @@
  */
 namespace ForminatorFilePacks;
 if ( ! defined( 'ABSPATH' ) ) { exit; }
-const VERSION = '0.2.0';
+const VERSION = '0.3.0';
 const MAX_ENTRIES = 100;
 const MAX_FILES = 500;
 const MAX_BYTES = 104857600;

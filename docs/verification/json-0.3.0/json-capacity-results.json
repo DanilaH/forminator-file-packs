@@ -1,0 +1,8 @@
+{
+    "source_metadata_bytes": 8388608,
+    "json_bytes": 50332632,
+    "php_memory_limit": "256M",
+    "peak_memory_bytes": 141897728,
+    "seconds": 0.416,
+    "expected_field_sha256": "30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58"
+}

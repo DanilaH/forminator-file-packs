@@ -1,6 +1,6 @@
 # Project instructions
 
-Build File Packs for Forminator: read-only export of selected submissions, local attachments, HTML cards, and a CSV register into a ZIP.
+Build File Packs for Forminator: read-only export of selected submissions, local attachments, HTML cards, a CSV register, and structured JSON into a ZIP.
 
 - Read README.md, ROADMAP.md, docs/V1_SPEC.md, and docs/HANDOFF.md before changing scope. ROADMAP.md owns milestone status; docs/V1_SPEC.md owns the agreed product baseline. Update status only with evidence of completed work and checks.
 - Inspect actual Forminator source and synthetic submissions before implementing an adapter. Do not invent methods, upload formats, or capabilities.

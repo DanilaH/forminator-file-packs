@@ -6,7 +6,7 @@ wp=json.loads(os.environ['FFP_WP_COMMAND'])
 assert isinstance(wp,list) and wp and all(isinstance(x,str) for x in wp)
 root=pathlib.Path(os.environ['FFP_WP_PATH']).resolve()
 output=pathlib.Path(os.environ['FFP_TEST_ARTIFACTS']); output.mkdir(parents=True,exist_ok=True)
-version='0.2.0'; package=repo/'dist'/('forminator-file-packs-'+version+'-dev.zip')
+version='0.3.0'; package=repo/'dist'/('forminator-file-packs-'+version+'-dev.zip')
 def run(c,**kw): return subprocess.run(c,cwd=repo,check=True,**kw)
 checks=[]
 def check(ok,name):

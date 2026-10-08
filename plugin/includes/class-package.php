@@ -111,6 +111,7 @@ final class Package {
 			foreach ( $this->plan['entries'] as $row ) { $this->add_text( $row['folder'] . '/request.html', $this->card( $row ) ); }
 			$this->add_text( 'index.html', $this->index() );
 			$this->add_text( 'register.csv', $this->csv() );
+			$this->json_register();
 			$this->add_text( 'warnings.json', wp_json_encode( $this->plan['warnings'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE ) );
 			$this->guard();
 			$archive = $this->archive;
@@ -130,6 +131,46 @@ final class Package {
 		if ( ! $this->archive->addFromString( $name, $text ) ) { throw new StorageException( esc_html__( 'Could not add package metadata.', 'forminator-file-packs' ) ); }
 	}
 	public function path() { return $this->directory . '/package.zip'; }
+	private function json_register() {
+		$path = $this->directory . '/data.json';
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Checked local stream inside the private export job; no public or remote storage.
+		$stream = @fopen( $path, 'xb' );
+		if ( ! $stream ) { throw new StorageException( esc_html__( 'Could not add package metadata.', 'forminator-file-packs' ) ); }
+		$write = function ( $text ) use ( $stream ) {
+			$this->guard();
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite -- Checked local stream; a short write aborts the whole package.
+			if ( strlen( $text ) !== @fwrite( $stream, $text ) ) { throw new StorageException( esc_html__( 'Could not add package metadata.', 'forminator-file-packs' ) ); }
+		};
+		$encode = static function ( $value ) {
+			try { return wp_json_encode( $value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION | JSON_THROW_ON_ERROR ); }
+			catch ( \JsonException $e ) { throw new StorageException( esc_html__( 'Could not add package metadata.', 'forminator-file-packs' ) ); }
+		};
+		try {
+			$header = array( 'schema_version' => 1, 'plugin_version' => VERSION, 'generated_at' => gmdate( 'c' ), 'timezone' => wp_timezone_string(), 'form' => array( 'id' => $this->plan['form_id'], 'title' => $this->plan['form_title'] ), 'status' => $this->plan['warnings'] ? 'incomplete' : 'complete', 'submission_count' => count( $this->plan['entries'] ), 'attachment_count' => $this->plan['file_count'], 'attachment_bytes' => $this->plan['bytes'], 'warnings' => $this->plan['warnings'] );
+			$write( substr( $encode( $header ), 0, -1 ) . ',"submissions":[' );
+			$first = true;
+			foreach ( $this->plan['entries'] as $row ) {
+				$files = array_map( static fn( $f ) => array( 'field' => $f['field'], 'label' => $f['label'], 'name' => $f['name'], 'path' => $row['folder'] . '/' . $f['name'], 'bytes' => $f['size'] ), $row['files'] );
+				if ( ! $first ) { $write( ',' ); }
+				$write( substr( $encode( array( 'id' => $row['id'], 'created_at' => $row['date'], 'card' => $row['folder'] . '/request.html', 'attachments' => $files, 'warnings' => $row['warnings'] ) ), 0, -1 ) . ',"fields":[' );
+				$first_field = true;
+				foreach ( $row['fields'] as $field ) {
+					// Sixfold escaping plus temporary encoder allocation, bounded per field.
+					$this->guard( strlen( $field['value'] ) * 12 + 4194304 );
+					if ( ! $first_field ) { $write( ',' ); }
+					$write( $encode( array( 'key' => $field['key'], 'label' => $field['label'], 'type' => $field['type'], 'value' => $field['data'] ) ) );
+					$first_field = false;
+				}
+				$write( ']}' );
+				$first = false;
+			}
+			$write( ']}' );
+		} finally {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Close the private metadata stream on success and failure.
+			fclose( $stream );
+		}
+		if ( ! $this->archive->addFile( $path, 'data.json' ) ) { throw new StorageException( esc_html__( 'Could not add package metadata.', 'forminator-file-packs' ) ); }
+	}
 	private function html( $title, $body ) {
 		return '<!doctype html><html lang="' . esc_attr( str_replace( '_', '-', determine_locale() ) ) . '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;"><title>' . esc_html( $title ) . '</title><style>body{font:16px/1.6 system-ui,sans-serif;max-width:1000px;margin:40px auto;padding:0 24px;color:#17212b;background:#f5f7f9}main{background:white;border:1px solid #dce2e8;border-radius:10px;padding:28px}a{color:#145ca3}h1{line-height:1.2;overflow-wrap:anywhere}dl{display:grid;grid-template-columns:minmax(120px,1fr) 3fr;gap:12px}dt{font-weight:600}dd{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}.warning{background:#fff3d9;border-left:4px solid #b46b00;padding:12px}li{overflow-wrap:anywhere}@media(max-width:600px){dl{display:block}dd{margin-bottom:16px}}</style></head><body><main><h1>' . esc_html( $title ) . '</h1>' . $body . '</main></body></html>';
 	}
@@ -149,7 +190,7 @@ final class Package {
 	}
 	private function index() {
 		// translators: %1$d: submission count; %2$d: attachment count.
-		$body = '<p>' . esc_html( sprintf( __( '%1$d submissions · %2$d attachments', 'forminator-file-packs' ), count( $this->plan['entries'] ), $this->plan['file_count'] ) ) . '</p>' . $this->warnings( $this->plan['warnings'] ) . '<p><a href="register.csv">' . esc_html__( 'Open CSV register', 'forminator-file-packs' ) . '</a></p><ul>';
+		$body = '<p>' . esc_html( sprintf( __( '%1$d submissions · %2$d attachments', 'forminator-file-packs' ), count( $this->plan['entries'] ), $this->plan['file_count'] ) ) . '</p>' . $this->warnings( $this->plan['warnings'] ) . '<p><a href="register.csv">' . esc_html__( 'Open CSV register', 'forminator-file-packs' ) . '</a> · <a href="data.json">' . esc_html__( 'Open JSON data', 'forminator-file-packs' ) . '</a></p><ul>';
 		foreach ( $this->plan['entries'] as $row ) { $body .= '<li><a href="' . esc_attr( $row['folder'] . '/request.html' ) . '">' . esc_html( '#' . $row['id'] . ' · ' . $row['date'] ) . '</a></li>'; }
 		return $this->html( $this->plan['form_title'], $body . '</ul>' );
 	}

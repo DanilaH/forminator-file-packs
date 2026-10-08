@@ -25,3 +25,11 @@ Evidence: [first report](TEST_REPORT_2026-10-08.md) and [beta report](BETA_TEST_
 - [x] Focused Chromium accessibility-tree names, live regions, heading focus, sampled computed text contrast and 320 px layout checks.
 - [ ] Screen-reader audit, offload configurations, actual shared hosting, Windows and concurrent mid-request permission revocation.
 - [ ] License/dependency audit, final name and WordPress.org submission materials finalized.
+
+JSON extension evidence: [0.3.0 report](JSON_TEST_REPORT_2026-10-08.md).
+
+- [x] Stored composite/scalar values, repeated keys, Unicode, numeric strings, false/null and floating zero preserve their JSON representation.
+- [x] JSON references match actual ZIP members and CSV counts; omissions after preview update final warnings/status.
+- [x] Operational upload metadata and internal/addon sentinels stay out of JSON.
+- [x] Encoding errors and short metadata writes abort even with partial consent and clean private files.
+- [x] 8 MiB metadata with sixfold escaping passes after incremental fingerprint/field-streaming fixes.

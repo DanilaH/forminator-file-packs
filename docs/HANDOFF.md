@@ -10,7 +10,7 @@ This is an exporter, not Forminator Transfer/Recovery, a filesystem browser, or 
 
 ## Current state
 
-Beta v0.2.0 exists. Three compatibility combinations, failure/cleanup, native repeater, Russian UI and installation lifecycle are verified; real-hosting and release work remain. Read [beta report](BETA_TEST_REPORT_2026-10-08.md). Read [test report](TEST_REPORT_2026-10-08.md) and [adapter notes](ADAPTER.md) before modifying integration.
+Beta v0.3.0 adds `data.json` with structured field values, final attachment references and completeness/warnings. See [JSON contract](DATA_FORMAT.md) and [0.3.0 verification](JSON_TEST_REPORT_2026-10-08.md). Beta v0.2.0 historical checks: Three compatibility combinations, failure/cleanup, native repeater, Russian UI and installation lifecycle are verified; real-hosting and release work remain. Read [beta report](BETA_TEST_REPORT_2026-10-08.md). Read [test report](TEST_REPORT_2026-10-08.md) and [adapter notes](ADAPTER.md) before modifying integration.
 
 ## Next milestone
 

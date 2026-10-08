@@ -59,7 +59,7 @@ final class Admin {
   <section id="ffp-preview" class="ffp-panel" aria-labelledby="ffp-preview-heading" hidden>
    <h2 id="ffp-preview-heading" tabindex="-1"><?php esc_html_e( '3. Review and download', 'forminator-file-packs' ); ?></h2>
    <p id="ffp-totals" class="ffp-totals"></p><div id="ffp-warnings" class="ffp-warnings" hidden></div>
-   <p><?php esc_html_e( 'ZIP includes index.html, register.csv, warnings.json and one folder per submission with its card and attachments.', 'forminator-file-packs' ); ?></p>
+   <p><?php esc_html_e( 'ZIP includes index.html, register.csv, data.json, warnings.json and one folder per submission with its card and attachments.', 'forminator-file-packs' ); ?></p>
    <div id="ffp-tree"></div>
    <label id="ffp-partial-label" class="ffp-partial" hidden><input type="checkbox" id="ffp-partial"> <?php esc_html_e( 'I understand that the package will be incomplete. Export the available files.', 'forminator-file-packs' ); ?></label>
    <button id="ffp-download" class="button button-primary"><?php esc_html_e( 'Build and download ZIP', 'forminator-file-packs' ); ?></button>

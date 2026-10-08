@@ -301,8 +301,8 @@ msgstr "У вас нет прав на экспорт заявок."
 msgid "Your session expired or the request is invalid. Refresh this page."
 msgstr "Сессия истекла или запрос некорректен. Обновите страницу."
 
-msgid "ZIP includes index.html, register.csv, warnings.json and one folder per submission with its card and attachments."
-msgstr "В ZIP входят index.html, register.csv, warnings.json и отдельная папка каждой заявки с карточкой и вложениями."
+msgid "ZIP includes index.html, register.csv, data.json, warnings.json and one folder per submission with its card and attachments."
+msgstr "В ZIP входят index.html, register.csv, data.json, warnings.json и отдельная папка каждой заявки с карточкой и вложениями."
 
 msgid "ZIP ready. Download started; original submissions and files were not changed."
 msgstr "ZIP готов. Скачивание началось; исходные заявки и файлы не изменены."
@@ -328,3 +328,6 @@ msgstr "Файлы"
 
 msgid "Warnings"
 msgstr "Предупреждения"
+
+msgid "Open JSON data"
+msgstr "Открыть данные JSON"

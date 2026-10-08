@@ -1,0 +1,23 @@
+{
+  "count": 17,
+  "checks": [
+    "specific: forms allowed via HTTP",
+    "specific: entries allowed via HTTP",
+    "specific: preview allowed via HTTP",
+    "specific: actual ZIP download allowed",
+    "role: forms allowed via HTTP",
+    "role: entries allowed via HTTP",
+    "role: preview allowed via HTTP",
+    "role: actual ZIP download allowed",
+    "revoked: forms denied with existing session and nonce",
+    "revoked: entries denied with existing session and nonce",
+    "revoked: preview denied with existing session and nonce",
+    "revoked: download denied with existing session and nonce",
+    "excluded: forms denied with existing session and nonce",
+    "excluded: entries denied with existing session and nonce",
+    "excluded: preview denied with existing session and nonce",
+    "excluded: download denied with existing session and nonce",
+    "Restored permission permits retry in same session"
+  ],
+  "scope": "Between-request revocation with an existing authenticated session; concurrent mid-request revocation is not tested"
+}
