@@ -11,7 +11,7 @@ assert os.environ.get('GITHUB_ACTIONS') == 'true', 'Ephemeral GitHub runner only
 repo = Path(__file__).resolve().parents[1]
 target = Path.home() / 'ffp-staging'
 assert not target.exists(), 'Fresh runner destination required'
-with tempfile.TemporaryDirectory(prefix='ffp-ssh-ci-') as directory:
+with tempfile.TemporaryDirectory(prefix='ffp-ssh-ci-', dir=Path.home()) as directory:
     root = Path(directory)
     for name in ['host', 'identity']:
         subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(root / name)], check=True)
