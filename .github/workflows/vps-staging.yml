@@ -26,7 +26,6 @@ jobs:
       FFP_SSH_KNOWN_HOSTS: ${{ secrets.FFP_SSH_KNOWN_HOSTS }}
       FFP_STAGING_URL: ${{ vars.FFP_STAGING_URL }}
       FFP_CADDY_NETWORK: ${{ vars.FFP_CADDY_NETWORK }}
-      FFP_PLAYWRIGHT_MODULE: ${{ runner.temp }}/ffp-browser/node_modules/playwright
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -52,7 +51,7 @@ jobs:
           python3 scripts/check-package.py
       - name: Deploy dedicated stack and run hosting checks
         if: inputs.action == 'deploy'
-        run: python3 scripts/vps.py deploy
+        run: FFP_PLAYWRIGHT_MODULE="$RUNNER_TEMP/ffp-browser/node_modules/playwright" python3 scripts/vps.py deploy
       - name: Save synthetic hosting evidence
         if: always() && inputs.action == 'deploy'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

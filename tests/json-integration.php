@@ -5,6 +5,7 @@ use ForminatorFilePacks\Package;
 if ( ! defined( 'WP_CLI' ) || ! WP_CLI || '1' !== getenv( 'FFP_TEST_LAB' ) ) { throw new RuntimeException( 'Disposable lab only.' ); }
 wp_set_current_user( 1 );
 $form = Forminator_API::add_form( 'JSON structure <test>', array(), array( 'formName' => 'JSON structure <test>', 'store_submissions' => '1' ) );
+if ( '1' === getenv( 'FFP_STAGING_TEST' ) ) { update_post_meta( $form, '_ffp_staging_fixture', '1' ); }
 foreach ( array( 'text', 'name', 'checkbox', 'address', 'upload' ) as $type ) { Forminator_API::add_form_field( $form, $type, array( 'field_label' => $type . ' — данные' ) ); }
 $root = forminator_get_upload_path( $form, 'uploads' ); wp_mkdir_p( $root );
 $file = $root . '/json-document.txt'; file_put_contents( $file, 'Exact synthetic JSON attachment' );
@@ -30,5 +31,4 @@ if ( ! $rejected || glob( Package::private_root() . '/job-*' ) || glob( Package:
 if ( $before !== serialize( Forminator_API::get_entry( $form, $id )->meta_data ) ) { throw new RuntimeException( 'Export changed saved metadata.' ); }
 file_put_contents( $out . '/json-php-results.json', wp_json_encode( array( 'malformed_utf8_aborts' => true, 'private_cleanup' => true, 'saved_metadata_unchanged' => true, 'partial_source_removed_by_test_only' => true ) ) );
 Forminator_API::delete_entry( $form, $id );
-Forminator_API::delete_form( $form );
 echo "PASS structured saved JSON, omission after preview, invalid UTF-8 abort and cleanup, unchanged metadata\n";

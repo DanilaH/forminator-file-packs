@@ -30,6 +30,7 @@ def run(command, **kwargs):
 def wp(*command, **kwargs):
     return run(compose + ['exec', '-T', '--user', '33:33',
                '-e', 'FFP_TEST_LAB=1', '-e', 'FFP_TEST_FIXTURE=/opt/ffp/artifacts/fixture.json',
+               '-e', 'FFP_STAGING_TEST=1',
                '-e', 'FFP_TEST_ARTIFACTS=/opt/ffp/artifacts', 'wordpress', 'wp', '--path=/var/www/html', *command], **kwargs)
 
 
@@ -69,7 +70,8 @@ if args.action == 'deploy':
         # A fresh project/volume only. Feed the admin password through stdin, not command arguments.
         wp('core', 'install', '--url=' + args.url, '--title=File Packs staging', '--admin_user=lab',
            '--admin_email=lab@example.test', '--skip-email', '--prompt=admin_password',
-           input=(state / 'admin_password').read_text() + '\n', text=True)
+           input=(state / 'admin_password').read_text() + '\n', text=True,
+           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     wp('option', 'update', 'home', args.url)
     wp('option', 'update', 'siteurl', args.url)
     wp('option', 'update', 'blog_public', '0')
@@ -99,6 +101,7 @@ else:
                FFP_TEST_PASSWORD=(state / 'admin_password').read_text(),
                FFP_TEST_FIXTURE=str(out / 'fixture.json'), FFP_TEST_ARTIFACTS=str(out))
     wp('eval-file', '/opt/ffp/tests/seed-lab.php')
+    wp('eval', "chmod(getenv('FFP_TEST_FIXTURE'),0666);")
     wp('eval', "$f=json_decode(file_get_contents(getenv('FFP_TEST_FIXTURE')),true);foreach($f as $r){update_post_meta($r['form'],'_ffp_staging_fixture','1');}")
     try:
         run(['python3', 'tests/http-integration.py'], env=env)

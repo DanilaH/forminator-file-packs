@@ -32,10 +32,9 @@ jobs:
         env:
           FFP_PLAYWRIGHT_MODULE: ${{ runner.temp }}/ffp-browser/node_modules/playwright
         run: |
-          python3 scripts/staging.py deploy
-          python3 scripts/staging.py test
-          python3 scripts/staging.py deploy
-          python3 scripts/staging.py test
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq openssh-server
+          python3 scripts/ci-staging-ssh.py
       - name: Save hosting check evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
