@@ -4,6 +4,10 @@ Development repository for a WordPress plugin that exports selected Forminator s
 
 **Status:** initial scaffold; submission reading and export are not implemented. This is not a production release.
 
+## Project decisions
+
+See the [roadmap](ROADMAP.md) and [v1 specification](docs/V1_SPEC.md) for agreed scope, UX, milestones, commercial boundaries, and unverified decisions. The specification describes the intended product; it does not claim that export already works.
+
 ## First milestone
 
 Run WordPress with Forminator, create synthetic submissions, inspect actual upload metadata, and build a read-only export without changing source records or files. See [development setup](docs/DEVELOPMENT.md), [scope and handoff](docs/HANDOFF.md), and [acceptance checklist](docs/ACCEPTANCE.md).

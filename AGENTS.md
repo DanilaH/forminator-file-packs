@@ -2,7 +2,7 @@
 
 Build File Packs for Forminator: read-only export of selected submissions, local attachments, HTML cards, and a CSV register into a ZIP.
 
-- Read README.md and docs/HANDOFF.md before changing scope.
+- Read README.md, ROADMAP.md, docs/V1_SPEC.md, and docs/HANDOFF.md before changing scope. ROADMAP.md owns milestone status; docs/V1_SPEC.md owns the agreed product baseline. Update status only with evidence of completed work and checks.
 - Inspect actual Forminator source and synthetic submissions before implementing an adapter. Do not invent methods, upload formats, or capabilities.
 - Preserve original forms, records, file paths, names, and bytes. Never implement migration or cleanup of Forminator data.
 - Keep Forminator integration isolated from export planning and package generation.
