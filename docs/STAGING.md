@@ -5,10 +5,10 @@ This is a dedicated synthetic testing site, separate from existing sites. Docker
 ## Workflows
 
 - **Verify Docker staging** runs automatically on push/PR. It builds the WordPress image, installs the real plugin ZIP, checks real HTTP uploads/downloads, authorization/path handling, resource-failure behavior, Chromium/mobile UI, structured JSON and source integrity. It repeats deployment and tests against the same persistent volumes to catch fixture accumulation/reinstall issues.
-- **VPS staging → inspect** is a manual, read-only SSH probe: Docker/Compose versions, container names/images/ports, network names, disk/memory, listening ports and Python/Caddy executable availability. It never prints container environment variables or existing configuration files.
-- **VPS staging → deploy** is manual initially. It accepts only a main commit whose latest native matrix and Docker checks succeeded. It uploads code into `$HOME/ffp-staging`, builds/installs the dedicated stack and runs the targeted hosting suite. Existing destinations/stacks/volumes without ownership markers are rejected. There is no automatic Caddy edit, production deployment, global Docker pruning or volume deletion.
+- **VPS staging → inspect** is a read-only SSH probe (manual, or when its workflow is updated): Docker/Compose versions, container names/images/ports, network names, disk/memory, listening ports and Python/Caddy executable availability. It never prints container environment variables or existing configuration files.
+- **VPS staging → deploy** runs after a successful main-branch Docker check, or manually. It waits for the native matrix, rejects stale main commits, and repeats deployment and tests on the same volumes. It accepts only a main commit whose latest native matrix and Docker checks succeeded. It uploads code into `$HOME/ffp-staging`, builds/installs the dedicated stack and runs the targeted hosting suite. Existing destinations/stacks/volumes without ownership markers are rejected. There is no automatic Caddy edit, production deployment, global Docker pruning or volume deletion.
 
-VPS deploy uses SSH/SFTP-style access through Actions; the assistant never needs to read the stored private key. SSH fingerprints must be pinned. An automatic push deploy can be enabled after the first VPS/Caddy check succeeds and the target is confirmed.
+VPS deploy uses SSH/SFTP-style access through Actions; the assistant never needs to read the stored private key. SSH fingerprints must be pinned. Private staging deployment is automatic after both exact-commit checks succeed. Connecting a public subdomain/Caddy route is a separate setup step; automatic deployment does not edit Caddy.
 
 ## GitHub repository secrets
 

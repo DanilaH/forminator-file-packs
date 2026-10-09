@@ -1,5 +1,9 @@
 name: VPS staging
 on:
+  workflow_run:
+    workflows: ['Verify Docker staging']
+    types: [completed]
+    branches: [main]
   push:
     branches: [main]
     paths: ['.github/workflows/vps-staging.yml']
@@ -19,6 +23,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   staging:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
@@ -33,30 +38,38 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - name: Inspect host without changing services
         if: github.event_name == 'push' || inputs.action == 'inspect'
         run: python3 scripts/vps.py inspect
       - name: Require tested main commit
-        if: inputs.action == 'deploy'
+        if: github.event_name == 'workflow_run' || inputs.action == 'deploy'
         env:
           GH_TOKEN: ${{ github.token }}
+          FFP_DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          FFP_VERIFY_WAIT_SECONDS: '900'
         run: python3 scripts/require-verified.py
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        if: inputs.action == 'deploy'
+        if: github.event_name == 'workflow_run' || inputs.action == 'deploy'
         with:
           node-version: '22'
       - name: Install test browser and package
-        if: inputs.action == 'deploy'
+        if: github.event_name == 'workflow_run' || inputs.action == 'deploy'
         run: |
           npm install --prefix "$RUNNER_TEMP/ffp-browser" --no-audit --no-fund playwright@1.51.1
           "$RUNNER_TEMP/ffp-browser/node_modules/.bin/playwright" install --with-deps chromium
           python3 scripts/build.py
           python3 scripts/check-package.py
       - name: Deploy dedicated stack and run hosting checks
-        if: inputs.action == 'deploy'
+        if: github.event_name == 'workflow_run' || inputs.action == 'deploy'
         run: FFP_PLAYWRIGHT_MODULE="$RUNNER_TEMP/ffp-browser/node_modules/playwright" python3 scripts/vps.py deploy
+      - name: Verify repeat deployment and inspect host afterwards
+        if: github.event_name == 'workflow_run' || inputs.action == 'deploy'
+        run: |
+          FFP_PLAYWRIGHT_MODULE="$RUNNER_TEMP/ffp-browser/node_modules/playwright" python3 scripts/vps.py deploy
+          python3 scripts/vps.py inspect
       - name: Save synthetic hosting evidence
-        if: always() && inputs.action == 'deploy'
+        if: always() && (github.event_name == 'workflow_run' || inputs.action == 'deploy')
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: vps-staging-evidence
