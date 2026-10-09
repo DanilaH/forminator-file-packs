@@ -13,7 +13,7 @@ from pathlib import Path
 
 repo = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser()
-parser.add_argument('action', choices=['inspect', 'deploy', 'wp'])
+parser.add_argument('action', choices=['inspect', 'deploy', 'wp', 'artifact'])
 args, extra = parser.parse_known_args()
 host, user, port = [os.environ.get(n, '') for n in ['FFP_SSH_HOST', 'FFP_SSH_USER', 'FFP_SSH_PORT']]
 port = port or '22'
@@ -43,7 +43,27 @@ if network:
 try:
     if args.action == 'wp':
         command = extra[1:] if extra and extra[0] == '--' else extra
-        subprocess.run(ssh + [prefix + 'python3 scripts/staging.py wp -- ' + shlex.join(command)], check=True)
+        # Existing HTTP tests refer to runner paths. Map only bundled test files.
+        if command and command[0] == 'eval-file' and len(command) == 2:
+            path = Path(command[1])
+            if path.parent == repo / 'tests':
+                command[1] = '/opt/ffp/tests/' + path.name
+        variables = []
+        for name in ['FFP_REPEATER_MODE', 'FFP_REPEATER_FIXTURE', 'FFP_PERMISSIONS_MODE', 'FFP_PERMISSIONS_FIXTURE']:
+            value = os.environ.get(name)
+            if value:
+                if name.endswith('_FIXTURE'):
+                    path = Path(value)
+                    assert path.parent.resolve() == (repo / 'artifacts/staging').resolve() and re.fullmatch(r'[A-Za-z0-9_-]+\.json', path.name)
+                    value = '/opt/ffp/artifacts/' + path.name
+                else:
+                    assert re.fullmatch(r'[A-Za-z-]+', value)
+                variables.append(name + '=' + shlex.quote(value))
+        subprocess.run(ssh + [prefix + ('env ' + ' '.join(variables) + ' ' if variables else '') + 'python3 scripts/staging.py wp -- ' + shlex.join(command)], check=True)
+    elif args.action == 'artifact':
+        assert len(extra) == 1 and re.fullmatch(r'[A-Za-z0-9_-]+\.(zip|json|png)', extra[0]), 'Synthetic artifact basename required'
+        assert extra[0] not in ['fixture.json', 'permissions-fixture.json'], 'Internal fixture is not an export artifact'
+        subprocess.run(ssh + ['cat "$HOME/ffp-staging/artifacts/staging/"' + shlex.quote(extra[0])], check=True)
     elif args.action == 'inspect':
         # No full docker inspect, container env, Caddy files, users or credentials.
         script = 'set -eu; uname -sr; docker version --format "{{.Server.Version}}"; docker compose version; docker ps --format "table {{.Names}}\\t{{.Image}}\\t{{.Ports}}"; docker network ls; df -h /; free -m; command -v python3; command -v caddy || true; ss -ltn | head -30'
@@ -67,6 +87,7 @@ try:
         env.update(FFP_SSH_CONFIG=str(config), FFP_TEST_LAB='1', FFP_TEST_USER='lab', FFP_TEST_PASSWORD=password,
                    FFP_TEST_URL=origin, FFP_TEST_ARTIFACTS=str(out), FFP_TEST_FIXTURE=str(out / 'fixture.json'),
                    FFP_WP_COMMAND=json.dumps([sys.executable, str(repo / 'scripts/vps.py'), 'wp', '--']))
+        env['FFP_ARTIFACT_COMMAND'] = json.dumps([sys.executable, str(repo / 'scripts/vps.py'), 'artifact'])
         tunnel = None
         try:
             if origin == 'http://127.0.0.1:18080':

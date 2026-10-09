@@ -9,7 +9,7 @@ require_once $vendor_root . 'admin/abstracts/class-admin-module-edit-page.php';
 // Include this run's separately marked JSON fixture, which is not in seed-lab's list.
 $marked = get_posts( array( 'post_type' => 'forminator_forms', 'post_status' => 'any', 'posts_per_page' => -1, 'meta_key' => '_ffp_staging_fixture', 'meta_value' => '1', 'fields' => 'ids' ) );
 foreach ( $marked as $id ) {
- if ( ! in_array( $id, array_column( $fixture, 'form' ), false ) ) { $fixture[] = array( 'form' => $id, 'page' => 0 ); }
+ if ( ! in_array( $id, array_column( $fixture, 'form' ), false ) ) { $fixture[] = array( 'form' => $id, 'page' => (int) get_post_meta( $id, '_ffp_staging_page', true ) ); }
 }
 foreach ( $fixture as $row ) {
  $id = (int) $row['form'];

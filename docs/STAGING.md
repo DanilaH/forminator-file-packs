@@ -1,10 +1,10 @@
 # Docker / VPS staging
 
-This is a dedicated synthetic testing site, separate from existing sites. Docker staging is verified by its own Actions workflow; the actual VPS, DNS, Caddy route and HTTPS remain unverified until their workflows run successfully.
+This is a dedicated synthetic testing site, separate from existing sites. Initial real VPS installation, targeted exports and repeat deployment passed in [run 37980718219](https://github.com/DanilaH/forminator-file-packs/actions/runs/37980718219). DNS, Caddy route and HTTPS remain unverified. Extended hosting checks are recorded separately by subsequent runs.
 
 ## Workflows
 
-- **Verify Docker staging** runs automatically on push/PR. It builds the WordPress image, installs the real plugin ZIP, checks real HTTP uploads/downloads, authorization/path handling, resource-failure behavior, Chromium/mobile UI, structured JSON and source integrity. It repeats deployment and tests against the same persistent volumes to catch fixture accumulation/reinstall issues.
+- **Verify Docker staging** runs automatically on push/PR. It builds the WordPress image, installs the real plugin ZIP, checks real HTTP uploads/downloads, authorization/path handling, resource-failure behavior, Chromium/mobile UI, structured JSON and source integrity. The expanded suite adds six frontend repeater modes, the combined 100-entry/500-file/100-MiB ceiling, 8-MiB escaped JSON metadata, existing-session permission revocation, real child-process shutdown/fatal/SIGKILL recovery, uninstall/reinstall and Russian UI states. It repeats deployment and tests against the same persistent volumes to catch fixture accumulation/reinstall issues.
 - **VPS staging → inspect** is a read-only SSH probe (manual, or when its workflow is updated): Docker/Compose versions, container names/images/ports, network names, disk/memory, listening ports and Python/Caddy executable availability. It never prints container environment variables or existing configuration files.
 - **VPS staging → deploy** runs after a successful main-branch Docker check, or manually. It waits for the native matrix, rejects stale main commits, and repeats deployment and tests on the same volumes. It accepts only a main commit whose latest native matrix and Docker checks succeeded. It uploads code into `$HOME/ffp-staging`, builds/installs the dedicated stack and runs the targeted hosting suite. Existing destinations/stacks/volumes without ownership markers are rejected. There is no automatic Caddy edit, production deployment, global Docker pruning or volume deletion.
 
@@ -64,3 +64,7 @@ The actual Caddy container, configuration mount, network and reload command must
 ## Boundaries
 
 Official WordPress 7.1.3/PHP 8.3 Apache image with a checksum-verified WP-CLI 2.12.0; MariaDB 10.11. Image patch rebuilds can change, so evidence records runtime versions. This covers container hosting; it does not certify a shared-hosting PHP configuration, Windows, offload storage or screen-reader behavior. Exporter source files are not changed by this infrastructure. The installable plugin ZIP excludes all deployment/test code.
+
+## Extended test boundaries
+
+Large synthetic ZIPs stream through SSH, outside PHP JSON/base64 memory. All extra forms/pages carry staging ownership markers and are removed by the fixture cleanup. The shutdown check kills only its own PHP child export process; it does not restart Docker, exhaust host memory/disk, or crash the VPS. Historical-version upgrades remain covered by native CI. Chromium checks cover sampled accessible names, text contrast, focus, live regions and reflow; a complete accessibility audit and screen readers remain unverified.

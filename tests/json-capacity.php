@@ -3,6 +3,7 @@
 if ( ! defined( 'WP_CLI' ) || ! WP_CLI || '1' !== getenv( 'FFP_TEST_LAB' ) ) { throw new RuntimeException( 'Disposable lab only.' ); }
 wp_set_current_user( 1 ); ini_set( 'memory_limit', '256M' );
 $form = Forminator_API::add_form( 'JSON metadata ceiling', array(), array( 'formName' => 'JSON metadata ceiling', 'store_submissions' => '1' ) );
+if ( '1' === getenv( 'FFP_STAGING_TEST' ) ) { update_post_meta( $form, '_ffp_staging_fixture', '1' ); }
 $value = str_repeat( "\0", 1048576 ); $meta = array();
 for ( $i = 1; $i <= 8; ++$i ) { Forminator_API::add_form_field( $form, 'textarea', array( 'field_label' => 'Large field ' . $i ) ); $meta[] = array( 'name' => 'textarea-' . $i, 'value' => $value ); }
 $id = Forminator_API::add_form_entry( $form, wp_slash( $meta ) );

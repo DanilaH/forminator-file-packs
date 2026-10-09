@@ -5,6 +5,7 @@ use ForminatorFilePacks\Package;
 if ( ! defined( 'WP_CLI' ) || ! WP_CLI || '1' !== getenv( 'FFP_TEST_LAB' ) ) { throw new RuntimeException( 'Disposable lab only.' ); }
 wp_set_current_user( 1 );
 $form = Forminator_API::add_form( 'Capacity boundary', array(), array( 'formName' => 'Capacity boundary', 'store_submissions' => '1' ) );
+if ( '1' === getenv( 'FFP_STAGING_TEST' ) ) { update_post_meta( $form, '_ffp_staging_fixture', '1' ); }
 Forminator_API::add_form_field( $form, 'text', array( 'field_label' => 'Serial' ) );
 Forminator_API::add_form_field( $form, 'upload', array( 'field_label' => 'Files', 'file-type' => 'multiple', 'upload-method' => 'submission' ) );
 $root = forminator_get_upload_path( $form, 'uploads' );

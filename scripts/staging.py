@@ -28,7 +28,15 @@ def run(command, **kwargs):
 
 
 def wp(*command, **kwargs):
-    return run(compose + ['exec', '-T', '--user', '33:33',
+    selectors = []
+    for name in ['FFP_REPEATER_MODE', 'FFP_REPEATER_FIXTURE', 'FFP_PERMISSIONS_MODE', 'FFP_PERMISSIONS_FIXTURE']:
+        if os.environ.get(name):
+            selectors += ['-e', name + '=' + os.environ[name]]
+    # Supply the lab password through docker's inherited environment, never argv.
+    env = os.environ.copy()
+    env['FFP_TEST_PASSWORD'] = (state / 'admin_password').read_text()
+    kwargs['env'] = env
+    return run(compose + ['exec', '-T', '--user', '33:33', '-e', 'FFP_TEST_PASSWORD', *selectors,
                '-e', 'FFP_TEST_LAB=1', '-e', 'FFP_TEST_FIXTURE=/opt/ffp/artifacts/fixture.json',
                '-e', 'FFP_STAGING_TEST=1',
                '-e', 'FFP_TEST_ARTIFACTS=/opt/ffp/artifacts', 'wordpress', 'wp', '--path=/var/www/html', *command], **kwargs)
@@ -75,6 +83,7 @@ if args.action == 'deploy':
     wp('option', 'update', 'home', args.url)
     wp('option', 'update', 'siteurl', args.url)
     wp('option', 'update', 'blog_public', '0')
+    wp('language', 'core', 'install', 'ru_RU')
     wp('plugin', 'install', 'forminator', '--version=1.58.0', '--activate', '--force')
     package, = (repo / 'dist').glob('*.zip')
     wp('plugin', 'install', '/opt/ffp/packages/' + package.name, '--force', '--activate')

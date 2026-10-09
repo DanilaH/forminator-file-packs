@@ -29,11 +29,14 @@ try:
     subprocess.run(['node', str(repo / 'tests/browser-smoke.cjs')], check=True)
     for name in ['json-integration.php', 'json-write-failure.php']:
         print(wp('eval-file', '/opt/ffp/tests/' + name), flush=True)
+    subprocess.run(['python3', str(repo / 'scripts/staging-extended.py')], check=True)
     # Transfer synthetic exports and independently defined fixture for the Python reader.
-    encoded = wp('eval', "$a=array();foreach(glob(getenv('FFP_TEST_ARTIFACTS').'/*') as $p){if(preg_match('/\\.(zip|json)$/',$p)&&basename($p)!=='fixture.json'){$a[basename($p)]=base64_encode(file_get_contents($p));}}echo wp_json_encode($a);")
-    for name, value in json.loads(encoded).items():
+    names = wp('eval', "$a=array();foreach(glob(getenv('FFP_TEST_ARTIFACTS').'/*') as $p){if(preg_match('/\\.(zip|json)$/',$p)&&!in_array(basename($p),array('fixture.json','permissions-fixture.json'),true)){$a[]=basename($p);}}echo wp_json_encode($a);")
+    artifact_command = json.loads(os.environ['FFP_ARTIFACT_COMMAND'])
+    for name in json.loads(names):
         assert Path(name).name == name and name.endswith(('.zip', '.json'))
-        (out / name).write_bytes(base64.b64decode(value, validate=True))
+        with (out / name).open('wb') as output:
+            subprocess.run(artifact_command + [name], stdout=output, check=True)
     subprocess.run(['python3', str(repo / 'tests/validate-json.py')], check=True)
 finally:
     print(wp('eval-file', '/opt/ffp/tests/staging-cleanup.php'), flush=True)
