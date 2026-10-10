@@ -2,11 +2,11 @@
 
 A WordPress plugin that exports selected saved Forminator submissions and local attachments into one ZIP. Includes readable HTML cards, an HTML index, a CSV register, structured JSON and a warnings manifest. Original records and files remain unchanged.
 
-**Status: beta v0.3.0.** JSON regression coverage for 0.3.0: WordPress 7.1.3 / PHP 8.3.6 / Forminator 1.58.0. [JSON verification](docs/JSON_TEST_REPORT_2026-10-08.md). Earlier 0.2.0 verified combinations: WordPress 7.1.3 / PHP 8.3.6 / Forminator 1.58.0; WordPress 6.5.5 / PHP 8.2.32 / Forminator 1.58.0 and 1.57.1. This is not a production or WordPress.org release. [Beta verification and remaining limits](docs/BETA_TEST_REPORT_2026-10-08.md).
+**Status: release preparation v0.3.1.** The technical slug is `file-packs-for-forminator`; the GitHub repository keeps its existing address. Complete native, Docker and actual VPS regression passes for 0.3.0 are recorded in [release readiness](docs/RELEASE_READINESS.md). The current 0.3.1 build is releasable only after its own native/Docker/VPS checks succeed. WordPress.org publication and approval have not happened.
 
 ## Use
 
-1. Install and activate Forminator, then install the development ZIP.
+1. Install and activate Forminator, then install the development ZIP. When replacing a beta using the old `forminator-file-packs` folder, deactivate and delete that beta first. Exported source records/files are not plugin-owned data.
 2. Open **Tools → File Packs** using an account allowed to view Forminator entries.
 3. Choose a form, filter dates, select submissions and inspect the preview.
 4. Download the ZIP. Missing or unsupported attachments require explicit acceptance of an incomplete package.
@@ -20,11 +20,11 @@ English and Russian UI/package translations are bundled. Dates remain visible on
 
 GitHub Actions automatically runs the real WordPress regression matrix on pushes and pull requests. A successful run provides an `installable-plugin` ZIP artifact; failed checks prevent that artifact from being published. See [Actions](https://github.com/DanilaH/forminator-file-packs/actions/workflows/verify.yml) and [CI details](docs/DEVELOPMENT.md#github-actions).
 
-An isolated Docker/VPS staging workflow is available separately; see [staging setup](docs/STAGING.md). Actual VPS/Caddy/HTTPS verification is recorded only after deployment and tests succeed.
+An isolated Docker/VPS staging workflow is available separately; see [staging setup](docs/STAGING.md). The actual VPS has passed two complete test cycles over a private SSH tunnel. Public Caddy routing, DNS and HTTPS have not been configured and are not needed to install the plugin ZIP.
 
 See [setup and tests](docs/DEVELOPMENT.md), [verification report](docs/TEST_REPORT_2026-10-08.md), [integration notes](docs/ADAPTER.md), [roadmap](ROADMAP.md), [v1 specification](docs/V1_SPEC.md) and [remaining acceptance work](docs/ACCEPTANCE.md).
 
-Build the installable ZIP with `python3 scripts/build.py`. The output is `dist/forminator-file-packs-0.3.0-dev.zip`; development tests and fixtures are excluded.
+Build the installable ZIP with `python3 scripts/build.py`. The output is `dist/file-packs-for-forminator-0.3.1-dev.zip`; development tests and fixtures are excluded.
 
 ## Boundaries
 

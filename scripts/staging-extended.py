@@ -62,8 +62,8 @@ def intact(name):
 
 
 try:
-    wp('plugin', 'uninstall', 'forminator-file-packs', '--deactivate')
-    removed = wp('eval', "echo file_exists(WP_PLUGIN_DIR.'/forminator-file-packs/forminator-file-packs.php')?'present':'absent';").strip()
+    wp('plugin', 'uninstall', 'file-packs-for-forminator', '--deactivate')
+    removed = wp('eval', "echo file_exists(WP_PLUGIN_DIR.'/file-packs-for-forminator/file-packs-for-forminator.php')?'present':'absent';").strip()
     assert removed == 'absent', 'Installed staging plugin files must actually be removed'
     intact('source intact after actual plugin uninstall')
 finally:

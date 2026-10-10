@@ -20,7 +20,7 @@ def check(ok, name):
     checks.append(name)
     print('PASS '+name, flush=True)
 def nonce():
-    html=client.open(base+'/wp-admin/tools.php?page=forminator-file-packs').read().decode()
+    html=client.open(base+'/wp-admin/tools.php?page=file-packs-for-forminator').read().decode()
     return json.loads(re.search(r'var FFP = (\{.*?\});', html).group(1))['nonce']
 def endpoint(action, token, extra=None):
     return post('/wp-admin/admin-ajax.php', {'action':'ffp_'+action, 'nonce':token, 'form_id':fixture['form'], 'ids':json.dumps([fixture['entry']]), **(extra or {})})

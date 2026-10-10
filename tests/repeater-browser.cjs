@@ -27,7 +27,7 @@ if(process.env.FFP_TEST_LAB!=='1')throw Error('Disposable lab only');
   const result=await(await response).json();if(!result.success)throw Error(JSON.stringify(result));
   await page.goto(base+'/wp-login.php');await page.locator('#user_login').fill(process.env.FFP_TEST_USER||'lab');await page.locator('#user_pass').fill(process.env.FFP_TEST_PASSWORD);
   await Promise.all([page.waitForURL(/wp-admin/),page.locator('#wp-submit').click()]);
-  await page.goto(base+'/wp-admin/tools.php?page=forminator-file-packs');
+  await page.goto(base+'/wp-admin/tools.php?page=file-packs-for-forminator');
   // Older Forminator responses omit entry_id. Require exactly one saved entry
   // with our marker in this freshly seeded form, rather than guessing an ID.
   const saved=await page.evaluate(async form=>{

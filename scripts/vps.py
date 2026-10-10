@@ -75,7 +75,7 @@ try:
                 for path in sorted((repo / folder).rglob('*')):
                     if path.is_file() and not path.is_symlink() and '__pycache__' not in path.parts:
                         bundle.add(path, arcname=str(path.relative_to(repo)))
-        prepare = 'set -eu; umask 077; task_root="$HOME/ffp-staging"; if [ -e "$task_root" ] && [ ! -f "$task_root/.ffp-staging-owned" ]; then echo "Unmarked destination; refusing deployment" >&2; exit 1; fi; mkdir -p "$task_root"; cd "$task_root"; touch .ffp-staging-owned; flock -n .deploy.lock sh -c \'tar -xzf - && chmod -R a+rX tests dist deploy/staging\''
+        prepare = 'set -eu; umask 077; task_root="$HOME/ffp-staging"; if [ -e "$task_root" ] && [ ! -f "$task_root/.ffp-staging-owned" ]; then echo "Unmarked destination; refusing deployment" >&2; exit 1; fi; mkdir -p "$task_root"; cd "$task_root"; touch .ffp-staging-owned; flock -n .deploy.lock sh -c \'test ! -L dist && if [ -d dist ]; then find dist -maxdepth 1 -type f -name \"*.zip\" -delete; fi && tar -xzf - && chmod -R a+rX tests dist deploy/staging\''
         subprocess.run(ssh + [prepare], input=archive.getvalue(), check=True)
         origin = os.environ.get('FFP_STAGING_URL') or 'http://127.0.0.1:18080'
         subprocess.run(ssh + [prefix + 'flock -n .deploy.lock python3 scripts/staging.py deploy --url ' + shlex.quote(origin)], check=True)

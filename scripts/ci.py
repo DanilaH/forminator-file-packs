@@ -108,7 +108,7 @@ try:
         run(['python3', 'tests/lifecycle.py'])
         run(['python3', 'tests/validate-json.py'])
         result = subprocess.run(wp + ['--require=' + str(root / 'wp-content/plugins/plugin-check/cli.php'),
-                                     'plugin', 'check', 'forminator-file-packs', '--format=json'],
+                                     'plugin', 'check', 'file-packs-for-forminator', '--format=json'],
                                 cwd=repo, env=env, capture_output=True, text=True)
         if result.stderr:
             print(result.stderr, flush=True)
@@ -121,6 +121,9 @@ try:
                 diagnostics.extend(json.loads(block))
         (out / 'plugin-check.json').write_text(json.dumps(diagnostics, indent=2))
         assert not any(str(item.get('type', '')).upper() == 'ERROR' for item in diagnostics), 'Plugin Check errors'
+        allowed_warning = 'PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound'
+        assert all(item.get('code') == allowed_warning and str(item.get('type', '')).upper() == 'WARNING'
+                   for item in diagnostics), 'New Plugin Check diagnostic requires review'
         # Summarize actual evidence without claiming a hosting or accessibility audit.
         if env.get('GITHUB_STEP_SUMMARY'):
             with open(env['GITHUB_STEP_SUMMARY'], 'a') as summary:

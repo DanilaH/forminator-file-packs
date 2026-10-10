@@ -6,7 +6,7 @@ wp=json.loads(os.environ['FFP_WP_COMMAND'])
 assert isinstance(wp,list) and wp and all(isinstance(x,str) for x in wp)
 root=pathlib.Path(os.environ['FFP_WP_PATH']).resolve()
 output=pathlib.Path(os.environ['FFP_TEST_ARTIFACTS']); output.mkdir(parents=True,exist_ok=True)
-version='0.3.0'; package=repo/'dist'/('forminator-file-packs-'+version+'-dev.zip')
+version='0.3.1'; package=repo/'dist'/('file-packs-for-forminator-'+version+'-dev.zip')
 def run(c,**kw): return subprocess.run(c,cwd=repo,check=True,**kw)
 checks=[]
 def check(ok,name):
@@ -30,14 +30,22 @@ check(before==source(),'source intact after process shutdown failures')
 previous=os.environ.get('FFP_PREVIOUS_ZIP')
 for archive_path in ([pathlib.Path(previous)] if previous else []) + [package]:
  with zipfile.ZipFile(archive_path) as z:
-  expected=z.read('forminator-file-packs/forminator-file-packs.php').decode().split('Version:')[1].split()[0]
+  main, = [n for n in z.namelist() if n.count('/')==1 and n.endswith('.php')]
+  slug=main.split('/')[0]
+  expected=z.read(main).decode().split('Version:')[1].split()[0]
+ # Historical betas have a different slug; never activate both namespaces together.
+ if slug!='file-packs-for-forminator':
+  run(wp+['plugin','deactivate','file-packs-for-forminator'])
  run(wp+['plugin','install',str(archive_path),'--force','--activate'])
- check(run(wp+['plugin','get','forminator-file-packs','--field=version'],stdout=subprocess.PIPE,text=True).stdout.strip()==expected,'installed version verified '+expected)
+ check(run(wp+['plugin','get',slug,'--field=version'],stdout=subprocess.PIPE,text=True).stdout.strip()==expected,'installed version verified '+expected)
  check(before==source(),'source intact after installing '+expected)
+ if slug!='file-packs-for-forminator':
+  run(wp+['plugin','uninstall',slug,'--deactivate'])
+  check(before==source(),'source intact after removing historical beta before slug replacement')
 # Only delete the installed lab copy, never the development checkout.
-target=root/'wp-content/plugins/forminator-file-packs';assert target.is_dir() and not target.is_symlink()
-run(wp+['plugin','uninstall','forminator-file-packs','--deactivate'])
-check(not (target/'forminator-file-packs.php').exists(),'plugin files actually removed')
+target=root/'wp-content/plugins/file-packs-for-forminator';assert target.is_dir() and not target.is_symlink()
+run(wp+['plugin','uninstall','file-packs-for-forminator','--deactivate'])
+check(not (target/'file-packs-for-forminator.php').exists(),'plugin files actually removed')
 check(before==source(),'source intact after plugin uninstall')
 run(wp+['plugin','install',str(package),'--activate'])
 check(before==source(),'source intact after reinstall')

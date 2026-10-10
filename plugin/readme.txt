@@ -5,7 +5,7 @@ Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.2
 Requires Plugins: forminator
-Stable tag: 0.3.0
+Stable tag: 0.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,9 +28,10 @@ Independent project; not affiliated with WPMU DEV.
 == Installation ==
 
 1. Install and activate Forminator.
-2. Upload this plugin ZIP through Plugins > Add New and activate it.
-3. Open Tools > File Packs, choose a form, select submissions and preview the package.
-4. Review any warnings, then build and download the ZIP.
+2. If replacing an earlier forminator-file-packs beta, deactivate and delete that plugin first. This exporter stores no forms, submissions or settings of its own.
+3. Upload this plugin ZIP through Plugins > Add New and activate it.
+4. Open Tools > File Packs, choose a form, select submissions and preview the package.
+5. Review any warnings, then build and download the ZIP.
 
 PHP ZIP support and writable private temporary storage are required. By default the plugin uses the system temporary directory. If that is inside a public directory, configure FFP_PRIVATE_TEMP_DIR in wp-config.php to a writable private directory outside the web root. PHP mbstring is not required.
 
@@ -50,9 +51,16 @@ Yes. Review warnings before download. The ZIP index, individual cards, CSV regis
 
 No. It exports working packages and provides no import or restore operation.
 
+Source code and build tools: https://github.com/DanilaH/forminator-file-packs
+
 == Changelog ==
 
-= 0.3.0 =
+= 0.3.1 =
+* Directory-compatible technical slug and matching translation domain.
+* Translation setup runs on init for standalone ZIP installations.
+* Automated package metadata, dependency and license checks.
+
+= 0.3.1 =
 * Structured data.json preserves stored field values and references actual included attachments.
 * Streaming JSON and incremental preview fingerprints avoid large whole-plan allocations.
 * Independent JSON/CSV/ZIP validation, escaping stress, write/encoding failures and regression checks.

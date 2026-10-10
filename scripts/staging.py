@@ -85,6 +85,11 @@ if args.action == 'deploy':
     wp('option', 'update', 'blog_public', '0')
     wp('language', 'core', 'install', 'ru_RU')
     wp('plugin', 'install', 'forminator', '--version=1.58.0', '--activate', '--force')
+    # Replace only our historical beta on this owned, isolated staging installation.
+    legacy = subprocess.run(compose + ['exec', '-T', '--user', '33:33', 'wordpress', 'wp',
+                                      'plugin', 'is-installed', 'forminator-file-packs'], capture_output=True)
+    if legacy.returncode == 0:
+        wp('plugin', 'uninstall', 'forminator-file-packs', '--deactivate')
     package, = (repo / 'dist').glob('*.zip')
     wp('plugin', 'install', '/opt/ffp/packages/' + package.name, '--force', '--activate')
     wp('eval', "if (!is_dir(WPMU_PLUGIN_DIR)) { wp_mkdir_p(WPMU_PLUGIN_DIR); } file_put_contents(WPMU_PLUGIN_DIR.'/ffp-staging.php', '<?php add_filter(\"pre_wp_mail\", \"__return_true\");');")

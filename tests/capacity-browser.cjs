@@ -12,7 +12,7 @@ if(process.env.FFP_TEST_LAB!=='1')throw Error('Disposable lab only');
   const base=process.env.FFP_TEST_URL||'http://127.0.0.1:8080';
   await page.goto(base+'/wp-login.php');await page.locator('#user_login').fill(process.env.FFP_TEST_USER||'lab');await page.locator('#user_pass').fill(process.env.FFP_TEST_PASSWORD);
   await Promise.all([page.waitForURL(/wp-admin/),page.locator('#wp-submit').click()]);
-  await page.goto(base+'/wp-admin/tools.php?page=forminator-file-packs');
+  await page.goto(base+'/wp-admin/tools.php?page=file-packs-for-forminator');
   await page.waitForFunction(id=>document.querySelector('#ffp-form option[value="'+id+'"]'),fixture.form);
   await page.locator('#ffp-form').selectOption(String(fixture.form));
   await page.waitForFunction(()=>document.querySelectorAll('#ffp-rows input').length===25&&document.querySelector('#ffp-app').getAttribute('aria-busy')==='false');

@@ -16,7 +16,7 @@ for path in sorted(out.glob('*.zip')):
         raw = archive.read('data.json')
         data = json.loads(raw.decode('utf-8'))
         check(not raw.startswith(b'\xef\xbb\xbf') and data['schema_version']==1, path.name+': UTF-8 JSON without BOM, schema 1')
-        check(data['plugin_version']=='0.3.0' and bool(data['timezone']),path.name+': version and site timezone')
+        check(data['plugin_version']=='0.3.1' and bool(data['timezone']),path.name+': version and site timezone')
         names = archive.namelist()
         rows = data['submissions']
         check(data['submission_count']==len(rows) and len({r['id'] for r in rows})==len(rows),path.name+': unique submissions and count')

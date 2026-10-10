@@ -8,7 +8,7 @@ if(process.env.FFP_TEST_LAB!=='1')throw Error('Disposable lab only');
  try{
   const page=await browser.newPage({viewport:{width:1280,height:1000},acceptDownloads:true});const errors=[];page.on('pageerror',e=>errors.push(e.message));
   const base=process.env.FFP_TEST_URL||'http://127.0.0.1:8080';await page.goto(base+'/wp-login.php');await page.locator('#user_login').fill(process.env.FFP_TEST_USER||'lab');await page.locator('#user_pass').fill(process.env.FFP_TEST_PASSWORD);await Promise.all([page.waitForURL(/wp-admin/),page.locator('#wp-submit').click()]);
-  await page.goto(base+'/wp-admin/tools.php?page=forminator-file-packs');
+  await page.goto(base+'/wp-admin/tools.php?page=file-packs-for-forminator');
   if(process.env.FFP_EXPECT_DEPENDENCY==='1') {assert((await page.locator('#ffp-app').textContent()).includes('Активируйте Forminator'),'dependency absence explained in Russian');assert(await page.locator('#ffp-selection').count()===0,'no export controls without dependency');return;}
   await page.waitForFunction(()=>!document.querySelector('#ffp-search-button').disabled);
   assert((await page.locator('#ffp-form-heading').textContent()).includes('Выберите форму'),'Russian page labels loaded');

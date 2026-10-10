@@ -70,7 +70,7 @@ def saved_entry_id(result, form, serial):
     lookup = urllib.request.build_opener(urllib.request.ProxyHandler({}), urllib.request.HTTPCookieProcessor(CookieJar()))
     get('/wp-login.php', opener=lookup)
     post('/wp-login.php', {'log': os.environ.get('FFP_TEST_USER', 'lab'), 'pwd': os.environ['FFP_TEST_PASSWORD'], 'wp-submit': 'Log In', 'redirect_to': BASE + '/wp-admin/', 'testcookie': '1'}, opener=lookup)
-    html = get('/wp-admin/tools.php?page=forminator-file-packs', opener=lookup)
+    html = get('/wp-admin/tools.php?page=file-packs-for-forminator', opener=lookup)
     config = json.loads(re.search(r'var FFP = (\{.*?\});', html).group(1))
     status, _, raw = post('/wp-admin/admin-ajax.php', {'action': 'ffp_entries', 'nonce': config['nonce'], 'form_id': form['form']}, opener=lookup)
     rows = json.loads(raw)['data']['entries']
@@ -112,7 +112,7 @@ for mode, form in fixture.items():
 
 get('/wp-login.php')
 post('/wp-login.php', {'log': os.environ.get('FFP_TEST_USER', 'lab'), 'pwd': os.environ['FFP_TEST_PASSWORD'], 'wp-submit': 'Log In', 'redirect_to': BASE + '/wp-admin/', 'testcookie': '1'})
-admin = get('/wp-admin/tools.php?page=forminator-file-packs')
+admin = get('/wp-admin/tools.php?page=file-packs-for-forminator')
 match = re.search(r'var FFP = (\{.*?\});', admin)
 check(bool(match), 'admin page and script configuration load')
 config = json.loads(match.group(1))
