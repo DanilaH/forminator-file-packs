@@ -120,6 +120,7 @@ else:
     try:
         run(['python3', 'tests/http-integration.py'], env=env)
         wp('eval-file', '/opt/ffp/tests/security-integration.php')
+        wp('eval-file', '/opt/ffp/tests/storage-omissions.php')
         wp('eval-file', '/opt/ffp/tests/resilience-integration.php')
         run(['node', 'tests/browser-smoke.cjs'], env=env)
         wp('eval-file', '/opt/ffp/tests/json-integration.php')

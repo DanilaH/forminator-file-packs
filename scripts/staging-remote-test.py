@@ -24,7 +24,7 @@ try:
     subprocess.run(['python3', str(repo / 'tests/http-integration.py')], check=True)
     content = base64.b64encode(Path(os.environ['FFP_TEST_FIXTURE']).read_bytes()).decode()
     wp('eval', "file_put_contents(getenv('FFP_TEST_FIXTURE'),base64_decode('" + content + "'));")
-    for name in ['security-integration.php', 'resilience-integration.php']:
+    for name in ['security-integration.php', 'storage-omissions.php', 'resilience-integration.php']:
         print(wp('eval-file', '/opt/ffp/tests/' + name), flush=True)
     subprocess.run(['node', str(repo / 'tests/browser-smoke.cjs')], check=True)
     for name in ['json-integration.php', 'json-write-failure.php']:

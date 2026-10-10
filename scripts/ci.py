@@ -99,6 +99,7 @@ try:
         eval_file('seed-lab.php')
         run(['python3', 'tests/http-integration.py'])
         eval_file('security-integration.php')
+        eval_file('storage-omissions.php')
         eval_file('resilience-integration.php')
         run(['node', 'tests/browser-smoke.cjs'])
         eval_file('json-integration.php')
