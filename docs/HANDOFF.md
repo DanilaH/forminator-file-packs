@@ -10,7 +10,7 @@ This is an exporter, not Forminator Transfer/Recovery, a filesystem browser, or 
 
 ## Current state
 
-0.3.0 passed the complete native three-combination matrix and two complete Docker/VPS cycles. See [release readiness](RELEASE_READINESS.md) for exact evidence and scope. 0.3.2 prepares the directory-compatible slug `file-packs-for-forminator`, matching filenames/domain and package metadata checks. Its own green Actions runs are mandatory before distribution; previous version evidence is not a substitute.
+0.3.0 passed the complete native three-combination matrix and two complete Docker/VPS cycles. See [release readiness](RELEASE_READINESS.md) for exact evidence and scope. 0.3.1 introduced the directory-compatible slug `file-packs-for-forminator`, matching filenames/domain and package metadata checks. 0.3.2 refines first-use UX. Its own green Actions runs are mandatory before distribution; previous version evidence is not a substitute.
 
 The old beta must be deactivated/deleted before installing the new slug. Native lifecycle checks install the exact historical 0.2.0 beta, verify source integrity, remove it, and install the new package without duplicate namespaces. Owned staging handles only this known beta replacement; no general production migration is implemented.
 

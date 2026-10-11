@@ -16,6 +16,7 @@ if(process.env.FFP_TEST_LAB!=='1')throw Error('Disposable lab only');
   if(process.env.FFP_EXPECT_DEPENDENCY==='1') {assert((await page.locator('#ffp-app').textContent()).includes('Активируйте Forminator'),'dependency absence explained in Russian');assert(await page.locator('#ffp-selection').count()===0,'no export controls without dependency');return;}
   await page.waitForFunction(()=>document.querySelector('#ffp-search-button')?.disabled===false);
   assert((await page.locator('.ffp-help').textContent()).includes('Распакуйте ZIP')&&(await page.locator('.ffp-help').textContent()).includes('локально'),'quick start explains the result and local-file scope');
+  assert(await page.locator('.ffp-help').evaluate(e=>parseFloat(getComputedStyle(e).paddingLeft)>=16),'quick start retains readable inner spacing');
   assert((await page.locator('#ffp-form-heading').textContent()).includes('Выберите форму'),'Russian page labels loaded');
   await page.locator('#ffp-search').fill('NO-FORM-UNIQUE-FFP');await page.locator('#ffp-search-button').click();await page.waitForFunction(()=>document.querySelector('#ffp-form-note').textContent===FFP.strings.noForms);assert(await page.locator('#ffp-form option').count()===1,'no forms search state');
   await page.locator('#ffp-search').fill('');await page.locator('#ffp-search').press('Enter');await page.waitForFunction(f=>document.querySelector('#ffp-form option[value="'+f+'"]'),fixture.submission.form);
