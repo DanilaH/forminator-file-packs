@@ -11,9 +11,10 @@ if(process.env.FFP_TEST_LAB!=='1')throw Error('Disposable lab only');
   await page.goto(base+'/wp-admin/plugins.php');
   const exportLink=page.locator('tr[data-plugin="file-packs-for-forminator/file-packs-for-forminator.php"] a[href*="tools.php?page=file-packs-for-forminator"]');
   assert(await exportLink.count()===1,'plugin list provides a direct export link');
-  await exportLink.click();
+  await Promise.all([page.waitForURL(/tools\.php\?page=file-packs-for-forminator/),exportLink.click()]);
+  await page.locator('#ffp-app').waitFor();
   if(process.env.FFP_EXPECT_DEPENDENCY==='1') {assert((await page.locator('#ffp-app').textContent()).includes('Активируйте Forminator'),'dependency absence explained in Russian');assert(await page.locator('#ffp-selection').count()===0,'no export controls without dependency');return;}
-  await page.waitForFunction(()=>!document.querySelector('#ffp-search-button').disabled);
+  await page.waitForFunction(()=>document.querySelector('#ffp-search-button')?.disabled===false);
   assert((await page.locator('.ffp-help').textContent()).includes('Распакуйте ZIP')&&(await page.locator('.ffp-help').textContent()).includes('локально'),'quick start explains the result and local-file scope');
   assert((await page.locator('#ffp-form-heading').textContent()).includes('Выберите форму'),'Russian page labels loaded');
   await page.locator('#ffp-search').fill('NO-FORM-UNIQUE-FFP');await page.locator('#ffp-search-button').click();await page.waitForFunction(()=>document.querySelector('#ffp-form-note').textContent===FFP.strings.noForms);assert(await page.locator('#ffp-form option').count()===1,'no forms search state');
