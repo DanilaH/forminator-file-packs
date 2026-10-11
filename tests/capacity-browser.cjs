@@ -21,6 +21,7 @@ if(process.env.FFP_TEST_LAB!=='1')throw Error('Disposable lab only');
    if(p<4){const before=await page.locator('#ffp-rows').textContent();await page.locator('#ffp-next').click();await page.waitForFunction(old=>document.querySelector('#ffp-rows').textContent!==old&&document.querySelector('#ffp-app').getAttribute('aria-busy')==='false',before);}
   }
   check((await page.locator('#ffp-count').textContent()).endsWith('100'),'Selection persists across all four pages: 100 entries');
+  check(await page.locator('#ffp-selected-list li').count()===100,'Review contains all 100 selections across pages');
   await page.locator('#ffp-preview-button').click();await page.locator('#ffp-preview:not([hidden])').waitFor();
   check((await page.locator('#ffp-totals').textContent()).includes('500')&&(await page.locator('#ffp-totals').textContent()).includes('100.00 MiB'),'Actual preview shows 500 files and 100 MiB');
   const cdp=await page.context().newCDPSession(page);await cdp.send('Accessibility.enable');

@@ -1,5 +1,5 @@
 msgid ""
-msgstr "Project-Id-Version: File Packs 0.3.1\nLanguage: ru_RU\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+msgstr "Project-Id-Version: File Packs 0.3.2\nLanguage: ru_RU\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 
 msgid "%1$d submissions · %2$d attachments"
 msgstr "Заявки: %1$d · Вложения: %2$d"
@@ -331,3 +331,72 @@ msgstr "Предупреждения"
 
 msgid "Open JSON data"
 msgstr "Открыть данные JSON"
+
+msgid "Open export"
+msgstr "Открыть экспорт"
+
+msgid "Export Forminator submissions"
+msgstr "Экспорт заявок Forminator"
+
+msgid "Quick start"
+msgstr "Как пользоваться"
+
+msgid "Choose a form, select submissions, review the package, then download the ZIP. No setup is required."
+msgstr "Выберите форму, отметьте заявки, проверьте состав и скачайте ZIP. Настройка не требуется."
+
+msgid "Extract the ZIP and open index.html in your browser to view submissions and attachments. Open register.csv in a spreadsheet application; data.json is for automated processing."
+msgstr "Распакуйте ZIP и откройте index.html в браузере для просмотра заявок и вложений. Для таблицы откройте register.csv; data.json предназначен для программной обработки."
+
+msgid "Only attachments stored locally on this site are supported. Remote storage and unsupported file types are reported in the preview."
+msgstr "Поддерживаются вложения, сохранённые локально на сайте. Удалённое хранилище и неподдерживаемые типы файлов отмечаются в предпросмотре."
+
+msgid "No forms match your search. Clear the search or try another name."
+msgstr "Поиск не нашёл форм. Очистите поиск или попробуйте другое название."
+
+msgid "No forms are available. Create a form in Forminator and save submissions before exporting."
+msgstr "Нет доступных форм. Создайте форму в Forminator и сохраните заявки перед экспортом."
+
+msgid "No saved submissions are available for this form. Check that submissions are saved in Forminator."
+msgstr "У этой формы нет сохранённых заявок. Проверьте, что Forminator сохраняет заявки."
+
+msgid "No completed submissions match this period. Clear the period to see other submissions."
+msgstr "За этот период нет сохранённых заявок. Сбросьте период, чтобы увидеть другие заявки."
+
+msgid "Open Forminator"
+msgstr "Открыть Forminator"
+
+msgid "Clear period"
+msgstr "Сбросить период"
+
+msgid "Dates are optional. Leave both empty to show all saved submissions, 25 per page. Applying a period clears the current selection."
+msgstr "Период необязателен. Без дат показаны все сохранённые заявки, по 25 на странице. Применение периода снимает текущий выбор."
+
+msgid "Selection is kept when moving between pages. Review all selected submissions below."
+msgstr "Выбор сохраняется при переходе между страницами. Все выбранные заявки можно проверить ниже."
+
+msgid "Review selected submissions"
+msgstr "Проверить выбранные заявки"
+
+msgid "Remove submission"
+msgstr "Убрать заявку"
+
+msgid "No submissions selected. Select at least one row to preview the package."
+msgstr "Заявки не выбраны. Отметьте хотя бы одну строку для предпросмотра пакета."
+
+msgid "The period was edited. Your selection is kept until you apply it; export is paused until the list is refreshed."
+msgstr "Период изменён. Выбор сохранён до применения; для экспорта сначала обновите список."
+
+msgid "The selected form is outside the search results. The previous selection was cleared."
+msgstr "Выбранная форма не вошла в результаты поиска. Предыдущий выбор снят."
+
+msgid "Refresh preview"
+msgstr "Повторить предпросмотр"
+
+msgid "Retry loading"
+msgstr "Повторить загрузку"
+
+msgid "Check the omissions below. You can export the available files, or fix the source attachments and refresh the preview. Originals will not be changed."
+msgstr "Проверьте пропуски ниже. Можно выгрузить доступные файлы или исправить исходные вложения и повторить предпросмотр. Оригиналы не изменяются."
+
+msgid "Private temporary storage is unavailable. Ask your hosting administrator to configure writable storage outside public web directories."
+msgstr "Закрытое временное хранилище недоступно. Попросите администратора хостинга настроить доступный для записи каталог вне публичных веб-каталогов."

@@ -1,4 +1,4 @@
-# Technical handoff — 2026-10-10
+# Technical handoff — 2026-10-11
 
 The [roadmap](../ROADMAP.md) owns milestone status and the [v1 specification](V1_SPEC.md) owns agreed scope, UX, and commercial boundaries. Read them before implementation; this file provides technical orientation.
 
@@ -10,7 +10,7 @@ This is an exporter, not Forminator Transfer/Recovery, a filesystem browser, or 
 
 ## Current state
 
-0.3.0 passed the complete native three-combination matrix and two complete Docker/VPS cycles. See [release readiness](RELEASE_READINESS.md) for exact evidence and scope. 0.3.1 prepares the directory-compatible slug `file-packs-for-forminator`, matching filenames/domain and package metadata checks. Its own green Actions runs are mandatory before distribution; previous version evidence is not a substitute.
+0.3.0 passed the complete native three-combination matrix and two complete Docker/VPS cycles. See [release readiness](RELEASE_READINESS.md) for exact evidence and scope. 0.3.2 prepares the directory-compatible slug `file-packs-for-forminator`, matching filenames/domain and package metadata checks. Its own green Actions runs are mandatory before distribution; previous version evidence is not a substitute.
 
 The old beta must be deactivated/deleted before installing the new slug. Native lifecycle checks install the exact historical 0.2.0 beta, verify source integrity, remove it, and install the new package without duplicate namespaces. Owned staging handles only this known beta replacement; no general production migration is implemented.
 
@@ -35,3 +35,7 @@ Free should offer a useful standard export without trial counters. A future sepa
 ## Remaining work
 
 See the publication checklist and limitations in [RELEASE_READINESS.md](RELEASE_READINESS.md). All new compatibility claims need direct evidence. No payment integration or Pro development is authorized by technical release readiness.
+
+## UX refinement 0.3.2
+
+Plugin-list entry point, bilingual quick start/result instructions, fixed viewport notifications with direct retry, cross-page selected-row review/removal, clearer empty states. Date edits keep selection and pause export; successful period reload clears it. Search preserves selection if its form remains available. Expanded real browser checks are integrated in native/Docker/VPS suites. Verification of the exact current commit is required; prior green runs are not evidence for 0.3.2.

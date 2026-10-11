@@ -14,7 +14,7 @@ final class Package {
 	public static function private_root() {
 		$base = realpath( defined( 'FFP_PRIVATE_TEMP_DIR' ) ? FFP_PRIVATE_TEMP_DIR : sys_get_temp_dir() );
 	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable -- Private local streams, restrictive permissions and atomic locks require native operations; no FTP or remote filesystem fallback.
-		if ( ! $base || ! is_writable( $base ) ) { throw new \RuntimeException( esc_html__( 'Private temporary storage is unavailable.', 'file-packs-for-forminator' ) ); }
+		if ( ! $base || ! is_writable( $base ) ) { throw new \RuntimeException( esc_html__( 'Private temporary storage is unavailable. Ask your hosting administrator to configure writable storage outside public web directories.', 'file-packs-for-forminator' ) ); }
 		$uploads = wp_upload_dir();
 		foreach ( array( ABSPATH, WP_CONTENT_DIR, $uploads['basedir'], isset( $_SERVER['DOCUMENT_ROOT'] ) && is_string( $_SERVER['DOCUMENT_ROOT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['DOCUMENT_ROOT'] ) ) : '' ) as $public ) {
 			$public = $public ? realpath( $public ) : false;
