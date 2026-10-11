@@ -9,7 +9,7 @@ if(process.env.FFP_TEST_LAB!=='1')throw Error('Disposable lab only');
   const page=await browser.newPage({viewport:{width:1280,height:1000},acceptDownloads:true});const errors=[];page.on('pageerror',e=>errors.push(e.message));
   const base=process.env.FFP_TEST_URL||'http://127.0.0.1:8080';await page.goto(base+'/wp-login.php');await page.locator('#user_login').fill(process.env.FFP_TEST_USER||'lab');await page.locator('#user_pass').fill(process.env.FFP_TEST_PASSWORD);await Promise.all([page.waitForURL(/wp-admin/),page.locator('#wp-submit').click()]);
   await page.goto(base+'/wp-admin/plugins.php');
-  const exportLink=page.locator('tr[data-slug="file-packs-for-forminator"] a[href*="tools.php?page=file-packs-for-forminator"]');
+  const exportLink=page.locator('tr[data-plugin="file-packs-for-forminator/file-packs-for-forminator.php"] a[href*="tools.php?page=file-packs-for-forminator"]');
   assert(await exportLink.count()===1,'plugin list provides a direct export link');
   await exportLink.click();
   if(process.env.FFP_EXPECT_DEPENDENCY==='1') {assert((await page.locator('#ffp-app').textContent()).includes('Активируйте Forminator'),'dependency absence explained in Russian');assert(await page.locator('#ffp-selection').count()===0,'no export controls without dependency');return;}
