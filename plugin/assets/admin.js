@@ -9,8 +9,8 @@
 	const selectedRows = new Map();
 	let retry = null, activeController = null, ready = false, periods = {}, downloading = false;
  const help = app.querySelector('.ffp-help');
- try { if (localStorage.getItem('ffp.quickStartCollapsed') === '1') help.open = false; } catch (e) { /* Storage is optional. */ }
- help.addEventListener('toggle', () => { try { localStorage.setItem('ffp.quickStartCollapsed', help.open ? '0' : '1'); } catch (e) { /* Storage is optional. */ } });
+ try { if (localStorage.getItem('ffp.helpOpen') === '1') help.open = true; } catch (e) { /* Storage is optional. */ }
+ help.addEventListener('toggle', () => { try { localStorage.setItem('ffp.helpOpen', help.open ? '1' : '0'); } catch (e) { /* Storage is optional. */ } });
  window.addEventListener('beforeunload', e => { if (downloading) { e.preventDefault(); e.returnValue = ''; } });
 	let page = 1, pages = 1, rows = [], preview = null, busy = false, filterDirty = false;
 	const node = (tag, text, cls) => { const el = document.createElement(tag); if (text !== undefined) el.textContent = text; if (cls) el.className = cls; return el; };
@@ -26,7 +26,7 @@
  function reviewSelection() {
   $('selected-list').replaceChildren();
   for (const id of selected) {
-   const row = selectedRows.get(id); const li = node('li', `#${id} · ${row?.date || ''} · ${row?.summary || '—'} `);
+   const row = selectedRows.get(id); const li = node('li', `#${id} · ${row?.display_date || row?.date || ''} · ${row?.summary || '—'} `);
    const remove = node('button', `${s.remove} #${id}`, 'button-link'); remove.type = 'button'; remove.disabled = busy || filterDirty;
    remove.addEventListener('click', () => { clearRecovery(); selected.delete(id); selectedRows.delete(id); $('rows').querySelectorAll('input').forEach(box => { if (box.dataset.entry === String(id)) box.checked = false; }); invalidate(); message(''); $('selected-review').querySelector('summary').focus(); });
    li.append(remove); $('selected-list').append(li);
@@ -39,7 +39,10 @@
 		$('cancel').hidden = !busy; $('cancel').disabled = !busy || !activeController;
   $('week').disabled = busy || !periods.week; $('month').disabled = busy || !periods.month;
 		$('prev').disabled = busy || filterDirty || page <= 1; $('next').disabled = busy || filterDirty || page >= pages;
-		$('preview-button').disabled = busy || !ready || filterDirty || !selected.size;
+		$('preview-button').textContent = preview ? s.recheckSelection : s.checkSelection;
+  $('preview-button').classList.toggle('button-primary', !preview);
+  $('download').textContent = preview?.warnings.length ? s.downloadPartial : s.downloadFull;
+  $('preview-button').disabled = busy || !ready || filterDirty || !selected.size;
 		$('download').disabled = busy || !ready || filterDirty || !preview || (preview.warnings.length > 0 && !$('partial').checked);
 		$('all').disabled = busy || filterDirty || !rows.length;
 		$('rows').querySelectorAll('input').forEach(el => { el.disabled = busy || filterDirty; });
@@ -92,6 +95,7 @@
    ready = data.readiness.ready; periods = data.periods;
    $('readiness').textContent = ready ? s.ready : s.notReady;
    $('requirements').replaceChildren(...data.readiness.messages.map(text => node('li', text)));
+   $('environment').hidden = ready; $('environment-heading').textContent = s.unavailableTitle;
    $('environment').classList.toggle('ffp-environment-error', !ready);
    if (!ready) invalidate();
    const current = $('form').value; const keep = data.forms.some(form => String(form.id) === current);
@@ -121,16 +125,19 @@
 					if (box.checked) { selected.add(row.id); selectedRows.set(row.id, row); } else { selected.delete(row.id); selectedRows.delete(row.id); }
 					invalidate();
 				});
-				const identity = node('td', `#${row.id}`); identity.append(node('small', row.date, 'ffp-mobile-date'));
-				td.append(box); tr.append(td, identity, node('td', row.date), node('td', row.summary || '—')); $('rows').append(tr);
+				const identity = node('td'); identity.append(node('strong', row.summary || `#${row.id}`), node('small', `#${row.id} · ${row.display_date || row.date}`, 'ffp-mobile-date'));
+    const attachments = node('td', String(row.attachment_count)); attachments.setAttribute('aria-label', `${s.attachmentRefs}: ${row.attachment_count}`);
+				td.append(box); tr.append(td, identity, attachments); $('rows').append(tr);
 			}
-			if (!rows.length) { const tr = node('tr'); const td = node('td', $('from').value || $('to').value ? s.noEntries : s.emptyEntries); td.colSpan = 4; tr.append(td); $('rows').append(tr); }
+			if (!rows.length) { const tr = node('tr'); const td = node('td', $('from').value || $('to').value ? s.noEntries : s.emptyEntries); td.colSpan = 3; tr.append(td); $('rows').append(tr); }
 			$('page').textContent = `${s.page} ${page} ${s.of} ${pages} · ${s.total}: ${data.total}`;
 			$('timezone').textContent = `${s.dateZone} ${data.timezone}`;
+   $('applied-period').textContent = $('from').value || $('to').value ? `${$('from').value || '…'} — ${$('to').value || '…'} · ${data.timezone}` : s.allDates;
 			$('selection').hidden = false; $('pagination').hidden = pages <= 1; clearRecovery();
 		}, {label: s.retryLoad, run: () => loadEntries(nextPage, reset, preset)});
 	}
 	$('check').addEventListener('click', loadForms);
+ $('check-ready').addEventListener('click', loadForms);
  $('cancel').addEventListener('click', () => activeController?.abort());
  for (const id of ['week', 'month']) $(id).addEventListener('click', () => { clearRecovery(); filterDirty = true; invalidate(); loadEntries(1, true, id); });
 	$('search-button').addEventListener('click', loadForms);
@@ -153,20 +160,20 @@
  $('partial').addEventListener('change', refreshButtons);
  function showPreview() { if (!ready || filterDirty || !selected.size) { clearRecovery(); message(!ready ? s.notReady : filterDirty ? s.listChanged : s.emptySelection); return; } return operation(s.previewing, async () => {
 		preview = await request('preview', { form_id: $('form').value, ids: JSON.stringify([...selected]) });
-		$('totals').textContent = `${s.submissions}: ${preview.entries.length} · ${s.files}: ${preview.file_count} · ${size(preview.bytes)} · ${s.warnings}: ${preview.warnings.length}`;
+		$('totals').textContent = `${s.submissions}: ${preview.entries.length} · ${s.files}: ${preview.file_count} · ${size(preview.bytes)}${preview.warnings.length ? ` · ${s.warnings}: ${preview.warnings.length}` : ''}`;
 		$('warnings').replaceChildren(); $('warnings').hidden = !preview.warnings.length;
 		if (preview.warnings.length) {
 			const ul = node('ul'); preview.warnings.forEach(w => { const li = node('li', `#${w.entry} · ${w.field}: ${w.reason}`); li.append(node('p', w.next_step, 'description')); ul.append(li); }); $('warnings').append(ul);
 		}
 		$('tree').replaceChildren();
 		preview.entries.forEach(row => {
-			const details = node('details'); details.append(node('summary', `${row.folder}/ · ${s.files}: ${row.files.length}`));
+			const details = node('details'); details.append(node('summary', `#${row.id} · ${row.summary || row.date} · ${s.files}: ${row.files.length}`));
 			const ul = node('ul'); ul.append(node('li', 'request.html'));
 			row.files.forEach(file => ul.append(node('li', `${file.name} · ${size(file.size)}`)));
 			if (!row.files.length) ul.append(node('li', s.noFiles)); details.append(ul); $('tree').append(details);
 		});
   $('warning-help').hidden = !preview.warnings.length; $('partial').checked = false; $('partial-label').hidden = !preview.warnings.length; $('preview').hidden = false;
-  message(''); $('preview-heading').focus();
+  message(''); $('preview').scrollIntoView({block: 'nearest'}); $('preview-heading').focus({preventScroll: true});
 	}, {label: s.retryPreview, run: showPreview}); }
  $('preview-button').addEventListener('click', showPreview);
  $('retry').addEventListener('click', () => { if (retry) retry.run(); });
@@ -177,6 +184,7 @@
 		setTimeout(() => URL.revokeObjectURL(url), 60000);
 		const warnings = response.warnings;
 		message(warnings ? `${s.incomplete} (${s.warnings}: ${warnings})` : s.complete);
+  preview = null; $('preview').hidden = true; $('partial').checked = false;
   $('result-name').textContent = response.name; $('result-status').textContent = warnings ? s.incomplete : s.complete;
   $('result').hidden = false; $('result').scrollIntoView({block: 'start'}); $('result-heading').focus({preventScroll: true});
 	}, {label: s.retryPreview, run: showPreview}));

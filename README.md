@@ -2,7 +2,7 @@
 
 A WordPress plugin that exports selected saved Forminator submissions and local attachments into one ZIP. Includes readable HTML cards, an HTML index, a CSV register, structured JSON and a warnings manifest. Original records and files remain unchanged.
 
-**Status: usability and environment checks v0.3.4.** The technical slug is `file-packs-for-forminator`; the GitHub repository keeps its existing address. Complete native, Docker and actual VPS regression passes for 0.3.0 are recorded in [release readiness](docs/RELEASE_READINESS.md). The current 0.3.4 build is releasable only after its own native/Docker/VPS checks succeed. WordPress.org publication and approval have not happened.
+**Status: usability and environment checks v0.3.5.** The technical slug is `file-packs-for-forminator`; the GitHub repository keeps its existing address. Complete native, Docker and actual VPS regression passes for 0.3.0 are recorded in [release readiness](docs/RELEASE_READINESS.md). The current 0.3.5 build is releasable only after its own native/Docker/VPS checks succeed. WordPress.org publication and approval have not happened.
 
 ## Use
 
@@ -24,7 +24,7 @@ An isolated Docker/VPS staging workflow is available separately; see [staging se
 
 See [setup and tests](docs/DEVELOPMENT.md), [verification report](docs/TEST_REPORT_2026-10-08.md), [integration notes](docs/ADAPTER.md), [roadmap](ROADMAP.md), [v1 specification](docs/V1_SPEC.md) and [remaining acceptance work](docs/ACCEPTANCE.md).
 
-Build the installable ZIP with `python3 scripts/build.py`. The output is `dist/file-packs-for-forminator-0.3.4-dev.zip`; development tests and fixtures are excluded.
+Build the installable ZIP with `python3 scripts/build.py`. The output is `dist/file-packs-for-forminator-0.3.5-dev.zip`; development tests and fixtures are excluded.
 
 ## Boundaries
 
@@ -42,3 +42,5 @@ The 0.3.3 refinement checks PHP ZIP and an actual bounded private-storage write 
 
 
 The 0.3.4 usability pass adds bounded descriptions and attachment counts to the offline index, visible selection capacity, actionable omission guidance, a persistent download-result panel, optional local quick-start collapse memory, automatic choice of an only available form and a browser leave-page warning while downloading. No submission data is stored in browser storage; browser leave warnings are best effort. First-time human usability testing remains outstanding.
+
+The 0.3.5 interface centers on selecting submissions and checking/downloading a ZIP. Help and custom dates are collapsed by default; successful readiness is hidden. A compact confirmation reports verified contents and explicitly asks consent for omissions. List attachment counts are saved references, not a claim of file availability. No new endpoint or source mutation is introduced.

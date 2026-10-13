@@ -27,7 +27,7 @@ final class Adapter {
  }
  /** Dates are site-local. Half-open interval avoids Forminator's 23:59:00 end-date truncation. */
  public static function entries( $form_id, $page, $from = '', $to = '' ) {
-  self::form( $form_id );
+  $form = self::form( $form_id );
   global $wpdb;
   $table = \Forminator_Database_Tables::get_table_name( \Forminator_Database_Tables::FORM_ENTRY );
   $where = 'form_id = %d AND entry_type = %s AND is_spam = 0 AND status = %s';
@@ -44,12 +44,18 @@ final class Adapter {
   $ids = $wpdb->get_col( $wpdb->prepare( "SELECT entry_id FROM %i WHERE {$where_sql} ORDER BY date_created DESC, entry_id DESC LIMIT %d OFFSET %d", $table, 25, ( max( 1, $page ) - 1 ) * 25 ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,PluginCheck.Security.DirectDB.UnescapedDBParameter -- Read-only request-specific query; identifier escaped by %i and WHERE separately prepared from fixed fragments and bound values.
   $rows = array();
   foreach ( $ids as $id ) {
-   $entry = self::entry( $form_id, $id ); $summary = array();
+   $entry = self::entry( $form_id, $id ); $summary = array(); $attachments = 0;
    foreach ( $entry->meta_data as $key => $meta ) {
-    if ( str_starts_with( $key, '_' ) || str_starts_with( $key, 'forminator_addon_' ) || ! is_scalar( $meta['value'] ) || '' === (string) $meta['value'] ) { continue; }
-    $summary[] = wp_strip_all_tags( (string) $meta['value'] ); if ( count( $summary ) >= 2 ) { break; }
+    if ( str_starts_with( $key, '_' ) || str_starts_with( $key, 'forminator_addon_' ) ) { continue; }
+    $field = $form->get_field( $key, true );
+    if ( 'upload' === ( $field['type'] ?? '' ) ) {
+     $paths = is_array( $meta['value'] ) ? ( $meta['value']['file']['file_path'] ?? null ) : null;
+     foreach ( is_array( $paths ) ? $paths : array( $paths ) as $path ) { if ( is_string( $path ) && '' !== $path ) { ++$attachments; } }
+     continue;
+    }
+    if ( count( $summary ) < 2 && is_scalar( $meta['value'] ) && '' !== (string) $meta['value'] ) { $summary[] = wp_html_excerpt( wp_strip_all_tags( (string) $meta['value'] ), 180, '…' ); }
    }
-   $rows[] = array( 'id' => (int) $id, 'date' => $entry->date_created_sql, 'summary' => wp_html_excerpt( implode( ' · ', $summary ), 180, '…' ) );
+   $rows[] = array( 'id' => (int) $id, 'date' => $entry->date_created_sql, 'display_date' => mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $entry->date_created_sql ), 'summary' => wp_html_excerpt( implode( ' · ', $summary ), 180, '…' ), 'attachment_count' => $attachments );
   }
   return array( 'entries' => $rows, 'total' => $count, 'page' => $page, 'pages' => max( 1, (int) ceil( $count / 25 ) ), 'timezone' => wp_timezone_string() );
  }

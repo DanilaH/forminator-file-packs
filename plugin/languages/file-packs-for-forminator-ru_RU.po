@@ -1,5 +1,5 @@
 msgid ""
-msgstr "Project-Id-Version: File Packs 0.3.4\nLanguage: ru_RU\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+msgstr "Project-Id-Version: File Packs 0.3.5\nLanguage: ru_RU\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 
 msgid "%1$d submissions · %2$d attachments"
 msgstr "Заявки: %1$d · Вложения: %2$d"
@@ -454,3 +454,78 @@ msgstr "Этот тип исключён из безопасного экспо�
 
 msgid "Check the original attachment in Forminator with the site administrator, then refresh the preview. You can also accept a package without this file."
 msgstr "Проверьте исходное вложение в Forminator вместе с администратором сайта, затем обновите предпросмотр. Также можно согласиться на пакет без этого файла."
+
+msgid "Download submissions with attachments"
+msgstr "Скачать заявки с вложениями"
+
+msgid "Select submissions to get their details and attached files in one ZIP. Originals stay on your site."
+msgstr "Выберите заявки и скачайте их данные и прикреплённые файлы одним ZIP-архивом. Оригиналы останутся на сайте."
+
+msgid "Export is unavailable"
+msgstr "Скачивание недоступно"
+
+msgid "Period"
+msgstr "Период"
+
+msgid "All dates"
+msgstr "Все даты"
+
+msgid "Choose other dates"
+msgstr "Другие даты"
+
+msgid "Selection is kept when moving between pages."
+msgstr "Выбор сохраняется при переходе между страницами."
+
+msgid "Check and download"
+msgstr "Проверить и скачать"
+
+msgid "Ready to download"
+msgstr "Можно скачивать"
+
+msgid "Some files cannot be included. Review the reasons before downloading."
+msgstr "Часть файлов не войдёт в архив. Проверьте причины перед скачиванием."
+
+msgid "I agree to download without the files listed above."
+msgstr "Согласен скачать без перечисленных выше файлов."
+
+msgid "Download ZIP"
+msgstr "Скачать ZIP"
+
+msgid "Download available files"
+msgstr "Скачать доступные файлы"
+
+msgid "View included files"
+msgstr "Посмотреть состав файлов"
+
+msgid "Extract the ZIP and open index.html to see your submissions and files."
+msgstr "Распакуйте ZIP и откройте index.html: там список заявок, их данные и файлы."
+
+msgid "Submission list → submission details → attached files"
+msgstr "Список заявок → данные заявки → прикреплённые файлы"
+
+msgid "Keep the extracted folder together so the file links work."
+msgstr "Храните распакованную папку целиком, чтобы ссылки на файлы работали."
+
+msgid "How it works"
+msgstr "Как это работает"
+
+msgid "Choose a form, select submissions, check the contents and download the ZIP. No setup is required."
+msgstr "Выберите форму, отметьте заявки, проверьте состав и скачайте ZIP. Настройка не требуется."
+
+msgid "Attachment counts in the list reflect saved file references. Availability is checked before downloading."
+msgstr "Количество вложений в списке взято из сохранённых ссылок на файлы. Перед скачиванием проверяем, какие файлы доступны."
+
+msgid "Changing the period clears selection after the new list loads. Dates use the site timezone."
+msgstr "При смене периода выбор снимается после загрузки нового списка. Даты учитывают часовой пояс сайта."
+
+msgid "Check export requirements"
+msgstr "Проверить возможность скачивания"
+
+msgid "Select at least one submission, then choose Check and download."
+msgstr "Отметьте хотя бы одну заявку и нажмите «Проверить и скачать»."
+
+msgid "Export requirements are available."
+msgstr "Возможность скачивания проверена."
+
+msgid "Saved attachments"
+msgstr "Сохранённые вложения"

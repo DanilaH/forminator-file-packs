@@ -5,7 +5,7 @@ Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.2
 Requires Plugins: forminator
-Stable tag: 0.3.4
+Stable tag: 0.3.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -54,6 +54,10 @@ No. It exports working packages and provides no import or restore operation.
 Source code and build tools: https://github.com/DanilaH/forminator-file-packs
 
 == Changelog ==
+
+= 0.3.5 =
+* Simplified selection, compact confirmation and clearer download instructions.
+* Optional help and dates are collapsed; environment problems stay visible.
 
 = 0.3.4 =
 * Clearer offline index, selection limits, omission guidance and download instructions.

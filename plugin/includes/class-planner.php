@@ -89,6 +89,7 @@ final class Planner {
  public static function preview( $plan ) {
   foreach ( $plan['warnings'] as &$warning ) { $warning['next_step'] = self::warning_help( $warning['reason'] ); } unset( $warning );
   foreach ( $plan['entries'] as &$row ) {
+   $row['summary'] = self::summary( $row );
    unset( $row['fields'] ); foreach ( $row['files'] as &$file ) { $file = array_intersect_key( $file, array_flip( array( 'name', 'label', 'size' ) ) ); } unset( $file );
   } unset( $row ); return $plan;
  }

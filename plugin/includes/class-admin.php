@@ -35,76 +35,88 @@ final class Admin {
    'network' => __( 'The request was interrupted. Check your connection and refresh the preview before retrying.', 'file-packs-for-forminator' ),
    'complete' => __( 'ZIP ready. Download started; original submissions and files were not changed.', 'file-packs-for-forminator' ),
    'incomplete' => __( 'Incomplete ZIP ready. Download started. See the warnings in the package index.', 'file-packs-for-forminator' ),
-   'submissions' => __( 'Submissions', 'file-packs-for-forminator' ), 'files' => __( 'Files', 'file-packs-for-forminator' ), 'warnings' => __( 'Warnings', 'file-packs-for-forminator' ),
+   'submissions' => __( 'Submissions', 'file-packs-for-forminator' ), 'files' => __( 'Attachments', 'file-packs-for-forminator' ), 'warnings' => __( 'Warnings', 'file-packs-for-forminator' ),
    'noFiles' => __( 'No attachments included.', 'file-packs-for-forminator' ), 'previewChanged' => __( 'The selected data changed. Refresh the preview.', 'file-packs-for-forminator' ),
    'listChanged' => __( 'The period was edited. Your selection is kept until you apply it; export is paused until the list is refreshed.', 'file-packs-for-forminator' ),
    'emptyForms' => __( 'No forms are available. Create a form in Forminator and save submissions before exporting.', 'file-packs-for-forminator' ),
    'emptyEntries' => __( 'No saved submissions are available for this form. Check that submissions are saved in Forminator.', 'file-packs-for-forminator' ),
-   'emptySelection' => __( 'No submissions selected. Select at least one row to preview the package.', 'file-packs-for-forminator' ),
+   'emptySelection' => __( 'Select at least one submission, then choose Check and download.', 'file-packs-for-forminator' ),
    'remove' => __( 'Remove submission', 'file-packs-for-forminator' ),
    'searchReset' => __( 'The selected form is outside the search results. The previous selection was cleared.', 'file-packs-for-forminator' ),
    'retryPreview' => __( 'Refresh preview', 'file-packs-for-forminator' ),
    'retryLoad' => __( 'Retry loading', 'file-packs-for-forminator' ),
-   'ready' => __( 'ZIP support and private storage are available. Package size and available resources are checked again during export.', 'file-packs-for-forminator' ),
+   'ready' => __( 'Export requirements are available.', 'file-packs-for-forminator' ),
    'notReady' => __( 'Export is unavailable. Resolve the issues below and check again.', 'file-packs-for-forminator' ),
    'cancelled' => __( 'Waiting stopped in this browser. The server may still be building the package. Wait before refreshing the preview and trying again.', 'file-packs-for-forminator' ),
    'timeout' => __( 'The request took too long. The server may still be processing it. Wait before trying again, or refresh the page.', 'file-packs-for-forminator' ),
    'reload' => __( 'Refresh page', 'file-packs-for-forminator' ),
+   'checkSelection' => __( 'Check and download', 'file-packs-for-forminator' ),
+   'recheckSelection' => __( 'Check again', 'file-packs-for-forminator' ),
+   'allDates' => __( 'All dates', 'file-packs-for-forminator' ),
+   'downloadFull' => __( 'Download ZIP', 'file-packs-for-forminator' ),
+   'downloadPartial' => __( 'Download available files', 'file-packs-for-forminator' ),
+   'unavailableTitle' => __( 'Export is unavailable', 'file-packs-for-forminator' ),
+   'attachmentRefs' => __( 'Saved attachments', 'file-packs-for-forminator' ),
    'selectEntry' => __( 'Select submission', 'file-packs-for-forminator' ),
   ) ) );
  }
  public static function page() {
   if ( ! current_user_can( Adapter::capability() ) ) { wp_die( esc_html__( 'Access denied.', 'file-packs-for-forminator' ) ); }
-  echo '<div class="wrap ffp" id="ffp-app"><h1>' . esc_html__( 'File Packs for Forminator', 'file-packs-for-forminator' ) . '</h1><p class="ffp-intro">' . esc_html__( 'Turn submissions and their attachments into a ready-to-share ZIP. Originals stay untouched.', 'file-packs-for-forminator' ) . '</p>';
+  echo '<div class="wrap ffp" id="ffp-app"><h1 class="screen-reader-text">' . esc_html__( 'File Packs for Forminator', 'file-packs-for-forminator' ) . '</h1>';
   if ( ! Adapter::available() ) { echo '<div class="notice notice-warning"><p>' . esc_html__( 'Activate Forminator to start exporting.', 'file-packs-for-forminator' ) . '</p></div></div>'; return; }
   ?>
-  <details class="ffp-help" open><summary><?php esc_html_e( 'Quick start', 'file-packs-for-forminator' ); ?></summary>
-   <p><?php esc_html_e( 'Choose a form, select submissions, review the package, then download the ZIP. No setup is required.', 'file-packs-for-forminator' ); ?></p>
-   <p><?php esc_html_e( 'Extract the ZIP and open index.html in your browser to view submissions and attachments. Open register.csv in a spreadsheet application; data.json is for automated processing.', 'file-packs-for-forminator' ); ?></p>
-   <p class="description"><?php esc_html_e( 'Only attachments stored locally on this site are supported. Remote storage and unsupported file types are reported in the preview.', 'file-packs-for-forminator' ); ?></p>
-  </details>
   <div id="ffp-notification" class="ffp-notification" hidden><div id="ffp-status" role="status" aria-live="polite"></div><button id="ffp-retry" class="button" hidden></button><button id="ffp-cancel" class="button" hidden><?php esc_html_e( 'Stop waiting', 'file-packs-for-forminator' ); ?></button></div>
-  <section id="ffp-environment" class="ffp-panel" aria-labelledby="ffp-environment-heading">
-   <h2 id="ffp-environment-heading"><?php esc_html_e( 'Export readiness', 'file-packs-for-forminator' ); ?></h2>
-   <p id="ffp-readiness" role="status" aria-live="polite"><?php esc_html_e( 'Checking export requirements…', 'file-packs-for-forminator' ); ?></p>
-   <ul id="ffp-requirements"></ul><button id="ffp-check" class="button"><?php esc_html_e( 'Check again', 'file-packs-for-forminator' ); ?></button>
-  </section>
-  <section class="ffp-panel" aria-labelledby="ffp-form-heading">
-   <h2 id="ffp-form-heading"><?php esc_html_e( '1. Choose a form', 'file-packs-for-forminator' ); ?></h2>
-   <div class="ffp-controls"><div><label for="ffp-search"><?php esc_html_e( 'Find a form', 'file-packs-for-forminator' ); ?></label><input id="ffp-search" type="search" maxlength="100"><button id="ffp-search-button" class="button"><?php esc_html_e( 'Search', 'file-packs-for-forminator' ); ?></button></div><div><label for="ffp-form"><?php esc_html_e( 'Form', 'file-packs-for-forminator' ); ?></label><select id="ffp-form"><option value=""><?php esc_html_e( 'Choose a form', 'file-packs-for-forminator' ); ?></option></select></div></div>
-   <p id="ffp-form-note" class="description"></p>
-   <a id="ffp-form-help" href="<?php echo esc_url( admin_url( 'admin.php?page=forminator' ) ); ?>" hidden><?php esc_html_e( 'Open Forminator', 'file-packs-for-forminator' ); ?></a>
-  </section>
-  <section id="ffp-selection" class="ffp-panel" aria-labelledby="ffp-entries-heading" hidden>
-   <h2 id="ffp-entries-heading"><?php esc_html_e( '2. Select submissions', 'file-packs-for-forminator' ); ?></h2>
-   <div class="ffp-controls"><div><label for="ffp-from"><?php esc_html_e( 'From', 'file-packs-for-forminator' ); ?></label><input type="date" id="ffp-from"></div><div><label for="ffp-to"><?php esc_html_e( 'Through', 'file-packs-for-forminator' ); ?></label><input type="date" id="ffp-to"></div><button id="ffp-filter" class="button"><?php esc_html_e( 'Apply period', 'file-packs-for-forminator' ); ?></button><button id="ffp-reset-period" class="button"><?php esc_html_e( 'Clear period', 'file-packs-for-forminator' ); ?></button></div>
-   <div class="ffp-presets"><button id="ffp-week" class="button"><?php esc_html_e( 'Last 7 days', 'file-packs-for-forminator' ); ?></button><button id="ffp-month" class="button"><?php esc_html_e( 'This month', 'file-packs-for-forminator' ); ?></button></div>
-   <p class="description"><?php esc_html_e( 'Quick periods use the site timezone and replace the current period. Selection is cleared only after the new list loads.', 'file-packs-for-forminator' ); ?></p>
-   <p id="ffp-timezone" class="description"></p>
-   <p class="description"><?php esc_html_e( 'Dates are optional. Leave both empty to show all saved submissions, 25 per page. Applying a period clears the current selection.', 'file-packs-for-forminator' ); ?></p>
-   <div class="ffp-selection-bar"><label><input id="ffp-all" type="checkbox"> <?php esc_html_e( 'Select this page', 'file-packs-for-forminator' ); ?></label><strong id="ffp-count" aria-live="polite"></strong><button id="ffp-clear" class="button-link"><?php esc_html_e( 'Clear selection', 'file-packs-for-forminator' ); ?></button></div>
-   <p class="description"><?php esc_html_e( 'Selection is kept when moving between pages. Review all selected submissions below.', 'file-packs-for-forminator' ); ?></p>
-   <details id="ffp-selected-review"><summary><?php esc_html_e( 'Review selected submissions', 'file-packs-for-forminator' ); ?></summary><ul id="ffp-selected-list"></ul></details>
-   <p id="ffp-selection-help" class="description"></p>
-   <table class="widefat striped ffp-table"><thead><tr><th scope="col"><?php esc_html_e( 'Select', 'file-packs-for-forminator' ); ?></th><th scope="col"><?php esc_html_e( 'Submission', 'file-packs-for-forminator' ); ?></th><th scope="col"><?php esc_html_e( 'Created', 'file-packs-for-forminator' ); ?></th><th scope="col"><?php esc_html_e( 'Summary', 'file-packs-for-forminator' ); ?></th></tr></thead><tbody id="ffp-rows"></tbody></table>
-   <div id="ffp-pagination" class="ffp-pagination"><button id="ffp-prev" class="button"><?php esc_html_e( 'Previous', 'file-packs-for-forminator' ); ?></button><span id="ffp-page"></span><button id="ffp-next" class="button"><?php esc_html_e( 'Next', 'file-packs-for-forminator' ); ?></button></div>
-   <button id="ffp-preview-button" class="button button-primary" disabled><?php esc_html_e( 'Preview package', 'file-packs-for-forminator' ); ?></button>
-   <p class="description"><?php esc_html_e( 'Current safety limits: 100 submissions, 500 attachments, 100 MiB of attachment data per package. Use smaller batches on limited hosting.', 'file-packs-for-forminator' ); ?></p>
-  </section>
-  <section id="ffp-preview" class="ffp-panel" aria-labelledby="ffp-preview-heading" hidden>
-   <h2 id="ffp-preview-heading" tabindex="-1"><?php esc_html_e( '3. Review and download', 'file-packs-for-forminator' ); ?></h2>
-   <p id="ffp-totals" class="ffp-totals"></p><div id="ffp-warnings" class="ffp-warnings" hidden></div>
-   <p><?php esc_html_e( 'ZIP includes index.html, register.csv, data.json, warnings.json and one folder per submission with its card and attachments.', 'file-packs-for-forminator' ); ?></p>
-   <p id="ffp-warning-help" hidden><?php esc_html_e( 'Check the omissions below. You can export the available files, or fix the source attachments and refresh the preview. Originals will not be changed.', 'file-packs-for-forminator' ); ?></p>
-   <p><?php esc_html_e( 'Extract the ZIP and open index.html in your browser to view submissions and attachments. Open register.csv in a spreadsheet application; data.json is for automated processing.', 'file-packs-for-forminator' ); ?></p>
-   <div id="ffp-tree"></div>
-   <label id="ffp-partial-label" class="ffp-partial" hidden><input type="checkbox" id="ffp-partial"> <?php esc_html_e( 'I understand that the package will be incomplete. Export the available files.', 'file-packs-for-forminator' ); ?></label>
-   <button id="ffp-download" class="button button-primary"><?php esc_html_e( 'Build and download ZIP', 'file-packs-for-forminator' ); ?></button>
-  </section>
-  <section id="ffp-result" class="ffp-panel" aria-labelledby="ffp-result-heading" hidden>
-   <h2 id="ffp-result-heading" tabindex="-1"><?php esc_html_e( 'Download started', 'file-packs-for-forminator' ); ?></h2>
-   <p id="ffp-result-status"></p><p><strong id="ffp-result-name"></strong></p>
-   <p><?php esc_html_e( 'Find the ZIP in your browser downloads, extract it, then open index.html. Keep the whole extracted folder together so attachment links work.', 'file-packs-for-forminator' ); ?></p>
+  <section id="ffp-workspace" class="ffp-panel" aria-labelledby="ffp-main-heading">
+   <h2 id="ffp-main-heading"><?php esc_html_e( 'Download submissions with attachments', 'file-packs-for-forminator' ); ?></h2>
+   <p class="ffp-intro"><?php esc_html_e( 'Select submissions to get their details and attached files in one ZIP. Originals stay on your site.', 'file-packs-for-forminator' ); ?></p>
+   <div id="ffp-environment" class="ffp-environment" aria-labelledby="ffp-environment-heading">
+    <strong id="ffp-environment-heading"><?php esc_html_e( 'Checking export requirements…', 'file-packs-for-forminator' ); ?></strong>
+    <p id="ffp-readiness" role="status" aria-live="polite"><?php esc_html_e( 'Checking export requirements…', 'file-packs-for-forminator' ); ?></p>
+    <ul id="ffp-requirements"></ul><button id="ffp-check" class="button"><?php esc_html_e( 'Check again', 'file-packs-for-forminator' ); ?></button>
+   </div>
+   <div class="ffp-form-controls">
+    <div class="ffp-form-choice"><label id="ffp-form-heading" for="ffp-form"><?php esc_html_e( 'Choose a form', 'file-packs-for-forminator' ); ?></label><select id="ffp-form"><option value=""><?php esc_html_e( 'Choose a form', 'file-packs-for-forminator' ); ?></option></select></div>
+    <details id="ffp-form-search"><summary><?php esc_html_e( 'Find a form', 'file-packs-for-forminator' ); ?></summary><label class="screen-reader-text" for="ffp-search"><?php esc_html_e( 'Find a form', 'file-packs-for-forminator' ); ?></label><input id="ffp-search" type="search" maxlength="100"><button id="ffp-search-button" class="button"><?php esc_html_e( 'Search', 'file-packs-for-forminator' ); ?></button></details>
+   </div>
+   <p id="ffp-form-note" class="description"></p><a id="ffp-form-help" href="<?php echo esc_url( admin_url( 'admin.php?page=forminator' ) ); ?>" hidden><?php esc_html_e( 'Open Forminator', 'file-packs-for-forminator' ); ?></a>
+   <div id="ffp-selection" hidden>
+    <div class="ffp-period-bar"><strong><?php esc_html_e( 'Period', 'file-packs-for-forminator' ); ?></strong><button id="ffp-reset-period" class="button"><?php esc_html_e( 'All dates', 'file-packs-for-forminator' ); ?></button><button id="ffp-week" class="button"><?php esc_html_e( 'Last 7 days', 'file-packs-for-forminator' ); ?></button><button id="ffp-month" class="button"><?php esc_html_e( 'This month', 'file-packs-for-forminator' ); ?></button></div>
+    <details id="ffp-custom-period"><summary><?php esc_html_e( 'Choose other dates', 'file-packs-for-forminator' ); ?></summary>
+     <div class="ffp-controls"><div><label for="ffp-from"><?php esc_html_e( 'From', 'file-packs-for-forminator' ); ?></label><input type="date" id="ffp-from"></div><div><label for="ffp-to"><?php esc_html_e( 'Through', 'file-packs-for-forminator' ); ?></label><input type="date" id="ffp-to"></div><button id="ffp-filter" class="button"><?php esc_html_e( 'Apply period', 'file-packs-for-forminator' ); ?></button></div>
+     <p id="ffp-timezone" class="description"></p>
+    </details>
+    <p id="ffp-applied-period" class="description"></p>
+    <div class="ffp-selection-bar"><label><input id="ffp-all" type="checkbox"> <?php esc_html_e( 'Select this page', 'file-packs-for-forminator' ); ?></label><button id="ffp-clear" class="button-link"><?php esc_html_e( 'Clear selection', 'file-packs-for-forminator' ); ?></button></div>
+    <table class="widefat striped ffp-table"><thead><tr><th scope="col"><?php esc_html_e( 'Select', 'file-packs-for-forminator' ); ?></th><th scope="col"><?php esc_html_e( 'Submission', 'file-packs-for-forminator' ); ?></th><th scope="col"><?php esc_html_e( 'Attachments', 'file-packs-for-forminator' ); ?></th></tr></thead><tbody id="ffp-rows"></tbody></table>
+    <div id="ffp-pagination" class="ffp-pagination"><button id="ffp-prev" class="button"><?php esc_html_e( 'Previous', 'file-packs-for-forminator' ); ?></button><span id="ffp-page"></span><button id="ffp-next" class="button"><?php esc_html_e( 'Next', 'file-packs-for-forminator' ); ?></button></div>
+    <div class="ffp-action-bar"><strong id="ffp-count" aria-live="polite"></strong><button id="ffp-preview-button" class="button button-primary" disabled><?php esc_html_e( 'Check and download', 'file-packs-for-forminator' ); ?></button></div>
+    <p id="ffp-selection-help" class="description"></p>
+    <details id="ffp-selected-review"><summary><?php esc_html_e( 'Review selected submissions', 'file-packs-for-forminator' ); ?></summary><p class="description"><?php esc_html_e( 'Selection is kept when moving between pages.', 'file-packs-for-forminator' ); ?></p><ul id="ffp-selected-list"></ul></details>
+   </div>
+   <section id="ffp-preview" class="ffp-confirmation" aria-labelledby="ffp-preview-heading" hidden>
+    <h3 id="ffp-preview-heading" tabindex="-1"><?php esc_html_e( 'Ready to download', 'file-packs-for-forminator' ); ?></h3>
+    <p id="ffp-totals" class="ffp-totals"></p><div id="ffp-warnings" class="ffp-warnings" hidden></div>
+    <p id="ffp-warning-help" hidden><?php esc_html_e( 'Some files cannot be included. Review the reasons before downloading.', 'file-packs-for-forminator' ); ?></p>
+    <label id="ffp-partial-label" class="ffp-partial" hidden><input type="checkbox" id="ffp-partial"> <?php esc_html_e( 'I agree to download without the files listed above.', 'file-packs-for-forminator' ); ?></label>
+    <button id="ffp-download" class="button button-primary"><?php esc_html_e( 'Download ZIP', 'file-packs-for-forminator' ); ?></button>
+    <details id="ffp-content-review"><summary><?php esc_html_e( 'View included files', 'file-packs-for-forminator' ); ?></summary><div id="ffp-tree"></div></details>
+   </section>
+   <section id="ffp-result" class="ffp-confirmation" aria-labelledby="ffp-result-heading" hidden>
+    <h3 id="ffp-result-heading" tabindex="-1"><?php esc_html_e( 'Download started', 'file-packs-for-forminator' ); ?></h3>
+    <p id="ffp-result-status"></p><p><strong id="ffp-result-name"></strong></p>
+    <p><?php esc_html_e( 'Extract the ZIP and open index.html to see your submissions and files.', 'file-packs-for-forminator' ); ?></p>
+    <div class="ffp-result-example"><strong>index.html</strong><span><?php esc_html_e( 'Submission list → submission details → attached files', 'file-packs-for-forminator' ); ?></span></div>
+    <p class="description"><?php esc_html_e( 'Keep the extracted folder together so the file links work.', 'file-packs-for-forminator' ); ?></p>
+   </section>
+   <details class="ffp-help"><summary><?php esc_html_e( 'How it works', 'file-packs-for-forminator' ); ?></summary>
+    <p><?php esc_html_e( 'Choose a form, select submissions, check the contents and download the ZIP. No setup is required.', 'file-packs-for-forminator' ); ?></p>
+    <p><?php esc_html_e( 'Extract the ZIP and open index.html in your browser to view submissions and attachments. Open register.csv in a spreadsheet application; data.json is for automated processing.', 'file-packs-for-forminator' ); ?></p>
+    <p><?php esc_html_e( 'Only attachments stored locally on this site are supported. Remote storage and unsupported file types are reported in the preview.', 'file-packs-for-forminator' ); ?></p>
+    <p><?php esc_html_e( 'Attachment counts in the list reflect saved file references. Availability is checked before downloading.', 'file-packs-for-forminator' ); ?></p>
+    <p><?php esc_html_e( 'Changing the period clears selection after the new list loads. Dates use the site timezone.', 'file-packs-for-forminator' ); ?></p>
+    <p><?php esc_html_e( 'Current safety limits: 100 submissions, 500 attachments, 100 MiB of attachment data per package. Use smaller batches on limited hosting.', 'file-packs-for-forminator' ); ?></p>
+    <button id="ffp-check-ready" class="button"><?php esc_html_e( 'Check export requirements', 'file-packs-for-forminator' ); ?></button>
+   </details>
   </section></div>
   <?php
  }

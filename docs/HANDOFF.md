@@ -48,3 +48,8 @@ The independent follow-up reproduced stale session recovery, recovery after clea
 ## Usability pass 0.3.4
 
 Seven explicitly authorized refinements: bounded escaped offline index summaries/counts, selection capacity and stale recovery fix at the row limit, localized omission next steps, an actual browser-download result panel, optional localStorage of only quick-start collapse state, automatic single-form selection after forms loading completes, and beforeunload only during ZIP operation with cleanup after every success/error/abort. JSON schema and warnings manifest keep their existing shape; next_step is preview-only. Original source guards and resource limits are unchanged. Current-commit CI/Docker/VPS and first-time human usability testing are separate requirements.
+
+
+## Simplified task flow 0.3.5
+
+The user could not understand the 0.3.4 screenshots. Explicitly authorized redesign: one workspace, task-first wording, collapsed optional help/date/content details, failure-only environment block, compact reviewed-contents confirmation and extraction guidance. Backend security, private handling and export contracts remain enforced. List attachment_count counts only saved nonempty paths in recognized upload fields, without resolving or claiming exportability; preview totals still use verified attachments. Preview-only summaries are bounded. Screenshots must show real UI with synthetic persisted records; do not claim first-time human usability testing.

@@ -98,6 +98,7 @@ try:
             raise RuntimeError('PHP server did not start')
         eval_file('seed-lab.php')
         run(['python3', 'tests/http-integration.py'])
+        eval_file('seed-showcase.php')
         eval_file('environment-integration.php')
         eval_file('readiness-unavailable.php')
         eval_file('security-integration.php')
