@@ -4,8 +4,8 @@ use ForminatorFilePacks\Jobs;
 use ForminatorFilePacks\Package;
 if ( ! defined( 'WP_CLI' ) || ! WP_CLI || '1' !== getenv( 'FFP_TEST_LAB' ) ) { throw new RuntimeException( 'Disposable lab only.' ); }
 wp_set_current_user( 1 );
-$checks = array(); $GLOBALS['jobs_peak'] = 0; $GLOBALS['jobs_step_seconds'] = 0;
-function jobs_check( $ok, $name ) { global $checks; if ( ! $ok ) { throw new RuntimeException( $name ); } $checks[] = $name; echo 'PASS ' . $name . "\n"; }
+$GLOBALS['ffp_jobs_checks'] = array(); $GLOBALS['jobs_peak'] = 0; $GLOBALS['jobs_step_seconds'] = 0;
+function jobs_check( $ok, $name ) {  if ( ! $ok ) { throw new RuntimeException( $name ); } $GLOBALS['ffp_jobs_checks'][] = $name; echo 'PASS ' . $name . "\n"; }
 function jobs_reject( $fn, $name ) { try { $fn(); } catch ( RuntimeException $e ) { jobs_check( true, $name ); return; } throw new RuntimeException( 'Expected rejection: ' . $name ); }
 function jobs_advance( $id, $target, $max = 3000 ) { for ( $i = 0; $i < $max; ++$i ) { if ( function_exists( 'memory_reset_peak_usage' ) ) { memory_reset_peak_usage(); } $step_start = microtime( true ); Jobs::run( $id ); $GLOBALS['jobs_peak'] = max( $GLOBALS['jobs_peak'], memory_get_peak_usage( true ) ); $GLOBALS['jobs_step_seconds'] = max( $GLOBALS['jobs_step_seconds'], microtime( true ) - $step_start ); $s = Jobs::status( $id ); if ( $target === $s['status'] ) { return $s; } if ( 'error' === $s['status'] ) { throw new RuntimeException( $s['error'] ); } if ( function_exists( 'wp_cache_flush_runtime' ) ) { wp_cache_flush_runtime(); } } throw new RuntimeException( 'No task progress: ' . $target ); }
 function jobs_remove( $id ) { Jobs::command( $id, 'cancel' ); for ( $i = 0; $i < 200; ++$i ) { Jobs::run( $id ); if ( ! is_dir( Package::private_root() . '/export-' . $id ) ) { return; } } throw new RuntimeException( 'Private task cleanup incomplete' ); }
@@ -113,5 +113,5 @@ $state_path = Package::private_root() . '/export-' . $task['id'] . '/state.json'
 jobs_reject( static fn() => Jobs::parts( $task['id'], 1 ), 'Expired archives are not downloadable' ); Jobs::run( $task['id'] ); jobs_check( ! is_dir( dirname( $state_path ) ), 'Expiry removes only task-owned private artifacts' );
 
 file_put_contents( getenv( 'FFP_TEST_FIXTURE' ), wp_json_encode( $fixture ) );
-file_put_contents( $out . '/jobs-results.json', wp_json_encode( array( 'count' => count( $checks ), 'checks' => $checks, 'resource' => $resource ), JSON_PRETTY_PRINT ) );
+file_put_contents( $out . '/jobs-results.json', wp_json_encode( array( 'count' => count( $GLOBALS['ffp_jobs_checks'] ), 'checks' => $GLOBALS['ffp_jobs_checks'], 'resource' => $resource ), JSON_PRETTY_PRINT ) );
 echo 'Large export resource: ' . wp_json_encode( $resource ) . "\n";

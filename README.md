@@ -2,7 +2,7 @@
 
 A WordPress plugin that exports selected saved Forminator submissions and local attachments into ZIP packages. Includes readable HTML cards, an HTML index, a CSV register, structured JSON and a warnings manifest. Original records and files remain unchanged.
 
-**Status: resumable large exports v0.4.0, verification in progress.** The technical slug is `file-packs-for-forminator`; the GitHub repository keeps its existing address. Complete native, Docker and actual VPS regression passes for 0.3.0 are recorded in [release readiness](docs/RELEASE_READINESS.md). The current 0.3.5 build is releasable only after its own native/Docker/VPS checks succeed. WordPress.org publication and approval have not happened.
+**Status: resumable large exports v0.4.0, verification in progress.** The technical slug is `file-packs-for-forminator`; the GitHub repository keeps its existing address. Complete native, Docker and actual VPS regression passes for 0.3.0 are recorded in [release readiness](docs/RELEASE_READINESS.md). The current 0.4.0 build is releasable only after its own native/Docker/VPS checks succeed. WordPress.org publication and approval have not happened.
 
 ## Use
 

@@ -68,7 +68,7 @@ final class Package {
 		$marker = $this->lock . '/task';
 		if ( $task_id && ! is_link( $this->lock ) && is_file( $marker ) && ! is_link( $marker ) && $task_id === file_get_contents( $marker ) ) {
 			self::remove_job( $root . '/job-' . $task_id );
-			unlink( $marker ); rmdir( $this->lock );
+			unlink( $marker ); rmdir( $this->lock ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- Recover only this task's marker/atomic local lock while holding the Jobs flock; no FTP fallback.
 		}
 	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir -- Private local streams, restrictive permissions and atomic locks require native operations; no FTP or remote filesystem fallback.
 		if ( is_dir( $this->lock ) && ! is_link( $this->lock ) && filemtime( $this->lock ) < time() - 3600 ) { @rmdir( $this->lock ); }
@@ -76,7 +76,7 @@ final class Package {
 	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir -- Private local streams, restrictive permissions and atomic locks require native operations; no FTP or remote filesystem fallback.
 			throw new \RuntimeException( esc_html__( 'An export is already running for your account. Please wait.', 'file-packs-for-forminator' ) ); }
 		register_shutdown_function( array( $this, 'cleanup' ) );
-		if ( $task_id ) { if ( strlen( $task_id ) !== file_put_contents( $marker, $task_id ) || ! chmod( $marker, 0600 ) ) { $this->cleanup(); throw new StorageException( esc_html__( 'Could not save export progress.', 'file-packs-for-forminator' ) ); } }
+		if ( $task_id ) { if ( strlen( $task_id ) !== file_put_contents( $marker, $task_id ) || ! chmod( $marker, 0600 ) ) { $this->cleanup(); throw new StorageException( esc_html__( 'Could not save export progress.', 'file-packs-for-forminator' ) ); } } // phpcs:ignore WordPress.WP.AlternativeFunctions -- Checked private local marker write and restrictive mode; WP_Filesystem cannot provide the same atomic lock semantics.
 		$this->directory = $root . '/job-' . ( $task_id ?: bin2hex( random_bytes( 16 ) ) );
 		if ( ! @mkdir( $this->directory, 0700 ) ) { $this->cleanup(); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir -- Atomic private local directory creation; no FTP filesystem.
 	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir -- Private local streams, restrictive permissions and atomic locks require native operations; no FTP or remote filesystem fallback.
@@ -267,7 +267,7 @@ final class Package {
 		}
 		if ( $this->directory && is_dir( $this->directory ) && ! is_link( $this->directory ) ) { self::remove_job( $this->directory ); }
 	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir -- Private local streams, restrictive permissions and atomic locks require native operations; no FTP or remote filesystem fallback.
-		if ( $this->lock && is_dir( $this->lock ) && ! is_link( $this->lock ) ) { if ( is_file( $this->lock . '/task' ) ) { unlink( $this->lock . '/task' ); } @rmdir( $this->lock ); }
+		if ( $this->lock && is_dir( $this->lock ) && ! is_link( $this->lock ) ) { if ( is_file( $this->lock . '/task' ) ) { unlink( $this->lock . '/task' ); } @rmdir( $this->lock ); } // phpcs:ignore WordPress.WP.AlternativeFunctions -- Release only this request's checked local task marker and atomic lock directory.
 		$this->directory = '';
 		$this->lock = '';
 	}

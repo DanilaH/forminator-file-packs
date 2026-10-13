@@ -208,6 +208,8 @@ final class Admin {
   catch ( \Throwable $e ) { wp_send_json_error( array( 'message' => __( 'The export could not be completed. Check the environment and try again.', 'file-packs-for-forminator' ) ), 500 ); }
  }
  private static function job_endpoint( $action ) {
+  Adapter::authorize();
+  if ( ! check_ajax_referer( 'ffp_export', 'nonce', false ) ) { throw new \RuntimeException( esc_html__( 'Your session expired or the request is invalid. Refresh this page.', 'file-packs-for-forminator' ) ); }
   $id = isset( $_POST['job'] ) && is_string( $_POST['job'] ) ? sanitize_text_field( wp_unslash( $_POST['job'] ) ) : '';
   if ( 'job_create' === $action ) {
    $form = self::id( isset( $_POST['form_id'] ) && is_string( $_POST['form_id'] ) ? sanitize_text_field( wp_unslash( $_POST['form_id'] ) ) : '' );
