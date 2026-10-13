@@ -52,10 +52,10 @@ if(process.env.FFP_TEST_LAB!=='1')throw Error('Disposable lab only');
   await page.locator('#ffp-preview-button').click();await page.waitForFunction(()=>document.querySelector('#ffp-status').getAttribute('role')==='alert'&&document.querySelector('#ffp-app').getAttribute('aria-busy')==='false');
   await page.locator('#ffp-clear').click();assert(await page.locator('#ffp-retry').isHidden()&&await page.locator('#ffp-preview-button').isDisabled(),'clearing selection removes stale recovery action');await checkbox.check();
   // Exercise the real server's nonce rejection without changing the login session.
-  const originalNonce=await page.evaluate(()=>FFP.nonce);await page.evaluate(()=>FFP.nonce='expired-ui-fixture');
+  await page.evaluate(()=>FFP.nonce='expired-ui-fixture');
   await page.locator('#ffp-preview-button').click();await page.waitForFunction(()=>document.querySelector('#ffp-app').getAttribute('aria-busy')==='false');
   assert((await page.locator('#ffp-retry').textContent()).includes('Обновить страницу'),'expired session offers page refresh instead of repeating expired nonce');
-  await page.locator('#ffp-retry').click();await page.waitForFunction(old=>FFP.nonce!==old&&document.querySelector('#ffp-form')?.disabled===false,'expired-ui-fixture');assert(await page.locator('#ffp-selection').isHidden(),'session recovery reloads page with fresh nonce');
+  await page.locator('#ffp-retry').click();await page.waitForFunction(old=>window.FFP?.nonce&&FFP.nonce!==old&&document.querySelector('#ffp-form')?.disabled===false,'expired-ui-fixture');assert(await page.locator('#ffp-selection').isHidden(),'session recovery reloads page with fresh nonce');
   await page.locator('#ffp-form').selectOption(String(fixture.submission.form));await page.waitForFunction(()=>document.querySelector('#ffp-app').getAttribute('aria-busy')==='false');await checkbox.check();
   await page.evaluate(()=>window.ffpOriginalFetch=window.fetch);
   await page.evaluate(()=>window.fetch=(url,options)=>new URLSearchParams(options.body).get('action')==='ffp_preview'?new Promise((resolve,reject)=>options.signal.addEventListener('abort',()=>reject(new DOMException('Aborted','AbortError')),{once:true})):window.ffpOriginalFetch(url,options));
