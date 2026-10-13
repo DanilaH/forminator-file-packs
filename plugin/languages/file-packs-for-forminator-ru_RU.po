@@ -458,8 +458,8 @@ msgstr "Проверьте исходное вложение в Forminator вм�
 msgid "Download submissions with attachments"
 msgstr "Скачать заявки с вложениями"
 
-msgid "Select submissions to get their details and attached files in one ZIP. Originals stay on your site."
-msgstr "Выберите заявки и скачайте их данные и прикреплённые файлы одним ZIP-архивом. Оригиналы останутся на сайте."
+msgid "Select submissions to get their details and attached files in ZIP archives. Originals stay on your site."
+msgstr "Выберите заявки и скачайте их данные и прикреплённые файлы в ZIP-архивах. Оригиналы останутся на сайте."
 
 msgid "Export is unavailable"
 msgstr "Скачивание недоступно"

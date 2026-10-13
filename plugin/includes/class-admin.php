@@ -84,7 +84,7 @@ final class Admin {
   <div id="ffp-notification" class="ffp-notification" hidden><div id="ffp-status" role="status" aria-live="polite"></div><button id="ffp-retry" class="button" hidden></button><button id="ffp-cancel" class="button" hidden><?php esc_html_e( 'Stop waiting', 'file-packs-for-forminator' ); ?></button></div>
   <section id="ffp-workspace" class="ffp-panel" aria-labelledby="ffp-main-heading">
    <h2 id="ffp-main-heading"><?php esc_html_e( 'Download submissions with attachments', 'file-packs-for-forminator' ); ?></h2>
-   <p class="ffp-intro"><?php esc_html_e( 'Select submissions to get their details and attached files in one ZIP. Originals stay on your site.', 'file-packs-for-forminator' ); ?></p>
+   <p class="ffp-intro"><?php esc_html_e( 'Select submissions to get their details and attached files in ZIP archives. Originals stay on your site.', 'file-packs-for-forminator' ); ?></p>
    <div id="ffp-environment" class="ffp-environment" aria-labelledby="ffp-environment-heading">
     <strong id="ffp-environment-heading"><?php esc_html_e( 'Checking export requirements…', 'file-packs-for-forminator' ); ?></strong>
     <p id="ffp-readiness" role="status" aria-live="polite"><?php esc_html_e( 'Checking export requirements…', 'file-packs-for-forminator' ); ?></p>

@@ -6,4 +6,5 @@ add_action( 'ffp_export_part_prepared', static function ( $id ) {
  fgets( STDIN );
  if ( 'fatal' === getenv( 'FFP_HOLD_MODE' ) ) { trigger_error( 'Synthetic task fatal failure', E_USER_ERROR ); }
 }, 10, 1 );
+ini_set( 'memory_limit', '128M' );
 wp_set_current_user( 0 ); ForminatorFilePacks\Jobs::run( getenv( 'FFP_JOB_ID' ) );

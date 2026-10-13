@@ -14,7 +14,7 @@ if(process.env.FFP_TEST_LAB!=='1') throw new Error('Disposable lab only');
   await page.locator('#ffp-select-period').click();check((await page.locator('#ffp-count').getAttribute('data-count'))==='101','Explicitly selects all 101 period results without loading all IDs in the browser');
   await page.locator('#ffp-preview-button').click();await page.locator('#ffp-job:not([hidden])').waitFor();
   await page.reload();await page.locator('#ffp-job-review:not([hidden])').waitFor();await page.waitForFunction(()=>document.querySelector('#ffp-app').getAttribute('aria-busy')==='false');
-  check((await page.locator('#ffp-job-totals').textContent()).includes('101'),'Task and checked counts restored after a page reload');check(await page.locator('#ffp-job-review-list li').count()===10,'Checked submission review paginated');
+  check((await page.locator('#ffp-job-totals').textContent()).includes('101'),'Task and checked counts restored after a page reload');check((await page.locator('#ffp-job-heading').textContent()).includes('Большая выгрузка · 101 заявка'),'Restored task identifies its own form independently of the current selector');check(await page.locator('#ffp-job-review-list li').count()===10,'Checked submission review paginated');
   await page.locator('#ffp-job-next').click();await page.waitForFunction(()=>document.querySelector('#ffp-job-page').textContent.includes('2'));check((await page.locator('#ffp-job-page').textContent()).includes('2'),'Review page controls work');
   await page.locator('#ffp-job').screenshot({path:path.join(out,'large-review.png'),style:'#wpadminbar{visibility:hidden}'});
   await page.locator('#ffp-job-start').click();await page.locator('#ffp-job-result:not([hidden])').waitFor();

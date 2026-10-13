@@ -24,8 +24,15 @@ for ( $i = 0; $i < $total; ++$i ) {
 $started = microtime( true ); $original_memory = ini_get( 'memory_limit' ); ini_set( 'memory_limit', '128M' );
 $job = Jobs::create( $form, 'all' ); $id = $job['id'];
 $late = Forminator_API::add_form_entry( $form, array( array( 'name' => 'text-1', 'value' => 'AFTER-START' ) ) );
-$snapshot = static function () { $limit = ini_get( 'memory_limit' ); ini_set( 'memory_limit', '256M' ); ob_start(); require __DIR__ . '/lifecycle-snapshot.php'; $hash = ob_get_clean(); ini_set( 'memory_limit', $limit ); return $hash; };
+$snapshot = static function () {
+ $wp_cli = realpath( $_SERVER['argv'][0] );
+ $child = proc_open( array( PHP_BINARY, $wp_cli, '--path=' . ABSPATH, 'eval-file', __DIR__ . '/lifecycle-snapshot.php' ), array( 0 => array( 'pipe', 'r' ), 1 => array( 'pipe', 'w' ), 2 => array( 'pipe', 'w' ) ), $pipes );
+ fclose( $pipes[0] ); $hash = trim( stream_get_contents( $pipes[1] ) ); fclose( $pipes[1] ); $stderr = stream_get_contents( $pipes[2] ); fclose( $pipes[2] );
+ if ( 0 !== proc_close( $child ) || ! preg_match( '/^[a-f0-9]{64}$/D', $hash ) ) { throw new RuntimeException( 'Independent source snapshot failed: ' . $stderr ); }
+ return $hash;
+};
 $source_before = $snapshot();
+jobs_check( '128M' === ini_get( 'memory_limit' ), 'Actual 128 MiB PHP limit enforced during all large-export passes' );
 $review = jobs_advance( $id, 'review' );
 jobs_check( $total === $review['total'] && $total === $review['checked'] && $total === $review['files'], $total . ' persisted submissions checked without a total-count ceiling; later entry excluded' );
 jobs_check( 0 === $review['warnings'] && $review['parts'] === (int) ceil( $total / min( Jobs::PART_ENTRIES, Jobs::PART_FILES ) ), 'Measured safe independent part boundaries' );

@@ -13,6 +13,7 @@
  help.addEventListener('toggle', () => { try { localStorage.setItem('ffp.helpOpen', help.open ? '1' : '0'); } catch (e) { /* Storage is optional. */ } });
  window.addEventListener('beforeunload', e => { if (downloading) { e.preventDefault(); e.returnValue = ''; } });
 	let page = 1, pages = 1, rows = [], preview = null, busy = false, filterDirty = false, allPeriod = false, totalRows = 0;
+ const jobHeadingLabel = $('job-heading').textContent;
  let job = null, jobPage = 1, jobPages = 1, jobTimer = null, jobPolling = false;
 	const node = (tag, text, cls) => { const el = document.createElement(tag); if (text !== undefined) el.textContent = text; if (cls) el.className = cls; return el; };
 	function size(bytes) { return bytes < 1024 ? `${bytes} B` : bytes < 1048576 ? `${(bytes / 1024).toFixed(1)} KiB` : `${(bytes / 1048576).toFixed(2)} MiB`; }
@@ -234,11 +235,12 @@
  }
  async function renderJob() {
   $('job').hidden = !job; if (!job) return;
+  $('job-heading').textContent = `${jobHeadingLabel} · ${job.form_title || '#' + job.form}`;
   const labels = {discovering: s.discovering, selecting: s.selectingJob, checking: s.checking, review: s.review, building: s.buildingJob, ready: s.readyJob, cancelled: s.cancelledJob, expired: s.expiredJob, error: job.error};
   const processed = job.status === 'building' || job.status === 'ready' ? job.built : job.checked;
   $('job-status').textContent = `${labels[job.status] || s.error}${job.total ? ` · ${s.processed}: ${processed} ${s.of} ${job.total}` : ''}`;
   if (Date.now() / 1000 - job.updated > 120 && activeJob()) $('job-status').textContent += ` · ${s.jobDelay}`;
-  $('job-totals').textContent = `${s.submissions}: ${job.total} · ${s.files}: ${job.files} · ${size(job.bytes)}${job.warnings ? ` · ${s.warnings}: ${job.warnings}` : ''}`;
+  $('job-totals').textContent = `${job.from || job.to ? (job.from || '…') + ' — ' + (job.to || '…') : s.allDates} · ${s.submissions}: ${job.total} · ${s.files}: ${job.files} · ${size(job.bytes)}${job.warnings ? ` · ${s.warnings}: ${job.warnings}` : ''}`;
   $('job-review').hidden = job.status !== 'review'; $('job-result').hidden = job.status !== 'ready';
   $('job-cancel').hidden = ['cancelled', 'expired'].includes(job.status);
   $('job-partial-label').hidden = !job.warnings;
@@ -247,7 +249,7 @@
    const data = await jobRequest(job.status === 'ready' ? 'parts' : 'review', {job: job.id, page: jobPage}); jobPages = data.pages;
    $('job-pager').hidden = jobPages <= 1; $('job-page').textContent = `${s.page} ${jobPage} ${s.of} ${jobPages}`;
    if (job.status === 'review') for (const row of data.rows) {
-    const li = node('li', `#${row.id} · ${row.summary}`);
+    const li = node('li', `#${row.id} · ${row.summary}${row.files !== undefined ? ` · ${s.files}: ${row.files} · ${size(row.bytes)}` : ''}`);
     for (const warning of row.warnings) li.append(node('p', `${warning.field}: ${warning.reason}`, 'description'));
     $('job-review-list').append(li);
    }

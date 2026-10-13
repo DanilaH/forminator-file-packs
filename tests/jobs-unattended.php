@@ -23,6 +23,8 @@ try {
  $task = Jobs::create( $form, 'all' ); $state = $wait( $task['id'], 'review' );
  if ( 1 !== $state['checked'] ) { throw new RuntimeException( 'Incorrect unattended checked count' ); }
  $checks[] = 'Actual container WP-CLI cron runner discovers/checks without a browser';
+ // Simulate the fresh request that starts a checked task; another process changed cron options.
+ if ( function_exists( 'wp_cache_flush_runtime' ) ) { wp_cache_flush_runtime(); }
  Jobs::command( $task['id'], 'start' ); $state = $wait( $task['id'], 'ready' );
  if ( 1 !== $state['built'] || 1 !== $state['completed_parts'] ) { throw new RuntimeException( 'Incorrect unattended completion' ); }
  $checks[] = 'Actual container runner builds and commits ZIP without status processing calls';

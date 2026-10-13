@@ -17,18 +17,20 @@ Beta build for testing, not a directory-approved production release.
 
 Choose a form and completed submissions, review the actual files and warnings, and download a package containing an HTML index, CSV register, JSON data, submission cards, attachments and a warnings manifest.
 
-Original forms, submissions and attachment files stay unchanged. Temporary archives are stored outside public web directories and removed after the request. Incomplete packages require explicit acceptance.
+Original forms, submissions and attachment files stay unchanged. Archives are stored outside public web directories. Quick-export temporary files are removed after the request; large-task results expire after 24 hours. Incomplete packages require explicit acceptance.
 
 This version supports local files, native single/multi uploads, AJAX multi uploads and Media Library uploads as tested on Forminator 1.58.0. Offloaded files and active HTML/script attachments are omitted with warnings. Six repeater upload configurations are verified on Forminator 1.58.0.
 
 Safety limits per synchronous package: 100 submissions, 500 attachments, 100 MiB of attachment data and 8 MiB of field data. These are engineering limits, not paid unlocks. Hosting time and disk limits may require smaller batches.
+
+Large selections are processed as saved tasks without a fixed total count ceiling. Parts are limited to 1000 submissions, 500 attachments, 16 MiB of attachments and 1 MiB of field data. A single oversized submission can be exported separately through a smaller quick selection. Ready parts expire after 24 hours. WP-Cron background processing depends on site activity; the open export page also advances progress. No scheduled recurring exports or remote storage support is added.
 
 Independent project; not affiliated with WPMU DEV.
 
 == Installation ==
 
 1. Install and activate Forminator.
-2. If replacing an earlier forminator-file-packs beta, deactivate and delete that plugin first. This exporter stores no forms, submissions or settings of its own.
+2. If replacing an earlier forminator-file-packs beta, deactivate and delete that plugin first. Original Forminator forms and submissions are not exporter-owned data.
 3. Upload this plugin ZIP through Plugins > Add New and activate it.
 4. Use Open export in the plugin list, or open Tools > Export Forminator submissions. Choose a form, select submissions and preview the package.
 5. Review any warnings, then build and download the ZIP.
@@ -96,5 +98,3 @@ Source code and build tools: https://github.com/DanilaH/forminator-file-packs
 
 = 0.1.0 =
 * First development build with selection, date filtering, preview, protected local ZIP export and explicit omission warnings.
-
-Large selections are processed as saved tasks without a fixed total count ceiling. Parts are limited to 1000 submissions, 500 attachments, 16 MiB of attachments and 1 MiB of field data. A single oversized submission can be exported separately through a smaller quick selection. Ready parts expire after 24 hours. WP-Cron background processing depends on site activity; the open export page also advances progress. No scheduled recurring exports or remote storage support is added.

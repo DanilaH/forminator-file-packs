@@ -79,7 +79,7 @@ final class Jobs {
   } finally { fclose( $lock ); }
  }
  public static function create( $form, $mode, $from = '', $to = '' ) {
-  Adapter::form( $form );
+  $model = Adapter::form( $form );
   if ( ! in_array( $mode, array( 'all', 'manual' ), true ) ) { throw new \RuntimeException( esc_html__( 'Invalid submission selection.', 'file-packs-for-forminator' ) ); }
   $ceiling = Adapter::scan( $form, $from, $to );
   $lock = self::lock(); if ( ! $lock ) { throw new \RuntimeException( esc_html__( 'Another export step is running. Try again shortly.', 'file-packs-for-forminator' ) ); }
@@ -97,6 +97,7 @@ final class Jobs {
    $id = bin2hex( random_bytes( 16 ) ); $path = Package::private_root() . '/export-' . $id;
    if ( ! mkdir( $path, 0700 ) || ! chmod( $path, 0700 ) ) { throw new StorageException( esc_html__( 'Cannot prepare the package.', 'file-packs-for-forminator' ) ); }
    $state = array( 'schema' => 1, 'version' => VERSION, 'id' => $id, 'owner' => get_current_user_id(), 'locale' => determine_locale(), 'form' => (int) $form, 'mode' => $mode, 'from' => $from, 'to' => $to, 'ceiling' => $ceiling, 'cursor' => 0, 'status' => 'all' === $mode ? 'discovering' : 'selecting', 'chunks' => 0, 'total' => 0, 'checked' => 0, 'built' => 0, 'files' => 0, 'bytes' => 0, 'warnings' => 0, 'parts' => 0, 'completed_parts' => 0, 'check_chunk' => 0, 'check_offset' => 0, 'pending' => array(), 'pending_bytes' => 0, 'pending_files' => 0, 'pending_text' => 0, 'partial' => false, 'error' => '', 'created' => time(), 'updated' => time(), 'expires' => time() + self::RETENTION );
+   $state['form_title'] = wp_html_excerpt( wp_strip_all_tags( (string) ( $model->settings['formName'] ?? $model->name ) ), 180, '…' );
    self::save( $path, $state ); update_user_meta( $state['owner'], '_ffp_export', $id ); self::schedule( $id );
    wp_schedule_single_event( $state['expires'], 'ffp_export_step', array( $id ) );
    return self::view( $state );
@@ -182,7 +183,7 @@ final class Jobs {
      if ( count( $state['pending'] ) >= self::PART_ENTRIES || $state['pending_bytes'] + $plan['bytes'] > self::PART_BYTES || $state['pending_files'] + $plan['file_count'] > self::PART_FILES || $state['pending_text'] + $plan['metadata_bytes'] > self::PART_TEXT ) { self::part( $path, $state ); }
      $state['pending'][] = array( 'id' => $entry, 'fingerprint' => $plan['fingerprint'], 'warnings' => count( $plan['warnings'] ) );
      $state['pending_bytes'] += $plan['bytes']; $state['pending_files'] += $plan['file_count']; $state['pending_text'] += $plan['metadata_bytes'];
-     $review = array( 'id' => $entry, 'summary' => Planner::summary( $plan['entries'][0] ), 'warnings' => $plan['warnings'] );
+     $review = array( 'id' => $entry, 'summary' => Planner::summary( $plan['entries'][0] ), 'warnings' => $plan['warnings'], 'files' => $plan['file_count'], 'bytes' => $plan['bytes'] );
      self::write( $path . '/review-' . $state['checked'] . '.json', $review );
      ++$state['checked']; ++$state['check_offset']; ++$steps;
      $state['files'] += $plan['file_count']; $state['bytes'] += $plan['bytes']; $state['warnings'] += count( $plan['warnings'] );
@@ -231,7 +232,7 @@ final class Jobs {
   } finally { if ( $switched ) { restore_previous_locale(); } wp_set_current_user( $previous ); fclose( $lock ); }
  }
  private static function view( $state ) {
-  return array_intersect_key( $state, array_flip( array( 'id', 'form', 'mode', 'from', 'to', 'status', 'total', 'checked', 'built', 'files', 'bytes', 'warnings', 'parts', 'completed_parts', 'error', 'updated', 'expires' ) ) );
+  return array_intersect_key( $state, array_flip( array( 'id', 'form', 'form_title', 'mode', 'from', 'to', 'status', 'total', 'checked', 'built', 'files', 'bytes', 'warnings', 'parts', 'completed_parts', 'error', 'updated', 'expires' ) ) );
  }
  public static function status( $id ) {
   list( $path, $state ) = self::owned( $id );
