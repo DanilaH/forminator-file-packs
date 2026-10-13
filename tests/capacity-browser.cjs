@@ -30,7 +30,7 @@ if(process.env.FFP_TEST_LAB!=='1')throw Error('Disposable lab only');
   await page.locator('#ffp-next').click();await page.waitForFunction(()=>document.querySelector('#ffp-app').getAttribute('aria-busy')==='false'&&document.querySelector('#ffp-page').textContent.includes('4'));
   await page.locator('#ffp-preview-button').click();await page.locator('#ffp-preview:not([hidden])').waitFor();
   check((await page.locator('#ffp-totals').textContent()).includes('500')&&(await page.locator('#ffp-totals').textContent()).includes('100.00 MiB'),'Actual preview shows 500 files and 100 MiB');
-  await page.locator('#ffp-content-review summary').click();
+  await page.locator('#ffp-content-review > summary').click();
   const cdp=await page.context().newCDPSession(page);await cdp.send('Accessibility.enable');
   const {root}=await cdp.send('DOM.getDocument');const {nodeId}=await cdp.send('DOM.querySelector',{nodeId:root.nodeId,selector:'#ffp-app'});
   const {nodeIds}=await cdp.send('DOM.querySelectorAll',{nodeId,selector:'button,input,select,summary'});
