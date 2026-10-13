@@ -83,7 +83,7 @@ final class Adapter {
   if ( null === $ceiling ) {
    return (int) $wpdb->get_var( $wpdb->prepare( "SELECT MAX(entry_id) FROM %i WHERE {$where_sql}", $table ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,PluginCheck.Security.DirectDB.UnescapedDBParameter -- Read-only Forminator identifier and separately prepared fixed WHERE.
   }
-  return array_map( 'intval', $wpdb->get_col( $wpdb->prepare( "SELECT entry_id FROM %i WHERE {$where_sql} AND entry_id > %d AND entry_id <= %d ORDER BY entry_id ASC LIMIT 200", $table, $after, $ceiling ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,PluginCheck.Security.DirectDB.UnescapedDBParameter -- Bounded read-only keyset query, identifier and cursor bound.
+  return array_map( 'intval', $wpdb->get_col( $wpdb->prepare( "SELECT entry_id FROM %i WHERE {$where_sql} AND entry_id > %d AND entry_id <= %d ORDER BY entry_id ASC LIMIT 1000", $table, $after, $ceiling ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,PluginCheck.Security.DirectDB.UnescapedDBParameter -- Bounded read-only keyset query, identifier and cursor bound.
  }
  /** Persisted metadata in known upload fields only; no fetching or path guessing. */
  public static function resolve_file( $form_id, $path, $url, $attachment_id ) {

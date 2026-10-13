@@ -172,8 +172,8 @@ final class Jobs {
      $state['status'] = 'checking';
     }
    } elseif ( 'checking' === $state['status'] ) {
-    $deadline = microtime( true ) + 8; $steps = 0;
-    while ( $state['check_chunk'] < $state['chunks'] && $steps < 10 && microtime( true ) < $deadline ) {
+    $deadline = microtime( true ) + 8; $steps = 0; $memory = wp_convert_hr_to_bytes( ini_get( 'memory_limit' ) );
+    while ( $state['check_chunk'] < $state['chunks'] && $steps < 200 && microtime( true ) < $deadline && ( ! $steps || $memory <= 0 || memory_get_usage( true ) < $memory - 33554432 ) ) {
      $chunk = self::read( $path . '/ids-' . $state['check_chunk'] . '.json' );
      if ( $state['check_offset'] >= count( $chunk['ids'] ) ) { ++$state['check_chunk']; $state['check_offset'] = 0; continue; }
      $entry = $chunk['ids'][$state['check_offset']];
@@ -229,7 +229,11 @@ final class Jobs {
    if ( 'ready' === $state['status'] ) { wp_clear_scheduled_hook( 'ffp_export_step', array( $id ) ); wp_schedule_single_event( $state['expires'], 'ffp_export_step', array( $id ) ); }
   } catch ( \Throwable $e ) {
    if ( $state && isset( $path ) ) { $state['status'] = 'error'; $state['error'] = $e instanceof \RuntimeException ? $e->getMessage() : __( 'The export could not be completed. Check the environment and try again.', 'file-packs-for-forminator' ); self::save( $path, $state ); }
-  } finally { if ( $switched ) { restore_previous_locale(); } wp_set_current_user( $previous ); fclose( $lock ); }
+  } finally {
+   // Evict only this process's runtime cache; never flush a shared persistent cache.
+   if ( function_exists( 'wp_cache_flush_runtime' ) ) { wp_cache_flush_runtime(); }
+   if ( $switched ) { restore_previous_locale(); } wp_set_current_user( $previous ); fclose( $lock );
+  }
  }
  private static function view( $state ) {
   return array_intersect_key( $state, array_flip( array( 'id', 'form', 'form_title', 'mode', 'from', 'to', 'status', 'total', 'checked', 'built', 'files', 'bytes', 'warnings', 'parts', 'completed_parts', 'error', 'updated', 'expires' ) ) );
