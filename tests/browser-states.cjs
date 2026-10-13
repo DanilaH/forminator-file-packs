@@ -65,6 +65,7 @@ if(process.env.FFP_TEST_LAB!=='1')throw Error('Disposable lab only');
   await page.locator('#ffp-retry').click();await page.locator('#ffp-preview:not([hidden])').waitFor();assert(await page.locator('#ffp-download').isEnabled(),'direct retry after network interruption works');
   await page.route('**/admin-ajax.php',async route=>{if(route.request().postData()?.includes('action=ffp_preview')){await route.abort();await page.unroute('**/admin-ajax.php');return;}return route.continue();});
   await page.locator('#ffp-preview-button').click();await page.waitForFunction(()=>document.querySelector('#ffp-status').getAttribute('role')==='alert'&&document.querySelector('#ffp-app').getAttribute('aria-busy')==='false');
+  assert(await page.locator('#ffp-preview').isHidden()&&await page.locator('#ffp-download').isDisabled(),'failed recheck removes stale ready confirmation');
   await page.locator('#ffp-clear').click();assert(await page.locator('#ffp-retry').isHidden()&&await page.locator('#ffp-preview-button').isDisabled(),'clearing selection removes stale recovery action');await checkbox.check();
   // Exercise the real server's nonce rejection without changing the login session.
   await page.evaluate(()=>FFP.nonce='expired-ui-fixture');

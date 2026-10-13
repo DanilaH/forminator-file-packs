@@ -160,7 +160,7 @@
 		$('rows').querySelectorAll('input').forEach(el => { el.checked = checked; }); invalidate();
 	});
  $('partial').addEventListener('change', refreshButtons);
- function showPreview() { if (!ready || filterDirty || !selected.size) { clearRecovery(); message(!ready ? s.notReady : filterDirty ? s.listChanged : s.emptySelection); return; } return operation(s.previewing, async () => {
+ function showPreview() { if (!ready || filterDirty || !selected.size) { clearRecovery(); message(!ready ? s.notReady : filterDirty ? s.listChanged : s.emptySelection); return; } invalidate(); return operation(s.previewing, async () => {
 		preview = await request('preview', { form_id: $('form').value, ids: JSON.stringify([...selected]) });
 		$('totals').textContent = `${s.submissions}: ${preview.entries.length} · ${s.files}: ${preview.file_count} · ${size(preview.bytes)}${preview.warnings.length ? ` · ${s.warnings}: ${preview.warnings.length}` : ''}`;
 		$('warnings').replaceChildren(); $('warnings').hidden = !preview.warnings.length;
