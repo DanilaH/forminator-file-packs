@@ -6,7 +6,7 @@ if(process.env.FFP_TEST_LAB!=='1')throw Error('Disposable lab only');
  const browser=await chromium.launch({headless:true,executablePath:process.env.FFP_CHROMIUM_PATH||undefined});
  const assert=(value,name)=>{if(!value)throw Error(name);checks.push(name);console.log('PASS '+name);};
  try{
-  const page=await browser.newPage({viewport:{width:1280,height:1000},timezoneId:'America/Los_Angeles',acceptDownloads:true});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  const page=await browser.newPage({viewport:{width:1280,height:1000},timezoneId:'America/Los_Angeles',acceptDownloads:true});const errors=[];page.on('pageerror',e=>{errors.push(e.message);console.error('Browser exception: '+e.stack);});
   const base=process.env.FFP_TEST_URL||'http://127.0.0.1:8080';await page.goto(base+'/wp-login.php');await page.locator('#user_login').fill(process.env.FFP_TEST_USER||'lab');await page.locator('#user_pass').fill(process.env.FFP_TEST_PASSWORD);await Promise.all([page.waitForURL(/wp-admin/),page.locator('#wp-submit').click()]);
   await page.goto(base+'/wp-admin/plugins.php');
   const exportLink=page.locator('tr[data-plugin="file-packs-for-forminator/file-packs-for-forminator.php"] a[href*="tools.php?page=file-packs-for-forminator"]');
@@ -23,7 +23,7 @@ if(process.env.FFP_TEST_LAB!=='1')throw Error('Disposable lab only');
   await page.locator('.ffp-help summary').click();await page.waitForFunction(()=>localStorage.getItem('ffp.quickStartCollapsed')==='1');await page.reload();await page.waitForFunction(()=>window.FFP&&document.querySelector('#ffp-search-button')?.disabled===false);
   assert(!await page.locator('.ffp-help').evaluate(e=>e.open),'collapsed quick start is remembered after page reload');
   await page.locator('.ffp-help summary').click();await page.waitForFunction(()=>localStorage.getItem('ffp.quickStartCollapsed')==='0');
-  await page.addInitScript(()=>{Storage.prototype.getItem=()=>{throw new Error('Unavailable storage fixture');};Storage.prototype.setItem=()=>{throw new Error('Unavailable storage fixture');};});
+  await page.addInitScript(()=>{for(const name of ['getItem','setItem']){const original=Storage.prototype[name];Storage.prototype[name]=function(key,...args){if(key==='ffp.quickStartCollapsed')throw new Error('Unavailable plugin storage fixture');return original.call(this,key,...args);};}});
   await page.reload();await page.waitForFunction(()=>window.FFP&&document.querySelector('#ffp-search-button')?.disabled===false);
   assert(await page.locator('#ffp-search-button').isEnabled()&&await page.locator('.ffp-help').evaluate(e=>e.open),'unavailable browser storage leaves the interface usable');
   await page.route('**/admin-ajax.php',async route=>{if(route.request().postData()?.includes('action=ffp_forms')){const response=await route.fetch();const body=await response.json();body.data.forms=body.data.forms.filter(f=>Number(f.id)===Number(fixture.submission.form));body.data.truncated=false;await route.fulfill({response,json:body});await page.unroute('**/admin-ajax.php');return;}return route.continue();});
