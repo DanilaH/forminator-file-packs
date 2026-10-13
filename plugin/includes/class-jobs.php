@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 final class Jobs {
  const PART_ENTRIES = 1000;
  const PART_FILES = 500;
- const PART_BYTES = 16777216;
+ const PART_BYTES = 104857600;
  const PART_TEXT = 1048576;
  const RETENTION = 86400;
  private static function owner_key( $blog = null ) { return '_ffp_export_' . (int) ( $blog ?? get_current_blog_id() ); }
@@ -100,7 +100,7 @@ final class Jobs {
    if ( ! mkdir( $path, 0700 ) || ! chmod( $path, 0700 ) ) { throw new StorageException( esc_html__( 'Cannot prepare the package.', 'file-packs-for-forminator' ) ); }
    $state = array( 'schema' => 1, 'version' => VERSION, 'id' => $id, 'owner' => get_current_user_id(), 'locale' => determine_locale(), 'form' => (int) $form, 'mode' => $mode, 'from' => $from, 'to' => $to, 'ceiling' => $ceiling, 'cursor' => 0, 'status' => 'all' === $mode ? 'discovering' : 'selecting', 'chunks' => 0, 'total' => 0, 'checked' => 0, 'built' => 0, 'files' => 0, 'bytes' => 0, 'warnings' => 0, 'parts' => 0, 'completed_parts' => 0, 'check_chunk' => 0, 'check_offset' => 0, 'pending' => array(), 'pending_bytes' => 0, 'pending_files' => 0, 'pending_text' => 0, 'partial' => false, 'error' => '', 'created' => time(), 'updated' => time(), 'expires' => time() + self::RETENTION );
    $state['form_title'] = wp_html_excerpt( wp_strip_all_tags( (string) ( $model->settings['formName'] ?? $model->name ) ), 180, '…' );
-   $state['blog'] = get_current_blog_id();
+   $state['blog'] = get_current_blog_id(); $state['warned_entries'] = 0;
    self::save( $path, $state ); update_user_meta( $state['owner'], self::owner_key(), $id ); self::schedule( $id );
    wp_schedule_single_event( $state['expires'], 'ffp_export_step', array( $id ) );
    return self::view( $state );
@@ -183,12 +183,14 @@ final class Jobs {
      $entry = $chunk['ids'][$state['check_offset']];
      $plan = Planner::build( $state['form'], array( $entry ) );
      // translators: %d: submission identifier.
-     if ( $plan['bytes'] > self::PART_BYTES || $plan['file_count'] > self::PART_FILES || $plan['metadata_bytes'] > self::PART_TEXT ) { throw new \RuntimeException( esc_html( sprintf( __( 'Submission #%d exceeds the per-submission safety limit: 16 MiB of attachments, 500 attachments or 1 MiB of field data. Export it separately in a small selection.', 'file-packs-for-forminator' ), $entry ) ) ); }
+     if ( $plan['bytes'] > self::PART_BYTES || $plan['file_count'] > self::PART_FILES || $plan['metadata_bytes'] > self::PART_TEXT ) { throw new \RuntimeException( esc_html( sprintf( __( 'Submission #%d exceeds the per-submission safety limit: 100 MiB of attachments, 500 attachments or 1 MiB of field data. Export it separately in a small selection.', 'file-packs-for-forminator' ), $entry ) ) ); }
      if ( count( $state['pending'] ) >= self::PART_ENTRIES || $state['pending_bytes'] + $plan['bytes'] > self::PART_BYTES || $state['pending_files'] + $plan['file_count'] > self::PART_FILES || $state['pending_text'] + $plan['metadata_bytes'] > self::PART_TEXT ) { self::part( $path, $state ); }
      $state['pending'][] = array( 'id' => $entry, 'fingerprint' => $plan['fingerprint'], 'warnings' => count( $plan['warnings'] ) );
      $state['pending_bytes'] += $plan['bytes']; $state['pending_files'] += $plan['file_count']; $state['pending_text'] += $plan['metadata_bytes'];
      $review = array( 'id' => $entry, 'summary' => Planner::summary( $plan['entries'][0] ), 'warnings' => $plan['warnings'], 'files' => $plan['file_count'], 'bytes' => $plan['bytes'] );
+     foreach ( $review['warnings'] as &$warning ) { $warning['next_step'] = Planner::warning_help( $warning['reason'] ); } unset( $warning);
      self::write( $path . '/review-' . $state['checked'] . '.json', $review );
+     if ( $review['warnings'] ) { self::write( $path . '/warning-' . $state['warned_entries'] . '.json', $review ); ++$state['warned_entries']; }
      ++$state['checked']; ++$state['check_offset']; ++$steps;
      $state['files'] += $plan['file_count']; $state['bytes'] += $plan['bytes']; $state['warnings'] += count( $plan['warnings'] );
      self::save( $path, $state );
@@ -255,9 +257,9 @@ final class Jobs {
  public static function review( $id, $page ) {
   list( $path, $state ) = self::owned( $id );
   if ( ! in_array( $state['status'], array( 'review', 'building', 'ready' ), true ) || $state['expires'] <= time() ) { throw new \RuntimeException( esc_html__( 'The export is not ready for review.', 'file-packs-for-forminator' ) ); }
-  $rows = array(); $start = ( max( 1, $page ) - 1 ) * 10;
-  for ( $i = $start; $i < min( $start + 10, $state['checked'] ); ++$i ) { $rows[] = self::read( $path . '/review-' . $i . '.json' ); }
-  return array( 'rows' => $rows, 'page' => max( 1, $page ), 'pages' => max( 1, (int) ceil( $state['checked'] / 10 ) ) );
+  $rows = array(); $start = ( max( 1, $page ) - 1 ) * 10; $count = $state['warned_entries'] ?: $state['checked']; $prefix = $state['warned_entries'] ? '/warning-' : '/review-';
+  for ( $i = $start; $i < min( $start + 10, $count ); ++$i ) { $rows[] = self::read( $path . $prefix . $i . '.json' ); }
+  return array( 'rows' => $rows, 'page' => max( 1, $page ), 'pages' => max( 1, (int) ceil( $count / 10 ) ), 'warnings_only' => $state['warned_entries'] > 0 );
  }
  public static function parts( $id, $page ) {
   list( $path, $state ) = self::owned( $id );

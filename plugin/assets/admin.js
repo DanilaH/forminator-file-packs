@@ -236,7 +236,7 @@
  async function renderJob() {
   $('job').hidden = !job; if (!job) return;
   $('job-heading').textContent = `${jobHeadingLabel} · ${job.form_title || '#' + job.form}`;
-  const labels = {discovering: s.discovering, selecting: s.selectingJob, checking: s.checking, review: s.review, building: s.buildingJob, ready: s.readyJob, cancelled: s.cancelledJob, expired: s.expiredJob, error: job.error};
+  const labels = {discovering: s.discovering, selecting: s.selectingJob, checking: s.checking, review: s.review, building: s.buildingJob, ready: job.warnings ? s.readyPartialJob : s.readyJob, cancelled: s.cancelledJob, expired: s.expiredJob, error: job.error};
   $('job-totals').hidden = ['discovering', 'selecting'].includes(job.status);
   const processed = job.status === 'building' || job.status === 'ready' ? job.built : job.checked;
   $('job-status').textContent = `${labels[job.status] || s.error}${job.total ? job.status === 'discovering' ? ` · ${s.submissions}: ${job.total}` : ` · ${s.processed}: ${processed} ${s.of} ${job.total}` : ''}`;
@@ -244,14 +244,15 @@
   $('job-totals').textContent = `${job.from || job.to ? (job.from || '…') + ' — ' + (job.to || '…') : s.allDates} · ${s.submissions}: ${job.total} · ${s.files}: ${job.files} · ${size(job.bytes)}${job.warnings ? ` · ${s.warnings}: ${job.warnings}` : ''}`;
   $('job-review').hidden = true; $('job-result').hidden = true;
   $('job-cancel').hidden = ['cancelled', 'expired'].includes(job.status);
-  $('job-partial-label').hidden = !job.warnings;
+  $('job-partial-label').hidden = !job.warnings; $('job').classList.toggle('ffp-job-incomplete', job.warnings > 0);
   $('job-parts').replaceChildren(); $('job-review-list').replaceChildren(); $('job-pager').hidden = true; $('job-expiry').textContent = '';
   if (['review', 'ready'].includes(job.status)) {
    const data = await jobRequest(job.status === 'ready' ? 'parts' : 'review', {job: job.id, page: jobPage}); jobPages = data.pages;
+   $('job-review-note').hidden = !data.warnings_only; $('job-review-note').textContent = data.warnings_only ? s.warningReview : '';
    $('job-pager').hidden = jobPages <= 1; $('job-page').textContent = `${s.page} ${jobPage} ${s.of} ${jobPages}`;
    if (job.status === 'review') for (const row of data.rows) {
     const li = node('li', `#${row.id} · ${row.summary}${row.files !== undefined ? ` · ${s.files}: ${row.files} · ${size(row.bytes)}` : ''}`);
-    for (const warning of row.warnings) li.append(node('p', `${warning.field}: ${warning.reason}`, 'description'));
+    for (const warning of row.warnings) { li.append(node('p', `${warning.field}: ${warning.reason}`, 'description')); if (warning.next_step) li.append(node('p', warning.next_step, 'description')); }
     $('job-review-list').append(li);
    }
    else {

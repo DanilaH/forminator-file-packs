@@ -23,7 +23,7 @@ This version supports local files, native single/multi uploads, AJAX multi uploa
 
 Safety limits per synchronous package: 100 submissions, 500 attachments, 100 MiB of attachment data and 8 MiB of field data. These are engineering limits, not paid unlocks. Hosting time and disk limits may require smaller batches.
 
-Large selections are processed as saved tasks without a fixed total count ceiling. Parts are limited to 1000 submissions, 500 attachments, 16 MiB of attachments and 1 MiB of field data. A single oversized submission can be exported separately through a smaller quick selection. Ready parts expire after 24 hours. WP-Cron background processing depends on site activity; the open export page also advances progress. No scheduled recurring exports or remote storage support is added.
+Large selections are processed as saved tasks without a fixed total count ceiling. Parts are limited to 1000 submissions, 500 attachments, 100 MiB of attachments and 1 MiB of field data. A single oversized submission can be exported separately through a smaller quick selection. Ready parts expire after 24 hours. WP-Cron background processing depends on site activity; the open export page also advances progress. No scheduled recurring exports or remote storage support is added.
 
 Independent project; not affiliated with WPMU DEV.
 

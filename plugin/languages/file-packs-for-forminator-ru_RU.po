@@ -557,8 +557,8 @@ msgstr "Отменить задачу и удалить её архивы"
 msgid "Download each ZIP separately. Extract it and open index.html. Each part contains its own register and submission folders."
 msgstr "Скачайте каждый ZIP отдельно. Распакуйте его и откройте index.html. В каждой части есть свой реестр и папки заявок."
 
-msgid "Large exports have no fixed submission-count limit and are split into ZIP parts. Each submission in a large export may contain up to 16 MiB of attachments, 500 attachments and 1 MiB of field data. Smaller selections use the quick ZIP route. Available disk space and hosting resources still limit exports."
-msgstr "У больших выгрузок нет фиксированного лимита количества заявок: они разделяются на ZIP. Одна заявка в большой выгрузке может содержать до 16 МиБ вложений, 500 файлов и 1 МиБ данных полей. Небольшой выбор скачивается быстрым способом. Объём выгрузки зависит от свободного места и ресурсов хостинга."
+msgid "Large exports have no fixed submission-count limit and are split into ZIP parts. Each submission in a large export may contain up to 100 MiB of attachments, 500 attachments and 1 MiB of field data. Smaller selections use the quick ZIP route. Available disk space and hosting resources still limit exports."
+msgstr "У больших выгрузок нет фиксированного лимита количества заявок: они разделяются на ZIP. Одна заявка в большой выгрузке может содержать до 100 МиБ вложений, 500 файлов и 1 МиБ данных полей. Небольшой выбор скачивается быстрым способом. Объём выгрузки зависит от свободного места и ресурсов хостинга."
 
 msgid "All submissions in the applied period are selected. New submissions after checking starts are excluded."
 msgstr "Выбраны все заявки за применённый период. Новые заявки после начала проверки не добавляются."
@@ -642,8 +642,8 @@ msgid "The plugin or export owner changed. Check the selection again."
 msgstr "Плагин или владелец выгрузки изменился. Проверьте выбор заново."
 
 #, php-format
-msgid "Submission #%d exceeds the per-submission safety limit: 16 MiB of attachments, 500 attachments or 1 MiB of field data. Export it separately in a small selection."
-msgstr "Заявка #%d превышает предел большой выгрузки: 16 МиБ вложений, 500 файлов или 1 МиБ данных полей. Выгрузите её отдельно небольшим выбором."
+msgid "Submission #%d exceeds the per-submission safety limit: 100 MiB of attachments, 500 attachments or 1 MiB of field data. Export it separately in a small selection."
+msgstr "Заявка #%d превышает предел большой выгрузки: 100 МиБ вложений, 500 файлов или 1 МиБ данных полей. Выгрузите её отдельно небольшим выбором."
 
 msgid "The selected data changed. Cancel this task and check the selection again."
 msgstr "Выбранные данные изменились. Отмените задачу и проверьте выбор заново."
@@ -668,3 +668,9 @@ msgstr "Этап выгрузки ещё выполняется. Подожди�
 
 msgid "Previous export files are still being deleted. Refresh progress before starting another task."
 msgstr "Файлы предыдущей выгрузки ещё удаляются. Обновите прогресс перед запуском новой задачи."
+
+msgid "ZIP files are ready with omissions. Review the warnings in each archive."
+msgstr "Архивы готовы с пропусками. Просмотрите предупреждения в каждом архиве."
+
+msgid "Only submissions with omissions are shown. Other checked submissions have no reported omissions."
+msgstr "Показаны только заявки с пропусками. У остальных проверенных заявок пропусков не обнаружено."

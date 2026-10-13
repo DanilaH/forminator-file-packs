@@ -89,6 +89,7 @@ jobs_check( 'error' === Jobs::status( $id )['status'], 'Changed submission block
 $omitted = Forminator_API::add_form_entry( $form, array( array( 'name' => 'upload-1', 'value' => array( 'file' => array( 'file_path' => $root . '/missing-task.txt', 'file_url' => '' ) ) ) ) );
 $partial_task = Jobs::create( $form, 'manual' ); Jobs::append( $partial_task['id'], 0, array( $omitted ) ); Jobs::command( $partial_task['id'], 'finish' );
 $partial_review = jobs_advance( $partial_task['id'], 'review' ); jobs_check( 1 === $partial_review['warnings'], 'Large review reports actual missing-file warning' );
+jobs_check( Jobs::review( $partial_task['id'], 1 )['warnings_only'] && 1 === count( Jobs::review( $partial_task['id'], 1 )['rows'] ), 'Omission review focuses on warned submissions instead of thousands of normal rows' );
 jobs_reject( static fn() => Jobs::command( $partial_task['id'], 'start' ), 'Large export requires explicit omission consent' );
 Jobs::command( $partial_task['id'], 'start', true ); $partial_ready = jobs_advance( $partial_task['id'], 'ready' );
 jobs_check( 1 === $partial_ready['warnings'] && 0 === $partial_ready['files'], 'Consented partial task retains truthful actual counts and warning status' );
@@ -105,9 +106,14 @@ update_post_meta( $ui_form, '_ffp_staging_fixture', '1' );
 Forminator_API::add_form_field( $ui_form, 'text', array( 'field_label' => 'Клиент' ) );
 Forminator_API::add_form_field( $ui_form, 'upload', array( 'field_label' => 'Документы', 'file-type' => 'multiple', 'upload-method' => 'submission' ) );
 $ui_root = forminator_get_upload_path( $ui_form, 'uploads' ); wp_mkdir_p( $ui_root );
-$ui_file = $ui_root . '/document.txt'; file_put_contents( $ui_file, random_bytes( 262144 ) );
+$ui_file = $ui_root . '/document.txt'; file_put_contents( $ui_file, random_bytes( 1048576 ) );
 for ( $i = 0; $i < 101; ++$i ) { Forminator_API::add_form_entry( $ui_form, array( array( 'name' => 'text-1', 'value' => 'Клиент ' . $i ), array( 'name' => 'upload-1', 'value' => array( 'file' => array( 'file_path' => $ui_file, 'file_url' => '' ) ) ) ) ); }
 $fixture['large'] = array( 'form' => $ui_form, 'count' => 101, 'hash' => hash_file( 'sha256', $ui_file ) );
+$partial_form = Forminator_API::add_form( 'Заявки с пропусками', array(), array( 'formName' => 'Заявки с пропусками', 'store_submissions' => '1' ) ); update_post_meta( $partial_form, '_ffp_staging_fixture', '1' );
+Forminator_API::add_form_field( $partial_form, 'upload', array( 'field_label' => 'Документы', 'file-type' => 'multiple', 'upload-method' => 'submission' ) );
+Forminator_API::add_form_entry( $partial_form, array( array( 'name' => 'upload-1', 'value' => array( 'file' => array( 'file_path' => forminator_get_upload_path( $partial_form, 'uploads' ) . '/missing-document.txt', 'file_url' => '' ) ) ) ) );
+$fixture['large_partial'] = array( 'form' => $partial_form );
+
 // Exercise real process deaths after close but before publishing/checkpointing the part.
 foreach ( array( 'normal', 'fatal', 'kill' ) as $mode ) {
  $task = Jobs::create( $ui_form, 'all' ); $task_id = $task['id']; jobs_advance( $task_id, 'review' ); Jobs::command( $task_id, 'start' );
