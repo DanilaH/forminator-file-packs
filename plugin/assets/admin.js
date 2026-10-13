@@ -195,7 +195,7 @@
   $('result').hidden = false; $('result').scrollIntoView({block: 'start'}); $('result-heading').focus({preventScroll: true});
 	}, {label: s.retryPreview, run: showPreview}));
 
- $('select-period').addEventListener('click', () => { clearRecovery(); selected.clear(); selectedRows.clear(); allPeriod = true; $('rows input').forEach(box => { box.checked = true; }); invalidate(); });
+ $('select-period').addEventListener('click', () => { clearRecovery(); selected.clear(); selectedRows.clear(); allPeriod = true; $('rows').querySelectorAll('input').forEach(box => { box.checked = true; }); invalidate(); });
  function activeJob() { return job && ['selecting', 'discovering', 'checking', 'review', 'building'].includes(job.status); }
  async function jobRequest(action, extra = {}) {
   const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), FFP.requestTimeout);
@@ -229,7 +229,7 @@
   if (!job || jobPolling || busy) { scheduleJob(); return; }
   jobPolling = true;
   try { job = await jobRequest('status', {job: job.id}); await renderJob(); scheduleJob(); }
-  catch (error) { clearTimeout(jobTimer); message(error.message, true); if (error.reload) retry = {label: s.reload, run: () => window.location.reload()}; refreshButtons(); }
+  catch (error) { clearTimeout(jobTimer); jobFailure(error, pollJob); refreshButtons(); }
   finally { jobPolling = false; refreshButtons(); }
  }
  async function renderJob() {
@@ -262,11 +262,12 @@
   }
   refreshButtons();
  }
+ function jobFailure(error, again) { retry = error.reload ? {label: s.reload, run: () => window.location.reload()} : {label: s.retryLoad, run: again}; message(error.message, true); }
  async function jobCommand(command) {
   if (!job || jobPolling) return;
   clearTimeout(jobTimer); jobPolling = true; refreshButtons();
   try { job = await jobRequest(command, {job: job.id, allow_partial: $('job-partial').checked ? '1' : '0'}); jobPage = 1; $('job-partial').checked = false; await renderJob(); message(''); scheduleJob(); }
-  catch (error) { message(error.message, true); }
+  catch (error) { jobFailure(error, () => jobCommand(command)); }
   finally { jobPolling = false; refreshButtons(); }
  }
  async function downloadPart(number) {
@@ -282,12 +283,12 @@
    const form = node('form'); form.method = 'POST'; form.action = FFP.url; form.target = frame.name;
    for (const [name, value] of Object.entries({action: 'ffp_job_file', nonce: FFP.nonce, job: job.id, page: number + 1})) { const input = node('input'); input.type = 'hidden'; input.name = name; input.value = String(value); form.append(input); }
    document.body.append(form); form.submit(); form.remove(); message(s.downloadStarted);
-  } catch (error) { message(error.message, true); }
+  } catch (error) { jobFailure(error, () => downloadPart(number)); }
  }
  $('job-start').addEventListener('click', () => jobCommand('start'));
  $('job-cancel').addEventListener('click', () => jobCommand('cancel'));
  $('job-resume').addEventListener('click', pollJob);
  $('job-partial').addEventListener('change', refreshButtons);
- for (const [id, delta] of [['job-prev', -1], ['job-next', 1]]) $(id).addEventListener('click', async () => { jobPage += delta; try { await renderJob(); } catch (error) { message(error.message, true); } });
+ for (const [id, delta] of [['job-prev', -1], ['job-next', 1]]) $(id).addEventListener('click', async () => { jobPage += delta; try { await renderJob(); } catch (error) { jobFailure(error, renderJob); } });
  refreshButtons(); loadForms();
 })();

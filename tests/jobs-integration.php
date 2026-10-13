@@ -4,10 +4,10 @@ use ForminatorFilePacks\Jobs;
 use ForminatorFilePacks\Package;
 if ( ! defined( 'WP_CLI' ) || ! WP_CLI || '1' !== getenv( 'FFP_TEST_LAB' ) ) { throw new RuntimeException( 'Disposable lab only.' ); }
 wp_set_current_user( 1 );
-$checks = array();
+$checks = array(); $GLOBALS['jobs_peak'] = 0; $GLOBALS['jobs_step_seconds'] = 0;
 function jobs_check( $ok, $name ) { global $checks; if ( ! $ok ) { throw new RuntimeException( $name ); } $checks[] = $name; echo 'PASS ' . $name . "\n"; }
 function jobs_reject( $fn, $name ) { try { $fn(); } catch ( RuntimeException $e ) { jobs_check( true, $name ); return; } throw new RuntimeException( 'Expected rejection: ' . $name ); }
-function jobs_advance( $id, $target, $max = 3000 ) { for ( $i = 0; $i < $max; ++$i ) { Jobs::run( $id ); $s = Jobs::status( $id ); if ( $target === $s['status'] ) { return $s; } if ( 'error' === $s['status'] ) { throw new RuntimeException( $s['error'] ); } if ( function_exists( 'wp_cache_flush_runtime' ) ) { wp_cache_flush_runtime(); } } throw new RuntimeException( 'No task progress: ' . $target ); }
+function jobs_advance( $id, $target, $max = 3000 ) { for ( $i = 0; $i < $max; ++$i ) { if ( function_exists( 'memory_reset_peak_usage' ) ) { memory_reset_peak_usage(); } $step_start = microtime( true ); Jobs::run( $id ); $GLOBALS['jobs_peak'] = max( $GLOBALS['jobs_peak'], memory_get_peak_usage( true ) ); $GLOBALS['jobs_step_seconds'] = max( $GLOBALS['jobs_step_seconds'], microtime( true ) - $step_start ); $s = Jobs::status( $id ); if ( $target === $s['status'] ) { return $s; } if ( 'error' === $s['status'] ) { throw new RuntimeException( $s['error'] ); } if ( function_exists( 'wp_cache_flush_runtime' ) ) { wp_cache_flush_runtime(); } } throw new RuntimeException( 'No task progress: ' . $target ); }
 function jobs_remove( $id ) { Jobs::command( $id, 'cancel' ); for ( $i = 0; $i < 200; ++$i ) { Jobs::run( $id ); if ( ! is_dir( Package::private_root() . '/export-' . $id ) ) { return; } } throw new RuntimeException( 'Private task cleanup incomplete' ); }
 $form = Forminator_API::add_form( 'Large export lab', array(), array( 'formName' => 'Large export lab', 'store_submissions' => '1' ) );
 update_post_meta( $form, '_ffp_staging_fixture', '1' );
@@ -24,6 +24,8 @@ for ( $i = 0; $i < $total; ++$i ) {
 $started = microtime( true ); $original_memory = ini_get( 'memory_limit' ); ini_set( 'memory_limit', '128M' );
 $job = Jobs::create( $form, 'all' ); $id = $job['id'];
 $late = Forminator_API::add_form_entry( $form, array( array( 'name' => 'text-1', 'value' => 'AFTER-START' ) ) );
+$snapshot = static function () { $limit = ini_get( 'memory_limit' ); ini_set( 'memory_limit', '256M' ); ob_start(); require __DIR__ . '/lifecycle-snapshot.php'; $hash = ob_get_clean(); ini_set( 'memory_limit', $limit ); return $hash; };
+$source_before = $snapshot();
 $review = jobs_advance( $id, 'review' );
 jobs_check( $total === $review['total'] && $total === $review['checked'] && $total === $review['files'], $total . ' persisted submissions checked without a total-count ceiling; later entry excluded' );
 jobs_check( 0 === $review['warnings'] && $review['parts'] === (int) ceil( $total / min( Jobs::PART_ENTRIES, Jobs::PART_FILES ) ), 'Measured safe independent part boundaries' );
@@ -51,7 +53,8 @@ jobs_check( $actual === $expected, 'All submission identities preserved exactly 
 jobs_check( $ready['built'] === $total && $ready['completed_parts'] === $ready['parts'], 'Completion reflects committed parts and actual submissions' );
 jobs_check( $hash === hash_file( 'sha256', $file ), 'Original attachment bytes unchanged' );
 jobs_check( 1 === get_current_user_id(), 'Worker restores the calling user after each pass' );
-$resource = array( 'submissions' => $total, 'parts' => $ready['parts'], 'seconds' => round( microtime( true ) - $started, 3 ), 'peak_memory_bytes' => memory_get_peak_usage( true ), 'php_memory_limit' => ini_get( 'memory_limit' ), 'zip_bytes' => $zip_bytes );
+jobs_check( $source_before === $snapshot(), 'All Forminator forms, records, metadata and original file hashes unchanged by large export' );
+$resource = array( 'submissions' => $total, 'parts' => $ready['parts'], 'seconds' => round( microtime( true ) - $started, 3 ), 'peak_memory_bytes' => $GLOBALS['jobs_peak'], 'max_step_seconds' => round( $GLOBALS['jobs_step_seconds'], 3 ), 'php_memory_limit' => ini_get( 'memory_limit' ), 'zip_bytes' => $zip_bytes );
 $out = getenv( 'FFP_TEST_ARTIFACTS' );
 // Keep only a representative part for independent Python CRC/content validation.
 copy( Package::private_root() . '/export-' . $id . '/archive-0.zip', $out . '/large-first.zip' );
