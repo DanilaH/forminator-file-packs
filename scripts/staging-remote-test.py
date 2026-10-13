@@ -42,3 +42,5 @@ try:
     subprocess.run(['python3', str(repo / 'tests/validate-json.py')], check=True)
 finally:
     print(wp('eval-file', '/opt/ffp/tests/staging-cleanup.php'), flush=True)
+print(wp('eval-file', '/opt/ffp/tests/jobs-unattended.php'), flush=True)
+(out / 'jobs-unattended-results.json').write_text(wp('eval', "echo file_get_contents(getenv('FFP_TEST_ARTIFACTS').'/jobs-unattended-results.json');"))

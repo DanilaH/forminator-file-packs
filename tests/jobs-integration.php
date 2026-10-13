@@ -73,6 +73,19 @@ $entry = Forminator_API::get_entry( $form, $ids[0] );
 Forminator_API::update_form_entry( $form, $ids[0], array( array( 'name' => 'text-1', 'value' => 'CHANGED-AFTER-CHECK' ) ) );
 Jobs::command( $id, 'start' ); Jobs::run( $id );
 jobs_check( 'error' === Jobs::status( $id )['status'], 'Changed submission blocks publication of stale checked contents' ); jobs_remove( $id );
+
+$omitted = Forminator_API::add_form_entry( $form, array( array( 'name' => 'upload-1', 'value' => array( 'file' => array( 'file_path' => $root . '/missing-task.txt', 'file_url' => '' ) ) ) ) );
+$partial_task = Jobs::create( $form, 'manual' ); Jobs::append( $partial_task['id'], 0, array( $omitted ) ); Jobs::command( $partial_task['id'], 'finish' );
+$partial_review = jobs_advance( $partial_task['id'], 'review' ); jobs_check( 1 === $partial_review['warnings'], 'Large review reports actual missing-file warning' );
+jobs_reject( static fn() => Jobs::command( $partial_task['id'], 'start' ), 'Large export requires explicit omission consent' );
+Jobs::command( $partial_task['id'], 'start', true ); $partial_ready = jobs_advance( $partial_task['id'], 'ready' );
+jobs_check( 1 === $partial_ready['warnings'] && 0 === $partial_ready['files'], 'Consented partial task retains truthful actual counts and warning status' );
+copy( Package::private_root() . '/export-' . $partial_task['id'] . '/archive-0.zip', $out . '/large-partial.zip' ); jobs_remove( $partial_task['id'] );
+// One large object has a clear failure, even though the total-count ceiling is removed.
+$oversize = Forminator_API::add_form_entry( $form, array( array( 'name' => 'upload-1', 'value' => array( 'file' => array( 'file_path' => array_fill( 0, 501, $file ), 'file_url' => array_fill( 0, 501, '' ) ) ) ) ) );
+$too_large = Jobs::create( $form, 'manual' ); Jobs::append( $too_large['id'], 0, array( $oversize ) ); Jobs::command( $too_large['id'], 'finish' ); Jobs::run( $too_large['id'] );
+jobs_check( 'error' === Jobs::status( $too_large['id'] )['status'], 'Oversized single submission fails without a ready archive claim' ); jobs_remove( $too_large['id'] );
+
 // Leave a small dedicated form for actual browser background/parts checks.
 $fixture = json_decode( file_get_contents( getenv( 'FFP_TEST_FIXTURE' ) ), true );
 $ui_form = Forminator_API::add_form( 'Большая выгрузка · 101 заявка', array(), array( 'formName' => 'Большая выгрузка · 101 заявка', 'store_submissions' => '1' ) );

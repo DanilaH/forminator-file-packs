@@ -5,6 +5,8 @@ RUN echo 'be928f6b8ca1e8dfb9d2f4b75a13aa4aee0896f8a9a0a1c45cd5d2c98605e6172e6d01
 COPY php.ini /usr/local/etc/php/conf.d/ffp.ini
 COPY export-runner.sh /usr/local/bin/ffp-export-runner
 COPY entrypoint.sh /usr/local/bin/ffp-staging-entrypoint
-RUN command -v gosu && chmod 755 /usr/local/bin/ffp-export-runner /usr/local/bin/ffp-staging-entrypoint
+RUN apt-get update && apt-get install -y --no-install-recommends gosu \
+    && rm -rf /var/lib/apt/lists/* \
+    && chmod 755 /usr/local/bin/ffp-export-runner /usr/local/bin/ffp-staging-entrypoint
 ENTRYPOINT ["ffp-staging-entrypoint"]
 CMD ["apache2-foreground"]

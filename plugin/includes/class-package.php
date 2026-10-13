@@ -254,10 +254,20 @@ final class Package {
 		return $csv;
 	}
 	private static function remove_job( $directory ) {
+		if ( ! is_dir( $directory ) || is_link( $directory ) || realpath( $directory ) !== $directory ) { return; }
 	// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink -- Private local streams, restrictive permissions and atomic locks require native operations; no FTP or remote filesystem fallback.
 		foreach ( glob( $directory . '/*' ) ?: array() as $file ) { if ( is_file( $file ) || is_link( $file ) ) { @unlink( $file ); } }
 	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir -- Private local streams, restrictive permissions and atomic locks require native operations; no FTP or remote filesystem fallback.
 		@rmdir( $directory );
+	}
+	/** Caller holds Jobs' exclusive flock; recover only the same task's abandoned marker. */
+	public static function recover_task( $task_id, $owner ) {
+		if ( ! preg_match( '/^[a-f0-9]{32}$/D', $task_id ) || $owner < 1 ) { return; }
+		$root = self::private_root(); $lock = $root . '/lock-' . (int) $owner; $marker = $lock . '/task';
+		if ( ! is_link( $lock ) && is_file( $marker ) && ! is_link( $marker ) && 32 === filesize( $marker ) && $task_id === file_get_contents( $marker ) ) {
+			self::remove_job( $root . '/job-' . $task_id );
+			unlink( $marker ); rmdir( $lock ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- Release only the same task's local marker/lock under the site-wide flock.
+		}
 	}
 	public function cleanup() {
 		$this->reserve = '';

@@ -90,7 +90,8 @@ final class Jobs {
     catch ( \RuntimeException $e ) { $old_path = ''; }
     if ( $old_path ) {
      if ( ! in_array( $old_state['status'], array( 'ready', 'error', 'cancelled', 'expired' ), true ) && $old_state['expires'] > time() ) { throw new \RuntimeException( esc_html__( 'An export task already exists. Finish or cancel it before starting another.', 'file-packs-for-forminator' ) ); }
-     $old_state['status'] = 'cancelled'; self::save( $old_path, $old_state ); self::schedule( $old );
+     $old_state['status'] = 'cancelled'; self::save( $old_path, $old_state ); self::purge_step( $old_path, $old_state );
+     if ( is_dir( $old_path ) ) { throw new \RuntimeException( esc_html__( 'Previous export files are still being deleted. Refresh progress before starting another task.', 'file-packs-for-forminator' ) ); }
     }
    }
    $id = bin2hex( random_bytes( 16 ) ); $path = Package::private_root() . '/export-' . $id;
@@ -143,7 +144,7 @@ final class Jobs {
  }
  private static function part( $path, &$state ) {
   if ( ! $state['pending'] ) { return; }
-  self::write( $path . '/part-' . $state['parts'] . '.json', array( 'entries' => $state['pending'], 'bytes' => $state['pending_bytes'], 'files' => $state['pending_files'] ) );
+  self::write( $path . '/part-' . $state['parts'] . '.json', array( 'entries' => $state['pending'], 'bytes' => $state['pending_bytes'], 'files' => $state['pending_files'], 'verified_bytes' => $state['pending_bytes'], 'verified_files' => $state['pending_files'] ) );
   ++$state['parts']; $state['pending'] = array(); $state['pending_bytes'] = 0; $state['pending_files'] = 0; $state['pending_text'] = 0;
  }
  /** One bounded pass, serialized site-wide; flock is released automatically after SIGKILL. */
@@ -213,14 +214,18 @@ final class Jobs {
      if ( is_link( $target ) || ! rename( $package->path(), $target ) || ! chmod( $target, 0600 ) ) { throw new StorageException( esc_html__( 'Could not save the finished archive.', 'file-packs-for-forminator' ) ); }
      $part['size'] = filesize( $target ); $part['warnings'] = count( $package->plan['warnings'] );
      $part['files'] = $package->plan['file_count'];
+     $part['bytes'] = $package->plan['bytes'];
+     $state['files'] += $part['files'] - $part['verified_files'];
+     $state['bytes'] += $part['bytes'] - $part['verified_bytes'];
      $state['warnings'] += $part['warnings'] - array_sum( array_column( $part['entries'], 'warnings' ) );
      $part['name'] = substr( Admin::download_name( $plan ), 0, -4 ) . '-part-' . ( $number + 1 ) . '.zip';
      self::write( $path . '/part-' . $number . '.json', $part );
      ++$state['completed_parts']; $state['built'] += count( $part['entries'] );
-     if ( $state['completed_parts'] === $state['parts'] ) { $state['status'] = 'ready'; $state['expires'] = time() + self::RETENTION; wp_schedule_single_event( $state['expires'], 'ffp_export_step', array( $id ) ); }
+     if ( $state['completed_parts'] === $state['parts'] ) { $state['status'] = 'ready'; $state['expires'] = time() + self::RETENTION; }
     } finally { $package->cleanup(); }
    }
    self::save( $path, $state );
+   if ( 'ready' === $state['status'] ) { wp_clear_scheduled_hook( 'ffp_export_step', array( $id ) ); wp_schedule_single_event( $state['expires'], 'ffp_export_step', array( $id ) ); }
   } catch ( \Throwable $e ) {
    if ( $state && isset( $path ) ) { $state['status'] = 'error'; $state['error'] = $e instanceof \RuntimeException ? $e->getMessage() : __( 'The export could not be completed. Check the environment and try again.', 'file-packs-for-forminator' ); self::save( $path, $state ); }
   } finally { if ( $switched ) { restore_previous_locale(); } wp_set_current_user( $previous ); fclose( $lock ); }
@@ -270,6 +275,7 @@ final class Jobs {
   } finally { fclose( $lock ); }
  }
  private static function purge_step( $path, &$state ) {
+  Package::recover_task( $state['id'], $state['owner'] );
   $count = 0;
   foreach ( new \DirectoryIterator( $path ) as $file ) {
    if ( $file->isDot() || 'state.json' === $file->getFilename() ) { continue; }

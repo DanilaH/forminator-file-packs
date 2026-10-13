@@ -665,3 +665,6 @@ msgstr "Не удалось удалить временные файлы выг�
 
 msgid "An export step is running. Wait briefly before deleting the plugin."
 msgstr "Этап выгрузки ещё выполняется. Подождите немного перед удалением плагина."
+
+msgid "Previous export files are still being deleted. Refresh progress before starting another task."
+msgstr "Файлы предыдущей выгрузки ещё удаляются. Обновите прогресс перед запуском новой задачи."
