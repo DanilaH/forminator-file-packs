@@ -44,6 +44,7 @@ print(wp('eval-file', '/opt/ffp/tests/jobs-integration.php'), flush=True)
 read_fixture('fixture.json')
 before = wp('eval-file', '/opt/ffp/tests/lifecycle-snapshot.php').strip()
 subprocess.run(['node', str(repo / 'tests/capacity-browser.cjs')], check=True)
+subprocess.run(['node', str(repo / 'tests/jobs-browser.cjs')], check=True)
 subprocess.run(['python3', str(repo / 'tests/permissions-http.py')],
                env={**os.environ, 'FFP_PERMISSIONS_FIXTURE': str(out / 'permissions-fixture.json')}, check=True)
 assert before == wp('eval-file', '/opt/ffp/tests/lifecycle-snapshot.php').strip() and len(before) == 64

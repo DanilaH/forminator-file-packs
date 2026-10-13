@@ -121,7 +121,7 @@ final class Admin {
     <h3 id="ffp-job-heading" tabindex="-1"><?php esc_html_e( 'Large export', 'file-packs-for-forminator' ); ?></h3>
     <p id="ffp-job-status" role="status" aria-live="polite"></p><p id="ffp-job-totals"></p>
     <p id="ffp-job-background" class="description"><?php esc_html_e( 'Progress is saved on this site. You can return to this page. Background processing may wait for site visits; keeping this page open also advances the task.', 'file-packs-for-forminator' ); ?></p>
-    <div id="ffp-job-review" hidden><p><?php esc_html_e( 'Review the checked submissions and omissions before starting. Large exports are split into independent ZIP files.', 'file-packs-for-forminator' ); ?></p><ul id="ffp-job-review-list"></ul><label id="ffp-job-partial-label" hidden><input id="ffp-job-partial" type="checkbox"> <?php esc_html_e( 'I agree to download without the files listed above.', 'file-packs-for-forminator' ); ?></label><button id="ffp-job-start" class="button button-primary"><?php esc_html_e( 'Start export', 'file-packs-for-forminator' ); ?></button></div>
+    <div id="ffp-job-review" hidden><p><?php esc_html_e( 'Review the checked submissions and omissions before starting. Large exports are split into independent ZIP files.', 'file-packs-for-forminator' ); ?></p><ul id="ffp-job-review-list"></ul><label id="ffp-job-partial-label" hidden><input id="ffp-job-partial" type="checkbox"> <?php esc_html_e( 'I accept all reported omissions, including those on other review pages.', 'file-packs-for-forminator' ); ?></label><button id="ffp-job-start" class="button button-primary"><?php esc_html_e( 'Start export', 'file-packs-for-forminator' ); ?></button></div>
     <ul id="ffp-job-parts"></ul><p id="ffp-job-expiry" class="description"></p>
     <div id="ffp-job-pager" hidden><button id="ffp-job-prev" class="button"><?php esc_html_e( 'Previous', 'file-packs-for-forminator' ); ?></button><span id="ffp-job-page"></span><button id="ffp-job-next" class="button"><?php esc_html_e( 'Next', 'file-packs-for-forminator' ); ?></button></div>
     <button id="ffp-job-resume" class="button"><?php esc_html_e( 'Refresh progress', 'file-packs-for-forminator' ); ?></button><button id="ffp-job-cancel" class="button"><?php esc_html_e( 'Cancel task and delete its archives', 'file-packs-for-forminator' ); ?></button>
@@ -140,7 +140,7 @@ final class Admin {
     <p><?php esc_html_e( 'Only attachments stored locally on this site are supported. Remote storage and unsupported file types are reported in the preview.', 'file-packs-for-forminator' ); ?></p>
     <p><?php esc_html_e( 'Attachment counts in the list reflect saved file references. Availability is checked before downloading.', 'file-packs-for-forminator' ); ?></p>
     <p><?php esc_html_e( 'Changing the period clears selection after the new list loads. Dates use the site timezone.', 'file-packs-for-forminator' ); ?></p>
-    <p><?php esc_html_e( 'Large exports have no fixed submission-count limit and are split into ZIP parts. Each submission in a large export may contain up to 16 MiB of attachments, 64 attachments and 1 MiB of field data. Smaller selections use the quick ZIP route. Available disk space and hosting resources still limit exports.', 'file-packs-for-forminator' ); ?></p>
+    <p><?php esc_html_e( 'Large exports have no fixed submission-count limit and are split into ZIP parts. Each submission in a large export may contain up to 16 MiB of attachments, 500 attachments and 1 MiB of field data. Smaller selections use the quick ZIP route. Available disk space and hosting resources still limit exports.', 'file-packs-for-forminator' ); ?></p>
     <button id="ffp-check-ready" class="button"><?php esc_html_e( 'Check export requirements', 'file-packs-for-forminator' ); ?></button>
    </details>
   </section></div>
@@ -229,9 +229,7 @@ final class Admin {
   }
   if ( in_array( $action, array( 'job_finish', 'job_start', 'job_cancel' ), true ) ) { wp_send_json_success( Jobs::command( $id, substr( $action, 4 ), isset( $_POST['allow_partial'] ) && '1' === $_POST['allow_partial'] ) ); }
   if ( 'job_status' === $action ) {
-   Jobs::status( $id ); // Authorize ownership before invoking any work.
-   Jobs::run( $id ); // A bounded foreground fallback works even with blocked cron/loopback.
-   wp_send_json_success( Jobs::status( $id ) );
+   wp_send_json_success( Jobs::tick( $id ) ); // Ownership checked before one bounded pass; also advances cancellation cleanup without cron.
   }
   $page = self::id( isset( $_POST['page'] ) && is_string( $_POST['page'] ) ? sanitize_text_field( wp_unslash( $_POST['page'] ) ) : '1' );
   if ( 'job_review' === $action ) { wp_send_json_success( Jobs::review( $id, $page ) ); }

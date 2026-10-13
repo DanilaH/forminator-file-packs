@@ -6,7 +6,7 @@ wp=json.loads(os.environ['FFP_WP_COMMAND'])
 assert isinstance(wp,list) and wp and all(isinstance(x,str) for x in wp)
 root=pathlib.Path(os.environ['FFP_WP_PATH']).resolve()
 output=pathlib.Path(os.environ['FFP_TEST_ARTIFACTS']); output.mkdir(parents=True,exist_ok=True)
-version='0.3.5'; package=repo/'dist'/('file-packs-for-forminator-'+version+'-dev.zip')
+version='0.4.0'; package=repo/'dist'/('file-packs-for-forminator-'+version+'-dev.zip')
 def run(c,**kw): return subprocess.run(c,cwd=repo,check=True,**kw)
 checks=[]
 def check(ok,name):
@@ -30,7 +30,7 @@ check(before==source(),'source intact after process shutdown failures')
 previous=os.environ.get('FFP_PREVIOUS_ZIP')
 for archive_path in ([pathlib.Path(previous)] if previous else []) + [package]:
  with zipfile.ZipFile(archive_path) as z:
-  main, = [n for n in z.namelist() if n.count('/')==1 and n.endswith('.php')]
+  main, = [n for n in z.namelist() if n==n.split('/')[0]+'/'+n.split('/')[0]+'.php']
   slug=main.split('/')[0]
   expected=z.read(main).decode().split('Version:')[1].split()[0]
  # Historical betas have a different slug; never activate both namespaces together.

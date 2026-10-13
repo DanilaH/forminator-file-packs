@@ -11,7 +11,7 @@ Build File Packs for Forminator: read-only export of selected submissions, local
 - Validate real paths, symlinks, submission ownership, ZIP paths, HTML escaping, CSV formula injection, and filename collisions.
 - Do not store exported documents in a public web directory. Random filenames or .htaccess alone are insufficient.
 - Use synthetic data only. Do not commit real submissions, credentials, payment details, generated archives, or vendor plugin source.
-- Keep scope small: no CRM, cloud, scheduler, SaaS, migration, or licensing server. Useful Free plugin; any future Pro features live in a separate package.
+- Keep scope small: no CRM, cloud, scheduled exports, SaaS, migration, or licensing server. A bounded internal WP-Cron queue for a manually requested export is authorized. Useful Free plugin; any future Pro features live in a separate package.
 - Working title and minimum-version targets are provisional. Record tested versions and limitations; never imply Plugin Check, installation, or exports passed without running them.
 - The repository is public. Keep user-specific commercial and personal context out of committed files.
 

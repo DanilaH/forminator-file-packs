@@ -19,7 +19,7 @@ if(process.env.FFP_TEST_LAB!=='1')throw Error('Disposable lab only');
   assert((await page.locator('.ffp-help').textContent()).includes('Распакуйте ZIP')&&(await page.locator('.ffp-help').textContent()).includes('локально'),'quick start explains the result and local-file scope');
   assert(!await page.locator('.ffp-help').evaluate(e=>e.open),'optional help is collapsed on first visit');
   assert((await page.locator('#ffp-form-heading').textContent()).includes('Выберите форму'),'Russian page labels loaded');
-  assert((await page.locator('#ffp-count').textContent()).endsWith('0 '+await page.evaluate(()=>FFP.strings.of)+' 100'),'selection counter exposes current count and capacity');
+  assert((await page.locator('#ffp-count').textContent()).endsWith('0'),'selection counter exposes count without a fixed total ceiling');
   await page.locator('.ffp-help summary').click();await page.waitForFunction(()=>localStorage.getItem('ffp.helpOpen')==='1');await page.locator('.ffp-help summary').click();await page.waitForFunction(()=>localStorage.getItem('ffp.helpOpen')==='0');await page.reload();await page.waitForFunction(()=>window.FFP&&document.querySelector('#ffp-search-button')?.disabled===false);
   assert(!await page.locator('.ffp-help').evaluate(e=>e.open),'collapsed quick start is remembered after page reload');
   await page.locator('.ffp-help summary').click();await page.waitForFunction(()=>localStorage.getItem('ffp.helpOpen')==='1');

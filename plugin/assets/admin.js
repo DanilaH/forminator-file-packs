@@ -223,7 +223,7 @@
  }
  function scheduleJob() {
   clearTimeout(jobTimer);
-  if (job && ['discovering', 'checking', 'building'].includes(job.status)) jobTimer = setTimeout(pollJob, 1200);
+  if (job && ['discovering', 'checking', 'building', 'cancelled', 'expired'].includes(job.status) && !job.cleanup_done) jobTimer = setTimeout(pollJob, 1200);
  }
  async function pollJob() {
   if (!job || jobPolling || busy) { scheduleJob(); return; }

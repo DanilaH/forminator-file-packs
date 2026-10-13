@@ -1,8 +1,8 @@
 # File Packs for Forminator
 
-A WordPress plugin that exports selected saved Forminator submissions and local attachments into one ZIP. Includes readable HTML cards, an HTML index, a CSV register, structured JSON and a warnings manifest. Original records and files remain unchanged.
+A WordPress plugin that exports selected saved Forminator submissions and local attachments into ZIP packages. Includes readable HTML cards, an HTML index, a CSV register, structured JSON and a warnings manifest. Original records and files remain unchanged.
 
-**Status: usability and environment checks v0.3.5.** The technical slug is `file-packs-for-forminator`; the GitHub repository keeps its existing address. Complete native, Docker and actual VPS regression passes for 0.3.0 are recorded in [release readiness](docs/RELEASE_READINESS.md). The current 0.3.5 build is releasable only after its own native/Docker/VPS checks succeed. WordPress.org publication and approval have not happened.
+**Status: resumable large exports v0.4.0, verification in progress.** The technical slug is `file-packs-for-forminator`; the GitHub repository keeps its existing address. Complete native, Docker and actual VPS regression passes for 0.3.0 are recorded in [release readiness](docs/RELEASE_READINESS.md). The current 0.3.5 build is releasable only after its own native/Docker/VPS checks succeed. WordPress.org publication and approval have not happened.
 
 ## Use
 
@@ -12,7 +12,7 @@ A WordPress plugin that exports selected saved Forminator submissions and local 
 4. Download the ZIP. Missing or unsupported attachments require explicit acceptance of an incomplete package.
 5. Extract the ZIP and open `index.html`; each `Request-ID` folder contains its card and attachments. `register.csv` opens in spreadsheet applications; `data.json` preserves exported field values/structure and links to the files inside the ZIP. See [the JSON contract](docs/DATA_FORMAT.md).
 
-PHP ZIP support and writable private temporary storage outside public web directories are required. The conservative per-export limits are 100 submissions, 500 attachments and 100 MiB of attachment bytes. These are safety limits, not a tested capacity guarantee for every hosting provider. No remote uploads are fetched. HTML, SVG and executable attachments are excluded with warnings.
+PHP ZIP support and writable private temporary storage outside public web directories are required. Quick synchronous exports retain limits of 100 submissions, 500 attachments and 100 MiB. Larger selections and explicit all-period selection use saved tasks without a fixed total submission-count ceiling. Each independent part is bounded by 1000 submissions, 500 attachments, 16 MiB of attachment bytes and 1 MiB of field data. A single submission exceeding a large-part boundary must be exported through a smaller quick selection. These are safety limits, not a tested capacity guarantee for every hosting provider. No remote uploads are fetched. HTML, SVG and executable attachments are excluded with warnings.
 
 English and Russian UI/package translations are bundled. Dates remain visible on narrow screens. Six native repeater upload configurations are tested on Forminator 1.58.0: single, multiple and AJAX multiple uploads, each with and without Media Library storage. The combined 100-entry / 500-file / 100 MiB ceiling has passed a native lab export and a real browser download; host capacity still varies.
 
@@ -24,11 +24,11 @@ An isolated Docker/VPS staging workflow is available separately; see [staging se
 
 See [setup and tests](docs/DEVELOPMENT.md), [verification report](docs/TEST_REPORT_2026-10-08.md), [integration notes](docs/ADAPTER.md), [roadmap](ROADMAP.md), [v1 specification](docs/V1_SPEC.md) and [remaining acceptance work](docs/ACCEPTANCE.md).
 
-Build the installable ZIP with `python3 scripts/build.py`. The output is `dist/file-packs-for-forminator-0.3.5-dev.zip`; development tests and fixtures are excluded.
+Build the installable ZIP with `python3 scripts/build.py`. The output is `dist/file-packs-for-forminator-0.4.0-dev.zip`; development tests and fixtures are excluded.
 
 ## Boundaries
 
-Forminator only; saved active nonspam submissions; verified local attachments. No migration, source-file renaming, cloud integrations, CRM, SaaS, schedules or license server. No telemetry. Future Pro work stays separate and depends on validated demand.
+Forminator only; saved active nonspam submissions; verified local attachments. No migration, source-file renaming, cloud integrations, CRM, SaaS, scheduled exports or license server. No telemetry. Future Pro work stays separate and depends on validated demand.
 
 The name is provisional. No directory approval, compatibility certification or working payment route is claimed.
 
@@ -44,3 +44,6 @@ The 0.3.3 refinement checks PHP ZIP and an actual bounded private-storage write 
 The 0.3.4 usability pass adds bounded descriptions and attachment counts to the offline index, visible selection capacity, actionable omission guidance, a persistent download-result panel, optional local quick-start collapse memory, automatic choice of an only available form and a browser leave-page warning while downloading. No submission data is stored in browser storage; browser leave warnings are best effort. First-time human usability testing remains outstanding.
 
 The 0.3.5 interface centers on selecting submissions and checking/downloading a ZIP. Help and custom dates are collapsed by default; successful readiness is hidden. A compact confirmation reports verified contents and explicitly asks consent for omissions. List attachment counts are saved references, not a claim of file availability. No new endpoint or source mutation is introduced.
+
+
+Large exports save progress in private local storage and run short WP-Cron steps. An open export page also advances them when cron/loopback is blocked. Closing the page does not guarantee immediate background progress on low-traffic sites. Results remain privately downloadable for 24 hours after completion; cancellation and expiry clean only exporter-owned files. Disk, execution time and memory remain real hosting constraints. See [large-export architecture and checks](docs/LARGE_EXPORTS.md).

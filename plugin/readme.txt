@@ -5,7 +5,7 @@ Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.2
 Requires Plugins: forminator
-Stable tag: 0.3.5
+Stable tag: 0.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -55,6 +55,10 @@ Source code and build tools: https://github.com/DanilaH/forminator-file-packs
 
 == Changelog ==
 
+= 0.4.0 =
+* Saved large-export tasks, explicit all-period selection, recoverable progress, bounded independent ZIP parts, authorized repeated downloads and task cancellation/expiry.
+* No fixed total submission-count ceiling for large tasks. Hosting and per-part resource constraints remain.
+
 = 0.3.5 =
 * Simplified selection, compact confirmation and clearer download instructions.
 * Optional help and dates are collapsed; environment problems stay visible.
@@ -92,3 +96,5 @@ Source code and build tools: https://github.com/DanilaH/forminator-file-packs
 
 = 0.1.0 =
 * First development build with selection, date filtering, preview, protected local ZIP export and explicit omission warnings.
+
+Large selections are processed as saved tasks without a fixed total count ceiling. Parts are limited to 1000 submissions, 500 attachments, 16 MiB of attachments and 1 MiB of field data. A single oversized submission can be exported separately through a smaller quick selection. Ready parts expire after 24 hours. WP-Cron background processing depends on site activity; the open export page also advances progress. No scheduled recurring exports or remote storage support is added.

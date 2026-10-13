@@ -5,8 +5,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // Native local streams are required for atomic rename, flock, bounded reads and private permissions.
 // phpcs:disable WordPress.WP.AlternativeFunctions
 final class Jobs {
- const PART_ENTRIES = 20;
- const PART_FILES = 64;
+ const PART_ENTRIES = 1000;
+ const PART_FILES = 500;
  const PART_BYTES = 16777216;
  const PART_TEXT = 1048576;
  const RETENTION = 86400;
@@ -53,9 +53,30 @@ final class Jobs {
   if ( ! $next || $next > time() + 60 ) { wp_schedule_single_event( time() + 5, 'ffp_export_step', array( $id ) ); }
  }
  public static function latest() {
+  try { self::collect(); } catch ( \RuntimeException $e ) { return null; }
   Adapter::authorize(); $id = get_user_meta( get_current_user_id(), '_ffp_export', true );
   if ( ! $id ) { return null; }
   try { return self::status( $id ); } catch ( \RuntimeException $e ) { delete_user_meta( get_current_user_id(), '_ffp_export' ); return null; }
+ }
+ /** Also recover expired orphan tasks if a process died before scheduling their cleanup. */
+ public static function collect() {
+  $deadline = microtime( true ) + 2; $root = Package::private_root();
+  foreach ( new \DirectoryIterator( $root ) as $item ) {
+   if ( microtime( true ) > $deadline ) { break; }
+   if ( ! $item->isDir() || $item->isLink() || ! preg_match( '/^export-([a-f0-9]{32})$/D', $item->getFilename(), $match ) ) { continue; }
+   try { $state = self::read( $item->getPathname() . '/state.json' ); if ( $state['expires'] <= time() || 'cancelled' === $state['status'] ) { self::schedule( $match[1] ); } } catch ( \RuntimeException $e ) { /* Corrupt state is never guessed or exposed. */ }
+  }
+ }
+ public static function uninstall() {
+  $lock = self::lock(); if ( ! $lock ) { throw new \RuntimeException( esc_html__( 'An export step is running. Wait briefly before deleting the plugin.', 'file-packs-for-forminator' ) ); }
+  try {
+   foreach ( new \DirectoryIterator( Package::private_root() ) as $item ) {
+    if ( ! $item->isDir() || $item->isLink() || ! preg_match( '/^export-[a-f0-9]{32}$/D', $item->getFilename() ) ) { continue; }
+    foreach ( new \DirectoryIterator( $item->getPathname() ) as $file ) { if ( ! $file->isDot() && ( $file->isFile() || $file->isLink() ) ) { unlink( $file->getPathname() ); } }
+    rmdir( $item->getPathname() );
+   }
+   delete_metadata( 'user', 0, '_ffp_export', '', true ); wp_unschedule_hook( 'ffp_export_step' ); wp_unschedule_hook( 'ffp_export_gc' );
+  } finally { fclose( $lock ); }
  }
  public static function create( $form, $mode, $from = '', $to = '' ) {
   Adapter::form( $form );
@@ -155,7 +176,8 @@ final class Jobs {
      if ( $state['check_offset'] >= count( $chunk['ids'] ) ) { ++$state['check_chunk']; $state['check_offset'] = 0; continue; }
      $entry = $chunk['ids'][$state['check_offset']];
      $plan = Planner::build( $state['form'], array( $entry ) );
-     if ( $plan['bytes'] > self::PART_BYTES || $plan['file_count'] > self::PART_FILES || $plan['metadata_bytes'] > self::PART_TEXT ) { throw new \RuntimeException( esc_html( sprintf( __( 'Submission #%d exceeds the per-submission safety limit: 16 MiB of attachments, 64 attachments or 1 MiB of field data. Export it separately in a small selection.', 'file-packs-for-forminator' ), $entry ) ) ); }
+     // translators: %d: submission identifier.
+     if ( $plan['bytes'] > self::PART_BYTES || $plan['file_count'] > self::PART_FILES || $plan['metadata_bytes'] > self::PART_TEXT ) { throw new \RuntimeException( esc_html( sprintf( __( 'Submission #%d exceeds the per-submission safety limit: 16 MiB of attachments, 500 attachments or 1 MiB of field data. Export it separately in a small selection.', 'file-packs-for-forminator' ), $entry ) ) ); }
      if ( count( $state['pending'] ) >= self::PART_ENTRIES || $state['pending_bytes'] + $plan['bytes'] > self::PART_BYTES || $state['pending_files'] + $plan['file_count'] > self::PART_FILES || $state['pending_text'] + $plan['metadata_bytes'] > self::PART_TEXT ) { self::part( $path, $state ); }
      $state['pending'][] = array( 'id' => $entry, 'fingerprint' => $plan['fingerprint'], 'warnings' => count( $plan['warnings'] ) );
      $state['pending_bytes'] += $plan['bytes']; $state['pending_files'] += $plan['file_count']; $state['pending_text'] += $plan['metadata_bytes'];
@@ -168,16 +190,24 @@ final class Jobs {
     if ( $state['check_chunk'] >= $state['chunks'] ) { self::part( $path, $state ); $state['status'] = 'review'; }
    } elseif ( 'building' === $state['status'] ) {
     $number = $state['completed_parts']; $part = self::read( $path . '/part-' . $number . '.json' );
+    $plan = null;
     foreach ( $part['entries'] as $item ) {
      $fresh = Planner::build( $state['form'], array( $item['id'] ) );
      if ( ! hash_equals( $item['fingerprint'], $fresh['fingerprint'] ) ) { throw new \RuntimeException( esc_html__( 'The selected data changed. Cancel this task and check the selection again.', 'file-packs-for-forminator' ) ); }
+     if ( null === $plan ) { $plan = $fresh; }
+     else {
+      $plan['entries'] = array_merge( $plan['entries'], $fresh['entries'] );
+      $plan['warnings'] = array_merge( $plan['warnings'], $fresh['warnings'] );
+      foreach ( array( 'bytes', 'file_count', 'metadata_bytes' ) as $key ) { $plan[$key] += $fresh[$key]; }
+     }
     }
     unset( $fresh );
-    $plan = Planner::build( $state['form'], array_column( $part['entries'], 'id' ) );
+    // Package the exact bounded plans just compared; do not re-read unchecked field values.
     $disk = disk_free_space( $path );
     if ( false !== $disk && $disk < $plan['bytes'] * 3 + 33554432 ) { throw new StorageException( esc_html__( 'Not enough temporary disk space for this package.', 'file-packs-for-forminator' ) ); }
     $package = new Package( $plan, $state['partial'], $id );
     try {
+     do_action( 'ffp_export_part_prepared', $id, $number );
      Adapter::authorize();
      $target = $path . '/archive-' . $number . '.zip';
      if ( is_link( $target ) || ! rename( $package->path(), $target ) || ! chmod( $target, 0600 ) ) { throw new StorageException( esc_html__( 'Could not save the finished archive.', 'file-packs-for-forminator' ) ); }
@@ -202,6 +232,11 @@ final class Jobs {
   list( $path, $state ) = self::owned( $id );
   if ( $state['expires'] <= time() ) { $state['status'] = 'expired'; self::schedule( $id ); }
   return self::view( $state );
+ }
+ public static function tick( $id ) {
+  $before = self::status( $id ); self::run( $id );
+  if ( in_array( $before['status'], array( 'cancelled', 'expired' ), true ) && ! is_dir( Package::private_root() . '/export-' . $id ) ) { $before['cleanup_done'] = true; return $before; }
+  return self::status( $id );
  }
  public static function review( $id, $page ) {
   list( $path, $state ) = self::owned( $id );

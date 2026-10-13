@@ -26,7 +26,7 @@ $job = Jobs::create( $form, 'all' ); $id = $job['id'];
 $late = Forminator_API::add_form_entry( $form, array( array( 'name' => 'text-1', 'value' => 'AFTER-START' ) ) );
 $review = jobs_advance( $id, 'review' );
 jobs_check( $total === $review['total'] && $total === $review['checked'] && $total === $review['files'], $total . ' persisted submissions checked without a total-count ceiling; later entry excluded' );
-jobs_check( 0 === $review['warnings'] && $review['parts'] === (int) ceil( $total / Jobs::PART_ENTRIES ), 'Measured safe independent part boundaries' );
+jobs_check( 0 === $review['warnings'] && $review['parts'] === (int) ceil( $total / min( Jobs::PART_ENTRIES, Jobs::PART_FILES ) ), 'Measured safe independent part boundaries' );
 jobs_check( 10 === count( Jobs::review( $id, 1 )['rows'] ), 'Review is paginated and contains no private paths' );
 Jobs::command( $id, 'start' ); $ready = jobs_advance( $id, 'ready' );
 $found = array(); $zip_bytes = 0;
@@ -77,9 +77,38 @@ update_post_meta( $ui_form, '_ffp_staging_fixture', '1' );
 Forminator_API::add_form_field( $ui_form, 'text', array( 'field_label' => 'Клиент' ) );
 Forminator_API::add_form_field( $ui_form, 'upload', array( 'field_label' => 'Документы', 'file-type' => 'multiple', 'upload-method' => 'submission' ) );
 $ui_root = forminator_get_upload_path( $ui_form, 'uploads' ); wp_mkdir_p( $ui_root );
-$ui_file = $ui_root . '/document.txt'; file_put_contents( $ui_file, 'Actual synthetic attachment bytes' );
+$ui_file = $ui_root . '/document.txt'; file_put_contents( $ui_file, random_bytes( 262144 ) );
 for ( $i = 0; $i < 101; ++$i ) { Forminator_API::add_form_entry( $ui_form, array( array( 'name' => 'text-1', 'value' => 'Клиент ' . $i ), array( 'name' => 'upload-1', 'value' => array( 'file' => array( 'file_path' => $ui_file, 'file_url' => '' ) ) ) ) ); }
-$fixture['large'] = array( 'form' => $ui_form, 'count' => 101 );
+$fixture['large'] = array( 'form' => $ui_form, 'count' => 101, 'hash' => hash_file( 'sha256', $ui_file ) );
+// Exercise real process deaths after close but before publishing/checkpointing the part.
+foreach ( array( 'normal', 'fatal', 'kill' ) as $mode ) {
+ $task = Jobs::create( $ui_form, 'all' ); $task_id = $task['id']; jobs_advance( $task_id, 'review' ); Jobs::command( $task_id, 'start' );
+ putenv( 'FFP_HOLD_MODE=' . $mode ); putenv( 'FFP_JOB_ID=' . $task_id );
+ $wp_cli = realpath( $_SERVER['argv'][0] );
+ $child = proc_open( array( PHP_BINARY, $wp_cli, '--path=' . ABSPATH, 'eval-file', __DIR__ . '/held-task.php' ), array( 0 => array( 'pipe', 'r' ), 1 => array( 'pipe', 'w' ), 2 => array( 'pipe', 'w' ) ), $pipes );
+ if ( ! is_resource( $child ) ) { throw new RuntimeException( 'Cannot start synthetic task child' ); }
+ $archive = trim( fgets( $pipes[1] ) );
+ if ( $archive !== Package::private_root() . '/job-' . $task_id . '/package.zip' || ! is_file( $archive ) ) { proc_terminate( $child, 9 ); throw new RuntimeException( 'Child did not prepare a private task archive' ); }
+ if ( 'kill' === $mode ) { proc_terminate( $child, 9 ); } else { fwrite( $pipes[0], "continue\n" ); }
+ fclose( $pipes[0] ); stream_get_contents( $pipes[1] ); fclose( $pipes[1] ); $stderr = stream_get_contents( $pipes[2] ); fclose( $pipes[2] ); $exit = proc_close( $child );
+ if ( 'normal' === $mode ? 0 !== $exit : 0 === $exit ) { throw new RuntimeException( 'Unexpected child status' ); }
+ if ( 'fatal' === $mode && ! str_contains( $stderr, 'Synthetic task fatal failure' ) ) { throw new RuntimeException( 'Actual task fatal missing' ); }
+ if ( 'kill' === $mode ) { clearstatcache(); jobs_check( is_file( $archive ), 'SIGKILL leaves only a private unpublished archive' ); }
+ $done = jobs_advance( $task_id, 'ready' );
+ jobs_check( 101 === $done['built'] && 2 === $done['completed_parts'], $mode . ': task resumes without duplicate parts or submissions' );
+ jobs_check( ! is_dir( dirname( $archive ) ), $mode . ': task work directory reclaimed without a one-hour wait' ); jobs_remove( $task_id );
+}
+// Background access uses the owner, including a capability revocation after queuing.
+wp_set_current_user( $other ); $task = Jobs::create( $ui_form, 'all' ); wp_set_current_user( 1 );
+$other_user = get_user_by( 'id', $other ); $other_user->set_role( 'subscriber' ); Jobs::run( $task['id'] );
+$private_state = json_decode( file_get_contents( Package::private_root() . '/export-' . $task['id'] . '/state.json' ), true );
+jobs_check( 'error' === $private_state['status'] && 1 === get_current_user_id(), 'Background owner permission revocation blocks processing and restores caller' );
+$other_user->set_role( 'administrator' ); wp_set_current_user( $other ); jobs_remove( $task['id'] ); wp_set_current_user( 1 );
+// Expired parts cannot be listed even when their private bytes still exist.
+$task = Jobs::create( $ui_form, 'all' ); jobs_advance( $task['id'], 'review' ); Jobs::command( $task['id'], 'start' ); jobs_advance( $task['id'], 'ready' );
+$state_path = Package::private_root() . '/export-' . $task['id'] . '/state.json'; $private_state = json_decode( file_get_contents( $state_path ), true ); $private_state['expires'] = time() - 1; file_put_contents( $state_path, wp_json_encode( $private_state ) );
+jobs_reject( static fn() => Jobs::parts( $task['id'], 1 ), 'Expired archives are not downloadable' ); Jobs::run( $task['id'] ); jobs_check( ! is_dir( dirname( $state_path ) ), 'Expiry removes only task-owned private artifacts' );
+
 file_put_contents( getenv( 'FFP_TEST_FIXTURE' ), wp_json_encode( $fixture ) );
 file_put_contents( $out . '/jobs-results.json', wp_json_encode( array( 'count' => count( $checks ), 'checks' => $checks, 'resource' => $resource ), JSON_PRETTY_PRINT ) );
 echo 'Large export resource: ' . wp_json_encode( $resource ) . "\n";

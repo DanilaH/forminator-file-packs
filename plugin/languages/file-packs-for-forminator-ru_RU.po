@@ -1,5 +1,5 @@
 msgid ""
-msgstr "Project-Id-Version: File Packs 0.3.5\nLanguage: ru_RU\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+msgstr "Project-Id-Version: File Packs 0.4.0\nLanguage: ru_RU\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 
 msgid "%1$d submissions · %2$d attachments"
 msgstr "Заявки: %1$d · Вложения: %2$d"
@@ -529,3 +529,139 @@ msgstr "Возможность скачивания проверена."
 
 msgid "Saved attachments"
 msgstr "Сохранённые вложения"
+
+msgid "Select all submissions in this period"
+msgstr "Выбрать все заявки за этот период"
+
+msgid "Large export"
+msgstr "Большая выгрузка"
+
+msgid "Progress is saved on this site. You can return to this page. Background processing may wait for site visits; keeping this page open also advances the task."
+msgstr "Прогресс сохраняется на сайте. Можно вернуться на эту страницу. Фоновая обработка может ждать посещений сайта; открытая страница также продолжает задачу."
+
+msgid "Review the checked submissions and omissions before starting. Large exports are split into independent ZIP files."
+msgstr "Перед запуском просмотрите проверенные заявки и пропуски. Большие выгрузки разделяются на самостоятельные ZIP."
+
+msgid "I accept all reported omissions, including those on other review pages."
+msgstr "Я принимаю все указанные пропуски, включая пропуски на других страницах проверки."
+
+msgid "Start export"
+msgstr "Начать выгрузку"
+
+msgid "Refresh progress"
+msgstr "Обновить прогресс"
+
+msgid "Cancel task and delete its archives"
+msgstr "Отменить задачу и удалить её архивы"
+
+msgid "Download each ZIP separately. Extract it and open index.html. Each part contains its own register and submission folders."
+msgstr "Скачайте каждый ZIP отдельно. Распакуйте его и откройте index.html. В каждой части есть свой реестр и папки заявок."
+
+msgid "Large exports have no fixed submission-count limit and are split into ZIP parts. Each submission in a large export may contain up to 16 MiB of attachments, 500 attachments and 1 MiB of field data. Smaller selections use the quick ZIP route. Available disk space and hosting resources still limit exports."
+msgstr "У больших выгрузок нет фиксированного лимита количества заявок: они разделяются на ZIP. Одна заявка в большой выгрузке может содержать до 16 МиБ вложений, 500 файлов и 1 МиБ данных полей. Небольшой выбор скачивается быстрым способом. Объём выгрузки зависит от свободного места и ресурсов хостинга."
+
+msgid "All submissions in the applied period are selected. New submissions after checking starts are excluded."
+msgstr "Выбраны все заявки за применённый период. Новые заявки после начала проверки не добавляются."
+
+msgid "Finding submissions…"
+msgstr "Поиск заявок…"
+
+msgid "Contents checked. Review omissions and start the export."
+msgstr "Состав проверен. Просмотрите пропуски и начните выгрузку."
+
+msgid "Building ZIP parts…"
+msgstr "Сборка частей ZIP…"
+
+msgid "Your ZIP files are ready. Originals stay unchanged."
+msgstr "Архивы ZIP готовы. Оригиналы не изменены."
+
+msgid "Task cancelled. Its private files are being deleted."
+msgstr "Задача отменена. Её временные файлы удаляются."
+
+msgid "The task expired. Check the selection again."
+msgstr "Срок хранения задачи истёк. Проверьте выбор заново."
+
+msgid "Saving the selection. If interrupted, cancel this task and check the selection again."
+msgstr "Сохранение выбора. При прерывании отмените задачу и проверьте выбор заново."
+
+msgid "Processed"
+msgstr "Обработано"
+
+msgid "Part"
+msgstr "Часть"
+
+msgid "Archives are deleted after:"
+msgstr "Архивы удаляются после:"
+
+msgid "Download started. You can download this part again until it expires."
+msgstr "Скачивание началось. Эту часть можно скачать повторно до окончания срока хранения."
+
+msgid "More selections are included. Use the checked export review to inspect all submissions."
+msgstr "В выбор включены и другие заявки. Все заявки можно просмотреть после проверки выгрузки."
+
+msgid "Progress has not advanced recently. Refresh progress to retry. Background processing can be delayed on this hosting."
+msgstr "Прогресс давно не менялся. Обновите прогресс для повтора. На этом хостинге фоновая обработка может задерживаться."
+
+msgid "Invalid export task."
+msgstr "Некорректная задача выгрузки."
+
+msgid "The export task expired or its private files are unavailable. Check the selection again."
+msgstr "Срок хранения задачи истёк или её временные файлы недоступны. Проверьте выбор заново."
+
+msgid "Private storage is unavailable."
+msgstr "Закрытое временное хранилище недоступно."
+
+msgid "Export progress is unavailable. Check the selection again."
+msgstr "Прогресс выгрузки недоступен. Проверьте выбор заново."
+
+msgid "Export progress data is too large."
+msgstr "Данные прогресса выгрузки слишком велики."
+
+msgid "Could not save export progress."
+msgstr "Не удалось сохранить прогресс выгрузки."
+
+msgid "The plugin changed during this export. Check the selection again."
+msgstr "Плагин изменился во время выгрузки. Проверьте выбор заново."
+
+msgid "Another export step is running. Try again shortly."
+msgstr "Другой этап выгрузки ещё выполняется. Повторите через несколько секунд."
+
+msgid "An export task already exists. Finish or cancel it before starting another."
+msgstr "Задача выгрузки уже существует. Завершите или отмените её перед запуском следующей."
+
+msgid "The selection changed. Cancel this task and check again."
+msgstr "Выбор изменился. Отмените задачу и проверьте заново."
+
+msgid "The export task expired. Check the selection again."
+msgstr "Срок хранения задачи истёк. Проверьте выбор заново."
+
+msgid "This export task cannot perform that action."
+msgstr "Это действие недоступно для текущего состояния задачи."
+
+msgid "The plugin or export owner changed. Check the selection again."
+msgstr "Плагин или владелец выгрузки изменился. Проверьте выбор заново."
+
+#, php-format
+msgid "Submission #%d exceeds the per-submission safety limit: 16 MiB of attachments, 500 attachments or 1 MiB of field data. Export it separately in a small selection."
+msgstr "Заявка #%d превышает предел большой выгрузки: 16 МиБ вложений, 500 файлов или 1 МиБ данных полей. Выгрузите её отдельно небольшим выбором."
+
+msgid "The selected data changed. Cancel this task and check the selection again."
+msgstr "Выбранные данные изменились. Отмените задачу и проверьте выбор заново."
+
+msgid "Could not save the finished archive."
+msgstr "Не удалось сохранить готовый архив."
+
+msgid "The export is not ready for review."
+msgstr "Выгрузка ещё не готова к просмотру."
+
+msgid "The archive is not available for download."
+msgstr "Архив недоступен для скачивания."
+
+msgid "The archive is unavailable. Check the selection again."
+msgstr "Архив недоступен. Проверьте выбор заново."
+
+msgid "Could not clean private export files."
+msgstr "Не удалось удалить временные файлы выгрузки."
+
+msgid "An export step is running. Wait briefly before deleting the plugin."
+msgstr "Этап выгрузки ещё выполняется. Подождите немного перед удалением плагина."

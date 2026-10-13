@@ -17,6 +17,7 @@ run(wp+['eval-file', str(repo/'tests/capacity-integration.php')])
 run(wp+['eval-file', str(repo/'tests/jobs-integration.php')])
 before = run(wp+['eval-file', str(repo/'tests/lifecycle-snapshot.php')], capture_output=True, text=True).stdout.strip()
 run(['node', str(repo/'tests/capacity-browser.cjs')])
+run(['node', str(repo/'tests/jobs-browser.cjs')])
 run(['python3', str(repo/'tests/permissions-http.py')], env={**os.environ,'FFP_PERMISSIONS_FIXTURE':str(out/'permissions-fixture.json')})
 after = run(wp+['eval-file', str(repo/'tests/lifecycle-snapshot.php')], capture_output=True, text=True).stdout.strip()
 assert before == after and len(before) == 64, 'Source records or attachments changed during capacity/permissions HTTP checks'
