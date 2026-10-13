@@ -25,7 +25,7 @@ final class Admin {
   $base = plugin_dir_url( dirname( __DIR__ ) . '/file-packs-for-forminator.php' );
   wp_enqueue_style( 'ffp-admin', $base . 'assets/admin.css', array(), VERSION );
   wp_enqueue_script( 'ffp-admin', $base . 'assets/admin.js', array(), VERSION, true );
-  wp_localize_script( 'ffp-admin', 'FFP', array( 'url' => admin_url( 'admin-ajax.php' ), 'nonce' => wp_create_nonce( 'ffp_export' ), 'maxEntries' => MAX_ENTRIES, 'strings' => array(
+  wp_localize_script( 'ffp-admin', 'FFP', array( 'url' => admin_url( 'admin-ajax.php' ), 'nonce' => wp_create_nonce( 'ffp_export' ), 'maxEntries' => MAX_ENTRIES, 'requestTimeout' => 90000, 'downloadTimeout' => 600000, 'strings' => array(
    'loading' => __( 'Loading…', 'file-packs-for-forminator' ), 'choose' => __( 'Choose a form', 'file-packs-for-forminator' ), 'noForms' => __( 'No forms match your search. Clear the search or try another name.', 'file-packs-for-forminator' ),
    'truncated' => __( 'Showing the first 100 matching forms. Refine your search.', 'file-packs-for-forminator' ), 'noEntries' => __( 'No completed submissions match this period. Clear the period to see other submissions.', 'file-packs-for-forminator' ),
    'selected' => __( 'Selected submissions:', 'file-packs-for-forminator' ), 'max' => __( 'Select no more than 100 submissions per package.', 'file-packs-for-forminator' ),
@@ -45,6 +45,11 @@ final class Admin {
    'searchReset' => __( 'The selected form is outside the search results. The previous selection was cleared.', 'file-packs-for-forminator' ),
    'retryPreview' => __( 'Refresh preview', 'file-packs-for-forminator' ),
    'retryLoad' => __( 'Retry loading', 'file-packs-for-forminator' ),
+   'ready' => __( 'ZIP support and private storage are available. Package size and available resources are checked again during export.', 'file-packs-for-forminator' ),
+   'notReady' => __( 'Export is unavailable. Resolve the issues below and check again.', 'file-packs-for-forminator' ),
+   'cancelled' => __( 'Waiting stopped in this browser. The server may still be building the package. Wait before refreshing the preview and trying again.', 'file-packs-for-forminator' ),
+   'timeout' => __( 'The request took too long. The server may still be processing it. Wait before trying again, or refresh the page.', 'file-packs-for-forminator' ),
+   'reload' => __( 'Refresh page', 'file-packs-for-forminator' ),
    'selectEntry' => __( 'Select submission', 'file-packs-for-forminator' ),
   ) ) );
  }
@@ -58,7 +63,12 @@ final class Admin {
    <p><?php esc_html_e( 'Extract the ZIP and open index.html in your browser to view submissions and attachments. Open register.csv in a spreadsheet application; data.json is for automated processing.', 'file-packs-for-forminator' ); ?></p>
    <p class="description"><?php esc_html_e( 'Only attachments stored locally on this site are supported. Remote storage and unsupported file types are reported in the preview.', 'file-packs-for-forminator' ); ?></p>
   </details>
-  <div id="ffp-notification" class="ffp-notification" hidden><div id="ffp-status" role="status" aria-live="polite"></div><button id="ffp-retry" class="button" hidden></button></div>
+  <div id="ffp-notification" class="ffp-notification" hidden><div id="ffp-status" role="status" aria-live="polite"></div><button id="ffp-retry" class="button" hidden></button><button id="ffp-cancel" class="button" hidden><?php esc_html_e( 'Stop waiting', 'file-packs-for-forminator' ); ?></button></div>
+  <section id="ffp-environment" class="ffp-panel" aria-labelledby="ffp-environment-heading">
+   <h2 id="ffp-environment-heading"><?php esc_html_e( 'Export readiness', 'file-packs-for-forminator' ); ?></h2>
+   <p id="ffp-readiness" role="status" aria-live="polite"><?php esc_html_e( 'Checking export requirements…', 'file-packs-for-forminator' ); ?></p>
+   <ul id="ffp-requirements"></ul><button id="ffp-check" class="button"><?php esc_html_e( 'Check again', 'file-packs-for-forminator' ); ?></button>
+  </section>
   <section class="ffp-panel" aria-labelledby="ffp-form-heading">
    <h2 id="ffp-form-heading"><?php esc_html_e( '1. Choose a form', 'file-packs-for-forminator' ); ?></h2>
    <div class="ffp-controls"><div><label for="ffp-search"><?php esc_html_e( 'Find a form', 'file-packs-for-forminator' ); ?></label><input id="ffp-search" type="search" maxlength="100"><button id="ffp-search-button" class="button"><?php esc_html_e( 'Search', 'file-packs-for-forminator' ); ?></button></div><div><label for="ffp-form"><?php esc_html_e( 'Form', 'file-packs-for-forminator' ); ?></label><select id="ffp-form"><option value=""><?php esc_html_e( 'Choose a form', 'file-packs-for-forminator' ); ?></option></select></div></div>
@@ -68,6 +78,8 @@ final class Admin {
   <section id="ffp-selection" class="ffp-panel" aria-labelledby="ffp-entries-heading" hidden>
    <h2 id="ffp-entries-heading"><?php esc_html_e( '2. Select submissions', 'file-packs-for-forminator' ); ?></h2>
    <div class="ffp-controls"><div><label for="ffp-from"><?php esc_html_e( 'From', 'file-packs-for-forminator' ); ?></label><input type="date" id="ffp-from"></div><div><label for="ffp-to"><?php esc_html_e( 'Through', 'file-packs-for-forminator' ); ?></label><input type="date" id="ffp-to"></div><button id="ffp-filter" class="button"><?php esc_html_e( 'Apply period', 'file-packs-for-forminator' ); ?></button><button id="ffp-reset-period" class="button"><?php esc_html_e( 'Clear period', 'file-packs-for-forminator' ); ?></button></div>
+   <div class="ffp-presets"><button id="ffp-week" class="button"><?php esc_html_e( 'Last 7 days', 'file-packs-for-forminator' ); ?></button><button id="ffp-month" class="button"><?php esc_html_e( 'This month', 'file-packs-for-forminator' ); ?></button></div>
+   <p class="description"><?php esc_html_e( 'Quick periods use the site timezone and replace the current period. Selection is cleared only after the new list loads.', 'file-packs-for-forminator' ); ?></p>
    <p id="ffp-timezone" class="description"></p>
    <p class="description"><?php esc_html_e( 'Dates are optional. Leave both empty to show all saved submissions, 25 per page. Applying a period clears the current selection.', 'file-packs-for-forminator' ); ?></p>
    <div class="ffp-selection-bar"><label><input id="ffp-all" type="checkbox"> <?php esc_html_e( 'Select this page', 'file-packs-for-forminator' ); ?></label><strong id="ffp-count" aria-live="polite"></strong><button id="ffp-clear" class="button-link"><?php esc_html_e( 'Clear selection', 'file-packs-for-forminator' ); ?></button></div>
@@ -91,6 +103,15 @@ final class Admin {
   </section></div>
   <?php
  }
+ public static function periods( $now = null ) {
+  $now = $now ?? current_datetime();
+  return array( 'week' => array( 'from' => $now->modify( '-6 days' )->format( 'Y-m-d' ), 'to' => $now->format( 'Y-m-d' ) ), 'month' => array( 'from' => $now->format( 'Y-m-01' ), 'to' => $now->format( 'Y-m-d' ) ) );
+ }
+ public static function download_name( $plan ) {
+  $title = preg_replace( '/[\x00-\x1f\x7f<>:"\/\\\\|?*]/u', '-', wp_html_excerpt( wp_strip_all_tags( $plan['form_title'] ), 100, '' ) );
+  $title = Planner::short_name( trim( sanitize_file_name( $title ), '. ' ) );
+  return 'form-' . (int) $plan['form_id'] . '-' . ( $title ?: 'submissions' ) . '-' . wp_date( 'Y-m-d_H-i-s' ) . '.zip';
+ }
  private static function id( $value ) {
   if ( ! is_scalar( $value ) || ! preg_match( '/^[1-9][0-9]{0,17}$/D', (string) $value ) || (float) $value > PHP_INT_MAX ) { throw new \RuntimeException( esc_html__( 'Invalid identifier.', 'file-packs-for-forminator' ) ); }
   return (int) $value;
@@ -98,14 +119,22 @@ final class Admin {
  public static function endpoint( $action ) {
   try {
    Adapter::authorize();
-   if ( 'POST' !== ( isset( $_SERVER['REQUEST_METHOD'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) : '' ) || ! check_ajax_referer( 'ffp_export', 'nonce', false ) ) { wp_send_json_error( array( 'message' => __( 'Your session expired or the request is invalid. Refresh this page.', 'file-packs-for-forminator' ) ), 403 ); }
-   if ( 'forms' === $action ) { wp_send_json_success( Adapter::forms( isset( $_POST['search'] ) && is_string( $_POST['search'] ) ? sanitize_text_field( wp_unslash( $_POST['search'] ) ) : '' ) ); }
+   if ( 'POST' !== ( isset( $_SERVER['REQUEST_METHOD'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) : '' ) || ! check_ajax_referer( 'ffp_export', 'nonce', false ) ) { wp_send_json_error( array( 'code' => 'session_expired', 'message' => __( 'Your session expired or the request is invalid. Refresh this page.', 'file-packs-for-forminator' ) ), 403 ); }
+   if ( 'forms' === $action ) { $data = Adapter::forms( isset( $_POST['search'] ) && is_string( $_POST['search'] ) ? sanitize_text_field( wp_unslash( $_POST['search'] ) ) : '' ); $data['readiness'] = Package::readiness(); $data['periods'] = self::periods(); wp_send_json_success( $data ); }
    $form_id = self::id( isset( $_POST['form_id'] ) && is_string( $_POST['form_id'] ) ? sanitize_text_field( wp_unslash( $_POST['form_id'] ) ) : '' );
    if ( 'entries' === $action ) {
     $page = self::id( isset( $_POST['page'] ) && is_string( $_POST['page'] ) ? sanitize_text_field( wp_unslash( $_POST['page'] ) ) : '1' ); if ( $page > 1000000 ) { throw new \RuntimeException( esc_html__( 'Invalid page.', 'file-packs-for-forminator' ) ); }
     $from = isset( $_POST['from'] ) && is_string( $_POST['from'] ) ? sanitize_text_field( wp_unslash( $_POST['from'] ) ) : '';
     $to = isset( $_POST['to'] ) && is_string( $_POST['to'] ) ? sanitize_text_field( wp_unslash( $_POST['to'] ) ) : '';
-    wp_send_json_success( Adapter::entries( $form_id, $page, $from, $to ) );
+    $period = isset( $_POST['period'] ) && is_string( $_POST['period'] ) ? sanitize_text_field( wp_unslash( $_POST['period'] ) ) : '';
+    $applied = null;
+    if ( '' !== $period ) {
+     if ( ! in_array( $period, array( 'week', 'month' ), true ) ) { throw new \RuntimeException( esc_html__( 'Enter valid dates.', 'file-packs-for-forminator' ) ); }
+     $applied = self::periods()[$period]; $from = $applied['from']; $to = $applied['to'];
+    }
+    $data = Adapter::entries( $form_id, $page, $from, $to );
+    if ( $applied ) { $data['applied_period'] = $applied; }
+    wp_send_json_success( $data );
    }
    // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Raw JSON is size-limited, decoded as a list, and each identifier strictly validated below.
    $raw = isset( $_POST['ids'] ) && is_string( $_POST['ids'] ) ? wp_unslash( $_POST['ids'] ) : '';
@@ -125,7 +154,7 @@ final class Admin {
     while ( ob_get_level() ) { ob_end_clean(); }
     nocache_headers();
     header( 'Content-Type: application/zip' ); header( 'X-Content-Type-Options: nosniff' );
-    header( 'Content-Disposition: attachment; filename="form-' . $form_id . '-file-pack.zip"' );
+    header( 'Content-Disposition: attachment; filename="form-' . $form_id . '-file-pack.zip"; filename*=UTF-8\'\'' . rawurlencode( self::download_name( $plan ) ) );
     header( 'X-FFP-Warnings: ' . count( $package->plan['warnings'] ) );
     header( 'Content-Length: ' . filesize( $package->path() ) );
     readfile( $package->path() ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- Stream the authorized private archive without loading it into PHP memory.

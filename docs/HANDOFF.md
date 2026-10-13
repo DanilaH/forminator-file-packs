@@ -1,4 +1,4 @@
-# Technical handoff — 2026-10-11
+# Technical handoff — 2026-10-13
 
 The [roadmap](../ROADMAP.md) owns milestone status and the [v1 specification](V1_SPEC.md) owns agreed scope, UX, and commercial boundaries. Read them before implementation; this file provides technical orientation.
 
@@ -39,3 +39,7 @@ See the publication checklist and limitations in [RELEASE_READINESS.md](RELEASE_
 ## UX refinement 0.3.2
 
 Plugin-list entry point, bilingual quick start/result instructions, fixed viewport notifications with direct retry, cross-page selected-row review/removal, clearer empty states. Date edits keep selection and pause export; successful period reload clears it. Search preserves selection if its form remains available. Expanded real browser checks are integrated in native/Docker/VPS suites. Verification of the exact current commit is required; prior green runs are not evidence for 0.3.2.
+
+## Refinement 0.3.3
+
+The independent follow-up reproduced stale session recovery, recovery after clearing selection, stale selected-row summaries and indefinite browser waiting. 0.3.3 fixes those paths, adds authenticated environment readiness in the existing forms endpoint, descriptive RFC 5987 ZIP names and server-computed quick periods in the existing entries endpoint. No new endpoint, public storage or outgoing data transfer is introduced. Readiness probes only this plugin’s private directory and removes its tiny probe; resource suitability is still checked for the actual package. JSON waits are capped at 90 seconds; full ZIP fetch/body consumption at 10 minutes. Stop waiting is deliberately not a claim that PHP has stopped. Native, Docker and VPS suites include new environment/calendar/name and browser regressions. Exact current-commit green checks are required before distributing this version.

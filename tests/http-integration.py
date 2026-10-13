@@ -131,6 +131,7 @@ for mode, form in fixture.items():
     check(b'file_path' not in raw and b'file_url' not in raw and b'/workspace/' not in raw, f'{mode}: preview hides source paths')
     status, headers, archive = api('download', {**params, 'fingerprint': preview['fingerprint']})
     check(status == 200 and headers.get_content_type() == 'application/zip', f'{mode}: authorized ZIP download')
+    check("filename*=UTF-8''" in headers.get('Content-Disposition',''), f'{mode}: standard UTF-8 archive filename provided')
     with ZipFile(io.BytesIO(archive)) as z:
         check(z.testzip() is None and len(z.namelist()) == 9, f'{mode}: ZIP structure and CRC')
         attachments = [name for name in z.namelist() if name.endswith('.txt')]
@@ -150,7 +151,7 @@ check(status == 400 and not json.loads(raw)['success'], 'entry from another form
 status, _, raw = api('entries', {'form_id': fixture['submission']['form'], 'from': '2026-02-31'})
 check(status == 400, 'invalid date rejected')
 status, _, raw = post('/wp-admin/admin-ajax.php', {'action': 'ffp_preview', 'nonce': 'invalid', 'form_id': fixture['submission']['form'], 'ids': '[1]'})
-check(status == 403, 'invalid nonce rejected')
+check(status == 403 and json.loads(raw)['data']['code']=='session_expired', 'invalid nonce rejected with session recovery code')
 for action in ['forms', 'entries', 'preview', 'download']:
     status, _, raw = api(action, params, opener=guest)
     check(status != 200 or raw == b'0', f'guest blocked: {action}')

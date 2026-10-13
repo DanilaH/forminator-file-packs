@@ -119,6 +119,8 @@ else:
     wp('eval', "$f=json_decode(file_get_contents(getenv('FFP_TEST_FIXTURE')),true);foreach($f as $r){update_post_meta($r['form'],'_ffp_staging_fixture','1');}")
     try:
         run(['python3', 'tests/http-integration.py'], env=env)
+        wp('eval-file', '/opt/ffp/tests/environment-integration.php')
+        wp('eval-file', '/opt/ffp/tests/readiness-unavailable.php')
         wp('eval-file', '/opt/ffp/tests/security-integration.php')
         wp('eval-file', '/opt/ffp/tests/storage-omissions.php')
         wp('eval-file', '/opt/ffp/tests/resilience-integration.php')

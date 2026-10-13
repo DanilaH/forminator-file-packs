@@ -11,6 +11,29 @@ final class Package {
 	private $deadline;
 	private $reserve = '';
 	public $plan;
+	/** Probe only this plugin's private storage; never include host paths in the result. */
+ public static function readiness() {
+  $result = array( 'zip' => class_exists( '\ZipArchive' ), 'storage' => false, 'ready' => false, 'messages' => array() );
+  if ( ! $result['zip'] ) { $result['messages'][] = __( 'PHP ZIP support is required. Ask your host to enable it.', 'file-packs-for-forminator' ); }
+  $probe = ''; $stream = false;
+  try {
+   $root = self::private_root();
+   $probe = $root . '/probe-' . bin2hex( random_bytes( 16 ) );
+   $stream = @fopen( $probe, 'xb' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Exclusive probe in verified private storage; no remote filesystem fallback.
+   if ( ! $stream || ! @chmod( $probe, 0600 ) || 3 !== @fwrite( $stream, 'FFP' ) || ! @fflush( $stream ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite -- Check an actual bounded private write, not only an advertised permission bit.
+    throw new StorageException( esc_html__( 'Could not verify private storage. Ask your hosting administrator to check its write permissions.', 'file-packs-for-forminator' ) );
+   }
+   $result['storage'] = true;
+  } catch ( \RuntimeException $e ) { $result['messages'][] = $e->getMessage(); }
+  catch ( \Throwable $e ) { $result['messages'][] = __( 'Could not verify private storage. Ask your hosting administrator to check its write permissions.', 'file-packs-for-forminator' ); }
+  finally {
+   if ( is_resource( $stream ) ) { fclose( $stream ); } // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Close only the private probe opened in this method.
+   if ( $probe && file_exists( $probe ) && ! @unlink( $probe ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink -- Remove only this request's exclusive private probe.
+    $result['storage'] = false; $result['messages'][] = __( 'Could not verify private storage. Ask your hosting administrator to check its write permissions.', 'file-packs-for-forminator' );
+   }
+  }
+  $result['ready'] = $result['zip'] && $result['storage']; return $result;
+ }
 	public static function private_root() {
 		$base = realpath( defined( 'FFP_PRIVATE_TEMP_DIR' ) ? FFP_PRIVATE_TEMP_DIR : sys_get_temp_dir() );
 	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable -- Private local streams, restrictive permissions and atomic locks require native operations; no FTP or remote filesystem fallback.

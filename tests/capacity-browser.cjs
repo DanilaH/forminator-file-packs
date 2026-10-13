@@ -22,6 +22,10 @@ if(process.env.FFP_TEST_LAB!=='1')throw Error('Disposable lab only');
   }
   check((await page.locator('#ffp-count').textContent()).endsWith('100'),'Selection persists across all four pages: 100 entries');
   check(await page.locator('#ffp-selected-list li').count()===100,'Review contains all 100 selections across pages');
+  await page.route('**/admin-ajax.php',async route=>{if(route.request().postData()?.includes('action=ffp_entries')){const response=await route.fetch();const body=await response.json();body.data.entries[0].summary='FFP refreshed summary';await route.fulfill({response,json:body});await page.unroute('**/admin-ajax.php');return;}return route.continue();});
+  await page.locator('#ffp-prev').click();await page.waitForFunction(()=>document.querySelector('#ffp-app').getAttribute('aria-busy')==='false'&&document.querySelector('#ffp-rows').textContent.includes('FFP refreshed summary'));
+  check((await page.locator('#ffp-selected-list').textContent()).includes('FFP refreshed summary'),'Selected review updates when a selected row is reloaded');
+  await page.locator('#ffp-next').click();await page.waitForFunction(()=>document.querySelector('#ffp-app').getAttribute('aria-busy')==='false'&&document.querySelector('#ffp-page').textContent.includes('4'));
   await page.locator('#ffp-preview-button').click();await page.locator('#ffp-preview:not([hidden])').waitFor();
   check((await page.locator('#ffp-totals').textContent()).includes('500')&&(await page.locator('#ffp-totals').textContent()).includes('100.00 MiB'),'Actual preview shows 500 files and 100 MiB');
   const cdp=await page.context().newCDPSession(page);await cdp.send('Accessibility.enable');

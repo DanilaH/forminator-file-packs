@@ -1,5 +1,5 @@
 msgid ""
-msgstr "Project-Id-Version: File Packs 0.3.2\nLanguage: ru_RU\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+msgstr "Project-Id-Version: File Packs 0.3.3\nLanguage: ru_RU\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 
 msgid "%1$d submissions · %2$d attachments"
 msgstr "Заявки: %1$d · Вложения: %2$d"
@@ -400,3 +400,42 @@ msgstr "Проверьте пропуски ниже. Можно выгрузи�
 
 msgid "Private temporary storage is unavailable. Ask your hosting administrator to configure writable storage outside public web directories."
 msgstr "Закрытое временное хранилище недоступно. Попросите администратора хостинга настроить доступный для записи каталог вне публичных веб-каталогов."
+
+msgid "Export readiness"
+msgstr "Готовность к экспорту"
+
+msgid "Checking export requirements…"
+msgstr "Проверяем условия для экспорта…"
+
+msgid "ZIP support and private storage are available. Package size and available resources are checked again during export."
+msgstr "ZIP-модуль и закрытое хранилище доступны. Размер пакета и доступные ресурсы повторно проверяются при экспорте."
+
+msgid "Export is unavailable. Resolve the issues below and check again."
+msgstr "Экспорт недоступен. Исправьте проблемы ниже и повторите проверку."
+
+msgid "Check again"
+msgstr "Проверить ещё раз"
+
+msgid "Could not verify private storage. Ask your hosting administrator to check its write permissions."
+msgstr "Не удалось проверить закрытое хранилище. Попросите администратора хостинга проверить права записи."
+
+msgid "Stop waiting"
+msgstr "Перестать ждать"
+
+msgid "Waiting stopped in this browser. The server may still be building the package. Wait before refreshing the preview and trying again."
+msgstr "Ожидание в браузере прекращено. Сервер может ещё собирать пакет. Подождите перед повторным предпросмотром и новой попыткой."
+
+msgid "The request took too long. The server may still be processing it. Wait before trying again, or refresh the page."
+msgstr "Запрос занял слишком много времени. Сервер может ещё его обрабатывать. Подождите перед новой попыткой или обновите страницу."
+
+msgid "Refresh page"
+msgstr "Обновить страницу"
+
+msgid "Last 7 days"
+msgstr "Последние 7 дней"
+
+msgid "This month"
+msgstr "Этот месяц"
+
+msgid "Quick periods use the site timezone and replace the current period. Selection is cleared only after the new list loads."
+msgstr "Быстрые периоды используют часовой пояс сайта и заменяют текущий период. Выбор снимается только после загрузки нового списка."
