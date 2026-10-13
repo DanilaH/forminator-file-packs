@@ -2,7 +2,7 @@
 
 A WordPress plugin that exports selected saved Forminator submissions and local attachments into ZIP packages. Includes readable HTML cards, an HTML index, a CSV register, structured JSON and a warnings manifest. Original records and files remain unchanged.
 
-**Status: resumable large exports v0.4.0, verification in progress.** The technical slug is `file-packs-for-forminator`; the GitHub repository keeps its existing address. Complete native, Docker and actual VPS regression passes for 0.3.0 are recorded in [release readiness](docs/RELEASE_READINESS.md). The current 0.4.0 build is releasable only after its own native/Docker/VPS checks succeed. WordPress.org publication and approval have not happened.
+**Status: v0.4.0 — resumable large exports.** The technical slug is `file-packs-for-forminator`; the GitHub repository keeps its existing address. Complete native, Docker and actual VPS regression passes for 0.3.0 are recorded in [release readiness](docs/RELEASE_READINESS.md). The current 0.4.0 build is releasable only after its own native/Docker/VPS checks succeed. WordPress.org publication and approval have not happened.
 
 ## Use
 
@@ -47,3 +47,6 @@ The 0.3.5 interface centers on selecting submissions and checking/downloading a 
 
 
 Large exports save progress in private local storage and run short WP-Cron steps. An open export page also advances them when cron/loopback is blocked. Closing the page does not guarantee immediate background progress on low-traffic sites. Results remain privately downloadable for 24 hours after completion; cancellation and expiry clean only exporter-owned files. Disk, execution time and memory remain real hosting constraints. See [large-export architecture and checks](docs/LARGE_EXPORTS.md).
+
+
+The 0.4.0 implementation has a dedicated [verification record](docs/LARGE_EXPORT_VERIFICATION_2026-10-14.md). Release/deployment gates still require successful native, Docker and actual VPS runs for the current main commit.
