@@ -178,7 +178,7 @@
 		const warnings = response.warnings;
 		message(warnings ? `${s.incomplete} (${s.warnings}: ${warnings})` : s.complete);
   $('result-name').textContent = response.name; $('result-status').textContent = warnings ? s.incomplete : s.complete;
-  $('result').hidden = false; $('result-heading').focus();
+  $('result').hidden = false; $('result').scrollIntoView({block: 'start'}); $('result-heading').focus({preventScroll: true});
 	}, {label: s.retryPreview, run: showPreview}));
  refreshButtons(); loadForms();
 })();
