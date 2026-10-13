@@ -53,7 +53,7 @@ final class Package {
 		}
 		return $root;
 	}
-	public function __construct( $plan, $allow_partial = false ) {
+	public function __construct( $plan, $allow_partial = false, $task_id = '' ) {
 		Adapter::authorize();
 		$limit = (int) ini_get( 'max_execution_time' );
 		$this->deadline = microtime( true ) + ( $limit > 0 ? max( 1, min( 45, $limit - 5 ) ) : 45 );
@@ -63,13 +63,21 @@ final class Package {
 		if ( ! class_exists( '\ZipArchive' ) ) { throw new \RuntimeException( esc_html__( 'PHP ZIP support is required. Ask your host to enable it.', 'file-packs-for-forminator' ) ); }
 		$root = self::private_root();
 		$this->lock = $root . '/lock-' . get_current_user_id();
+		// A task may recover only its own killed pass while Jobs holds the site-wide flock.
+		if ( $task_id && ! preg_match( '/^[a-f0-9]{32}$/D', $task_id ) ) { throw new StorageException( esc_html__( 'Invalid export task.', 'file-packs-for-forminator' ) ); }
+		$marker = $this->lock . '/task';
+		if ( $task_id && ! is_link( $this->lock ) && is_file( $marker ) && ! is_link( $marker ) && $task_id === file_get_contents( $marker ) ) {
+			self::remove_job( $root . '/job-' . $task_id );
+			unlink( $marker ); rmdir( $this->lock );
+		}
 	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir -- Private local streams, restrictive permissions and atomic locks require native operations; no FTP or remote filesystem fallback.
 		if ( is_dir( $this->lock ) && ! is_link( $this->lock ) && filemtime( $this->lock ) < time() - 3600 ) { @rmdir( $this->lock ); }
 		if ( ! @mkdir( $this->lock, 0700 ) ) { $this->lock = ''; // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir -- Atomic private local directory creation; no FTP filesystem.
 	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir -- Private local streams, restrictive permissions and atomic locks require native operations; no FTP or remote filesystem fallback.
 			throw new \RuntimeException( esc_html__( 'An export is already running for your account. Please wait.', 'file-packs-for-forminator' ) ); }
 		register_shutdown_function( array( $this, 'cleanup' ) );
-		$this->directory = $root . '/job-' . bin2hex( random_bytes( 16 ) );
+		if ( $task_id ) { if ( strlen( $task_id ) !== file_put_contents( $marker, $task_id ) || ! chmod( $marker, 0600 ) ) { $this->cleanup(); throw new StorageException( esc_html__( 'Could not save export progress.', 'file-packs-for-forminator' ) ); } }
+		$this->directory = $root . '/job-' . ( $task_id ?: bin2hex( random_bytes( 16 ) ) );
 		if ( ! @mkdir( $this->directory, 0700 ) ) { $this->cleanup(); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir -- Atomic private local directory creation; no FTP filesystem.
 	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir -- Private local streams, restrictive permissions and atomic locks require native operations; no FTP or remote filesystem fallback.
 			throw new \RuntimeException( esc_html__( 'Cannot prepare the package.', 'file-packs-for-forminator' ) ); }
@@ -259,7 +267,7 @@ final class Package {
 		}
 		if ( $this->directory && is_dir( $this->directory ) && ! is_link( $this->directory ) ) { self::remove_job( $this->directory ); }
 	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir -- Private local streams, restrictive permissions and atomic locks require native operations; no FTP or remote filesystem fallback.
-		if ( $this->lock && is_dir( $this->lock ) && ! is_link( $this->lock ) ) { @rmdir( $this->lock ); }
+		if ( $this->lock && is_dir( $this->lock ) && ! is_link( $this->lock ) ) { if ( is_file( $this->lock . '/task' ) ) { unlink( $this->lock . '/task' ); } @rmdir( $this->lock ); }
 		$this->directory = '';
 		$this->lock = '';
 	}

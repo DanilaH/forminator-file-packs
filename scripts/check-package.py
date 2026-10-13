@@ -29,7 +29,7 @@ assert header(readme, 'License') == 'GPLv2 or later'
 assert (source / 'languages' / (slug + '-ru_RU.po')).is_file()
 assert (source / 'languages' / (slug + '-ru_RU.mo')).is_file()
 allowed = {slug+'.php', 'readme.txt', 'includes/class-adapter.php', 'includes/class-admin.php',
-           'includes/class-planner.php', 'includes/class-package.php', 'assets/admin.css',
+           'includes/class-planner.php', 'includes/class-package.php', 'includes/class-jobs.php', 'assets/admin.css',
            'assets/admin.js', 'languages/'+slug+'-ru_RU.po', 'languages/'+slug+'-ru_RU.mo'}
 files = {p.relative_to(source).as_posix(): p for p in source.rglob('*') if p.is_file()}
 assert set(files) == allowed, 'Unexpected or missing shipped files; review license and purpose'

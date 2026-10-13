@@ -14,6 +14,7 @@ for mode in ['single', 'single-media', 'multiple', 'multiple-media', 'ajax', 'aj
     run(['node', str(repo/'tests/repeater-browser.cjs')], env=env)
     run(wp+['eval-file', str(repo/'tests/repeater-metadata.php')], env=env)
 run(wp+['eval-file', str(repo/'tests/capacity-integration.php')])
+run(wp+['eval-file', str(repo/'tests/jobs-integration.php')])
 before = run(wp+['eval-file', str(repo/'tests/lifecycle-snapshot.php')], capture_output=True, text=True).stdout.strip()
 run(['node', str(repo/'tests/capacity-browser.cjs')])
 run(['python3', str(repo/'tests/permissions-http.py')], env={**os.environ,'FFP_PERMISSIONS_FIXTURE':str(out/'permissions-fixture.json')})

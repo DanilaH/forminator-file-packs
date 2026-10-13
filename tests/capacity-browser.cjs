@@ -26,7 +26,7 @@ if(process.env.FFP_TEST_LAB!=='1')throw Error('Disposable lab only');
   await page.locator('#ffp-prev').click();await page.waitForFunction(()=>document.querySelector('#ffp-app').getAttribute('aria-busy')==='false'&&document.querySelector('#ffp-rows').textContent.includes('FFP refreshed summary'));
   check((await page.locator('#ffp-selected-list').textContent()).includes('FFP refreshed summary'),'Selected review updates when a selected row is reloaded');
   const extra=page.locator('input[data-entry="999999999"]');await extra.click();
-  check(!await extra.isChecked()&&(await page.locator('#ffp-count').getAttribute('data-count'))==='100'&&await page.locator('#ffp-retry').isHidden(),'101st selection is rejected without stale retry and preserves the real 100 selections');
+  check(await extra.isChecked()&&(await page.locator('#ffp-count').getAttribute('data-count'))==='101','101st selection is accepted for the large-export route'); await extra.uncheck(); check((await page.locator('#ffp-count').getAttribute('data-count'))==='100','Removing the extra selection preserves the real 100-entry quick export');
   await page.locator('#ffp-next').click();await page.waitForFunction(()=>document.querySelector('#ffp-app').getAttribute('aria-busy')==='false'&&document.querySelector('#ffp-page').textContent.includes('4'));
   await page.locator('#ffp-preview-button').click();await page.locator('#ffp-preview:not([hidden])').waitFor();
   check((await page.locator('#ffp-totals').textContent()).includes('500')&&(await page.locator('#ffp-totals').textContent()).includes('100.00 MiB'),'Actual preview shows 500 files and 100 MiB');

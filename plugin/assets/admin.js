@@ -12,7 +12,8 @@
  try { if (localStorage.getItem('ffp.helpOpen') === '1') help.open = true; } catch (e) { /* Storage is optional. */ }
  help.addEventListener('toggle', () => { try { localStorage.setItem('ffp.helpOpen', help.open ? '1' : '0'); } catch (e) { /* Storage is optional. */ } });
  window.addEventListener('beforeunload', e => { if (downloading) { e.preventDefault(); e.returnValue = ''; } });
-	let page = 1, pages = 1, rows = [], preview = null, busy = false, filterDirty = false;
+	let page = 1, pages = 1, rows = [], preview = null, busy = false, filterDirty = false, allPeriod = false, totalRows = 0;
+ let job = null, jobPage = 1, jobPages = 1, jobTimer = null, jobPolling = false;
 	const node = (tag, text, cls) => { const el = document.createElement(tag); if (text !== undefined) el.textContent = text; if (cls) el.className = cls; return el; };
 	function size(bytes) { return bytes < 1024 ? `${bytes} B` : bytes < 1048576 ? `${(bytes / 1024).toFixed(1)} KiB` : `${(bytes / 1048576).toFixed(2)} MiB`; }
 	function message(text, error = false) {
@@ -22,16 +23,16 @@
   if (retry) $('retry').textContent = retry.label;
  }
  function clearRecovery() { retry = null; message(''); }
- function clearSelection() { selected.clear(); selectedRows.clear(); }
+ function clearSelection() { allPeriod = false; selected.clear(); selectedRows.clear(); }
  function reviewSelection() {
   $('selected-list').replaceChildren();
-  for (const id of selected) {
+  for (const id of [...selected].slice(0, 100)) {
    const row = selectedRows.get(id); const li = node('li', `#${id} · ${row?.display_date || row?.date || ''} · ${row?.summary || '—'} `);
    const remove = node('button', `${s.remove} #${id}`, 'button-link'); remove.type = 'button'; remove.disabled = busy || filterDirty;
    remove.addEventListener('click', () => { clearRecovery(); selected.delete(id); selectedRows.delete(id); $('rows').querySelectorAll('input').forEach(box => { if (box.dataset.entry === String(id)) box.checked = false; }); invalidate(); message(''); $('selected-review').querySelector('summary').focus(); });
    li.append(remove); $('selected-list').append(li);
   }
-  $('selection-help').textContent = selected.size ? '' : s.emptySelection;
+  $('selection-help').textContent = allPeriod ? s.allPeriod : selected.size > 100 ? s.reviewMore : selected.size ? '' : s.emptySelection;
  }
 
 	function refreshButtons() {
@@ -43,15 +44,19 @@
 		$('preview-button').textContent = preview ? s.recheckSelection : s.checkSelection;
   $('preview-button').classList.toggle('button-primary', !preview);
   $('download').textContent = preview?.warnings.length ? s.downloadPartial : s.downloadFull;
-  $('preview-button').disabled = busy || !ready || filterDirty || !selected.size;
+  $('preview-button').disabled = busy || !ready || filterDirty || (!selected.size && !allPeriod) || activeJob();
 		$('download').disabled = busy || !ready || filterDirty || !preview || (preview.warnings.length > 0 && !$('partial').checked);
-		$('all').disabled = busy || filterDirty || !rows.length;
-		$('rows').querySelectorAll('input').forEach(el => { el.disabled = busy || filterDirty; });
-		$('all').checked = rows.length > 0 && rows.every(row => selected.has(row.id));
+		$('all').disabled = busy || filterDirty || !rows.length || allPeriod;
+  $('select-period').disabled = busy || filterDirty || !totalRows || activeJob();
+		$('rows').querySelectorAll('input').forEach(el => { el.disabled = busy || filterDirty || allPeriod; });
+		$('all').checked = rows.length > 0 && (allPeriod || rows.every(row => selected.has(row.id)));
 		$('all').indeterminate = rows.some(row => selected.has(row.id)) && !$('all').checked;
-		$('count').textContent = `${s.selected} ${selected.size} ${s.of} ${FFP.maxEntries}`;
-  $('count').dataset.count = String(selected.size);
+		$('count').textContent = `${s.selected} ${allPeriod ? totalRows : selected.size}`;
+  $('count').dataset.count = String(allPeriod ? totalRows : selected.size);
   reviewSelection();
+  $('job-start').disabled = busy || jobPolling || job?.status !== 'review' || (job.warnings > 0 && !$('job-partial').checked);
+  $('job-cancel').disabled = busy || jobPolling;
+  $('job-prev').disabled = busy || jobPolling || jobPage <= 1; $('job-next').disabled = busy || jobPolling || jobPage >= jobPages;
 	}
 	function invalidate() { $('result').hidden = true; preview = null; $('preview').hidden = true; $('partial').checked = false; refreshButtons(); }
 	async function request(action, extra = {}) {
@@ -94,6 +99,7 @@
 		await operation(s.loading, async () => {
 			const data = await request('forms', { search: $('search').value });
    ready = data.readiness.ready; periods = data.periods;
+   if (data.job) { job = data.job; await renderJob(); scheduleJob(); }
    $('readiness').textContent = ready ? s.ready : s.notReady;
    $('requirements').replaceChildren(...data.readiness.messages.map(text => node('li', text)));
    $('environment').hidden = ready; $('environment-heading').textContent = s.unavailableTitle;
@@ -117,13 +123,12 @@
    if (data.applied_period) { $('from').value = data.applied_period.from; $('to').value = data.applied_period.to; }
 			if (reset) clearSelection();
    if (preset || reset || (!$('from').value && !$('to').value)) currentPeriod = preset || (!$('from').value && !$('to').value ? 'all' : 'custom');
-   filterDirty = false; page = data.page; pages = data.pages; rows = data.entries; $('rows').replaceChildren();
+   filterDirty = false; totalRows = data.total; page = data.page; pages = data.pages; rows = data.entries; $('rows').replaceChildren();
 			for (const row of rows) {
     if (selected.has(row.id)) selectedRows.set(row.id, row);
-				const tr = node('tr'); const td = node('td'); const box = node('input'); box.type = 'checkbox'; box.dataset.entry = String(row.id); box.checked = selected.has(row.id); box.setAttribute('aria-label', `${s.selectEntry} #${row.id}`);
+				const tr = node('tr'); const td = node('td'); const box = node('input'); box.type = 'checkbox'; box.dataset.entry = String(row.id); box.checked = allPeriod || selected.has(row.id); box.setAttribute('aria-label', `${s.selectEntry} #${row.id}`);
 				box.addEventListener('change', () => {
 					clearRecovery();
-     if (box.checked && selected.size >= FFP.maxEntries) { box.checked = false; message(s.max, true); return; }
 					if (box.checked) { selected.add(row.id); selectedRows.set(row.id, row); } else { selected.delete(row.id); selectedRows.delete(row.id); }
 					invalidate();
 				});
@@ -155,12 +160,11 @@
  $('clear').addEventListener('click', () => { clearRecovery(); clearSelection(); $('rows').querySelectorAll('input').forEach(el => { el.checked = false; }); invalidate(); });
  $('all').addEventListener('change', () => {
 		clearRecovery(); const checked = $('all').checked;
-		if (checked && selected.size + rows.filter(row => !selected.has(row.id)).length > FFP.maxEntries) { message(s.max, true); refreshButtons(); return; }
 		rows.forEach(row => { if (checked) { selected.add(row.id); selectedRows.set(row.id, row); } else { selected.delete(row.id); selectedRows.delete(row.id); } });
 		$('rows').querySelectorAll('input').forEach(el => { el.checked = checked; }); invalidate();
 	});
  $('partial').addEventListener('change', refreshButtons);
- function showPreview() { if (!ready || filterDirty || !selected.size) { clearRecovery(); message(!ready ? s.notReady : filterDirty ? s.listChanged : s.emptySelection); return; } invalidate(); return operation(s.previewing, async () => {
+ function showPreview() { if (allPeriod || selected.size > FFP.maxEntries) return beginJob(); if (!ready || filterDirty || !selected.size) { clearRecovery(); message(!ready ? s.notReady : filterDirty ? s.listChanged : s.emptySelection); return; } invalidate(); return operation(s.previewing, async () => {
 		preview = await request('preview', { form_id: $('form').value, ids: JSON.stringify([...selected]) });
 		$('totals').textContent = `${s.submissions}: ${preview.entries.length} · ${s.files}: ${preview.file_count} · ${size(preview.bytes)}${preview.warnings.length ? ` · ${s.warnings}: ${preview.warnings.length}` : ''}`;
 		$('warnings').replaceChildren(); $('warnings').hidden = !preview.warnings.length;
@@ -190,5 +194,100 @@
   $('result-name').textContent = response.name; $('result-status').textContent = warnings ? s.incomplete : s.complete;
   $('result').hidden = false; $('result').scrollIntoView({block: 'start'}); $('result-heading').focus({preventScroll: true});
 	}, {label: s.retryPreview, run: showPreview}));
+
+ $('select-period').addEventListener('click', () => { clearRecovery(); selected.clear(); selectedRows.clear(); allPeriod = true; $('rows input').forEach(box => { box.checked = true; }); invalidate(); });
+ function activeJob() { return job && ['selecting', 'discovering', 'checking', 'review', 'building'].includes(job.status); }
+ async function jobRequest(action, extra = {}) {
+  const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), FFP.requestTimeout);
+  try {
+   const response = await fetch(FFP.url, {method: 'POST', credentials: 'same-origin', body: new URLSearchParams({action: `ffp_job_${action}`, nonce: FFP.nonce, ...extra}), signal: controller.signal});
+   const result = await response.json();
+   if (!response.ok || !result.success) { const error = new Error(result.data?.message || s.error); error.reload = response.status === 403 || result.data?.code === 'session_expired'; throw error; }
+   return result.data;
+  } catch (error) { if (controller.signal.aborted) throw new Error(s.timeout); if (error instanceof TypeError) throw new Error(s.network); throw error; }
+  finally { clearTimeout(timer); }
+ }
+ async function beginJob() {
+  if (!ready || filterDirty || activeJob()) return;
+  invalidate(); jobPage = 1;
+  await operation(s.previewing, async () => {
+   job = await jobRequest('create', {form_id: $('form').value, mode: allPeriod ? 'all' : 'manual', from: $('from').value, to: $('to').value});
+   await renderJob();
+   if (!allPeriod) {
+    const ids = [...selected];
+    for (let i = 0; i < ids.length; i += 100) job = await jobRequest('append', {job: job.id, sequence: i / 100, ids: JSON.stringify(ids.slice(i, i + 100))});
+    job = await jobRequest('finish', {job: job.id});
+   }
+   await renderJob(); message(''); scheduleJob(); $('job-heading').focus({preventScroll: true}); $('job').scrollIntoView({block: 'nearest'});
+  });
+ }
+ function scheduleJob() {
+  clearTimeout(jobTimer);
+  if (job && ['discovering', 'checking', 'building'].includes(job.status)) jobTimer = setTimeout(pollJob, 1200);
+ }
+ async function pollJob() {
+  if (!job || jobPolling || busy) { scheduleJob(); return; }
+  jobPolling = true;
+  try { job = await jobRequest('status', {job: job.id}); await renderJob(); scheduleJob(); }
+  catch (error) { clearTimeout(jobTimer); message(error.message, true); if (error.reload) retry = {label: s.reload, run: () => window.location.reload()}; refreshButtons(); }
+  finally { jobPolling = false; refreshButtons(); }
+ }
+ async function renderJob() {
+  $('job').hidden = !job; if (!job) return;
+  const labels = {discovering: s.discovering, selecting: s.selectingJob, checking: s.checking, review: s.review, building: s.buildingJob, ready: s.readyJob, cancelled: s.cancelledJob, expired: s.expiredJob, error: job.error};
+  const processed = job.status === 'building' || job.status === 'ready' ? job.built : job.checked;
+  $('job-status').textContent = `${labels[job.status] || s.error}${job.total ? ` · ${s.processed}: ${processed} ${s.of} ${job.total}` : ''}`;
+  if (Date.now() / 1000 - job.updated > 120 && activeJob()) $('job-status').textContent += ` · ${s.jobDelay}`;
+  $('job-totals').textContent = `${s.submissions}: ${job.total} · ${s.files}: ${job.files} · ${size(job.bytes)}${job.warnings ? ` · ${s.warnings}: ${job.warnings}` : ''}`;
+  $('job-review').hidden = job.status !== 'review'; $('job-result').hidden = job.status !== 'ready';
+  $('job-cancel').hidden = ['cancelled', 'expired'].includes(job.status);
+  $('job-partial-label').hidden = !job.warnings;
+  $('job-parts').replaceChildren(); $('job-review-list').replaceChildren(); $('job-pager').hidden = true; $('job-expiry').textContent = '';
+  if (['review', 'ready'].includes(job.status)) {
+   const data = await jobRequest(job.status === 'ready' ? 'parts' : 'review', {job: job.id, page: jobPage}); jobPages = data.pages;
+   $('job-pager').hidden = jobPages <= 1; $('job-page').textContent = `${s.page} ${jobPage} ${s.of} ${jobPages}`;
+   if (job.status === 'review') for (const row of data.rows) {
+    const li = node('li', `#${row.id} · ${row.summary}`);
+    for (const warning of row.warnings) li.append(node('p', `${warning.field}: ${warning.reason}`, 'description'));
+    $('job-review-list').append(li);
+   }
+   else {
+    $('job-expiry').textContent = `${s.expires} ${new Date(job.expires * 1000).toLocaleString()}`;
+    for (const part of data.rows) {
+     const li = node('li'); const button = node('button', `${s.downloadFull} · ${s.part} ${part.number + 1} ${s.of} ${job.parts}`, 'button'); button.type = 'button';
+     button.addEventListener('click', () => downloadPart(part.number));
+     li.append(button, node('p', `${part.name} · ${s.submissions}: ${part.submissions} · ${s.files}: ${part.files} · ${size(part.size)}${part.warnings ? ` · ${s.warnings}: ${part.warnings}` : ''}`, 'description')); $('job-parts').append(li);
+    }
+   }
+  }
+  refreshButtons();
+ }
+ async function jobCommand(command) {
+  if (!job || jobPolling) return;
+  clearTimeout(jobTimer); jobPolling = true; refreshButtons();
+  try { job = await jobRequest(command, {job: job.id, allow_partial: $('job-partial').checked ? '1' : '0'}); jobPage = 1; $('job-partial').checked = false; await renderJob(); message(''); scheduleJob(); }
+  catch (error) { message(error.message, true); }
+  finally { jobPolling = false; refreshButtons(); }
+ }
+ async function downloadPart(number) {
+  try {
+   const current = await jobRequest('parts', {job: job.id, page: Math.floor(number / 10) + 1});
+   if (!current.rows.some(row => row.number === number)) throw new Error(s.expiredJob);
+   let frame = document.getElementById('ffp-download-frame');
+   if (!frame) {
+    frame = node('iframe'); frame.id = 'ffp-download-frame'; frame.name = 'ffp-download-frame'; frame.hidden = true; frame.title = s.downloadFull;
+    frame.addEventListener('load', () => { try { const text = frame.contentDocument.body.textContent; if (text.startsWith('{')) { const result = JSON.parse(text); if (!result.success) message(result.data?.message || s.error, true); } } catch (error) { /* Download responses do not expose a document. */ } });
+    document.body.append(frame);
+   }
+   const form = node('form'); form.method = 'POST'; form.action = FFP.url; form.target = frame.name;
+   for (const [name, value] of Object.entries({action: 'ffp_job_file', nonce: FFP.nonce, job: job.id, page: number + 1})) { const input = node('input'); input.type = 'hidden'; input.name = name; input.value = String(value); form.append(input); }
+   document.body.append(form); form.submit(); form.remove(); message(s.downloadStarted);
+  } catch (error) { message(error.message, true); }
+ }
+ $('job-start').addEventListener('click', () => jobCommand('start'));
+ $('job-cancel').addEventListener('click', () => jobCommand('cancel'));
+ $('job-resume').addEventListener('click', pollJob);
+ $('job-partial').addEventListener('change', refreshButtons);
+ for (const [id, delta] of [['job-prev', -1], ['job-next', 1]]) $(id).addEventListener('click', async () => { jobPage += delta; try { await renderJob(); } catch (error) { message(error.message, true); } });
  refreshButtons(); loadForms();
 })();

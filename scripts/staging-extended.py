@@ -40,6 +40,8 @@ for mode in ['single', 'single-media', 'multiple', 'multiple-media', 'ajax', 'aj
 
 print(wp('eval-file', '/opt/ffp/tests/capacity-integration.php'), flush=True)
 read_fixture('capacity-fixture.json')
+print(wp('eval-file', '/opt/ffp/tests/jobs-integration.php'), flush=True)
+read_fixture('fixture.json')
 before = wp('eval-file', '/opt/ffp/tests/lifecycle-snapshot.php').strip()
 subprocess.run(['node', str(repo / 'tests/capacity-browser.cjs')], check=True)
 subprocess.run(['python3', str(repo / 'tests/permissions-http.py')],

@@ -7,7 +7,7 @@ final class Admin {
   add_filter( 'plugin_action_links_' . plugin_basename( dirname( __DIR__ ) . '/file-packs-for-forminator.php' ), array( self::class, 'action_links' ) );
   add_action( 'admin_menu', array( self::class, 'menu' ) );
   add_action( 'admin_enqueue_scripts', array( self::class, 'assets' ) );
-  foreach ( array( 'forms', 'entries', 'preview', 'download' ) as $action ) {
+  foreach ( array( 'forms', 'entries', 'preview', 'download', 'job_create', 'job_append', 'job_finish', 'job_start', 'job_cancel', 'job_status', 'job_review', 'job_parts', 'job_file' ) as $action ) {
    add_action( 'wp_ajax_ffp_' . $action, static function () use ( $action ) { self::endpoint( $action ); } );
   }
  }
@@ -58,6 +58,22 @@ final class Admin {
    'unavailableTitle' => __( 'Export is unavailable', 'file-packs-for-forminator' ),
    'attachmentRefs' => __( 'Saved attachments', 'file-packs-for-forminator' ),
    'selectEntry' => __( 'Select submission', 'file-packs-for-forminator' ),
+   'allPeriod' => __( 'All submissions in the applied period are selected. New submissions after checking starts are excluded.', 'file-packs-for-forminator' ),
+   'discovering' => __( 'Finding submissions…', 'file-packs-for-forminator' ),
+   'checking' => __( 'Checking submissions and files…', 'file-packs-for-forminator' ),
+   'review' => __( 'Contents checked. Review omissions and start the export.', 'file-packs-for-forminator' ),
+   'buildingJob' => __( 'Building ZIP parts…', 'file-packs-for-forminator' ),
+   'readyJob' => __( 'Your ZIP files are ready. Originals stay unchanged.', 'file-packs-for-forminator' ),
+   'cancelledJob' => __( 'Task cancelled. Its private files are being deleted.', 'file-packs-for-forminator' ),
+   'expiredJob' => __( 'The task expired. Check the selection again.', 'file-packs-for-forminator' ),
+   'selectingJob' => __( 'Saving the selection. If interrupted, cancel this task and check the selection again.', 'file-packs-for-forminator' ),
+   'processed' => __( 'Processed', 'file-packs-for-forminator' ),
+   'part' => __( 'Part', 'file-packs-for-forminator' ),
+   'expires' => __( 'Archives are deleted after:', 'file-packs-for-forminator' ),
+   'downloadStarted' => __( 'Download started. You can download this part again until it expires.', 'file-packs-for-forminator' ),
+   'reviewMore' => __( 'More selections are included. Use the checked export review to inspect all submissions.', 'file-packs-for-forminator' ),
+   'jobDelay' => __( 'Progress has not advanced recently. Refresh progress to retry. Background processing can be delayed on this hosting.', 'file-packs-for-forminator' ),
+
   ) ) );
  }
  public static function page() {
@@ -86,7 +102,7 @@ final class Admin {
      <p id="ffp-timezone" class="description"></p>
     </details>
     <p id="ffp-applied-period" class="description"></p>
-    <div class="ffp-selection-bar"><label><input id="ffp-all" type="checkbox"> <?php esc_html_e( 'Select this page', 'file-packs-for-forminator' ); ?></label><button id="ffp-clear" class="button-link"><?php esc_html_e( 'Clear selection', 'file-packs-for-forminator' ); ?></button></div>
+    <div class="ffp-selection-bar"><label><input id="ffp-all" type="checkbox"> <?php esc_html_e( 'Select this page', 'file-packs-for-forminator' ); ?></label><button id="ffp-select-period" class="button"><?php esc_html_e( 'Select all submissions in this period', 'file-packs-for-forminator' ); ?></button><button id="ffp-clear" class="button-link"><?php esc_html_e( 'Clear selection', 'file-packs-for-forminator' ); ?></button></div>
     <table class="widefat striped ffp-table"><thead><tr><th scope="col"><span class="screen-reader-text"><?php esc_html_e( 'Select', 'file-packs-for-forminator' ); ?></span></th><th scope="col"><?php esc_html_e( 'Submission', 'file-packs-for-forminator' ); ?></th><th scope="col"><?php esc_html_e( 'Attachments', 'file-packs-for-forminator' ); ?></th></tr></thead><tbody id="ffp-rows"></tbody></table>
     <div id="ffp-pagination" class="ffp-pagination"><button id="ffp-prev" class="button"><?php esc_html_e( 'Previous', 'file-packs-for-forminator' ); ?></button><span id="ffp-page"></span><button id="ffp-next" class="button"><?php esc_html_e( 'Next', 'file-packs-for-forminator' ); ?></button></div>
     <div class="ffp-action-bar"><strong id="ffp-count" aria-live="polite"></strong><button id="ffp-preview-button" class="button button-primary" disabled><?php esc_html_e( 'Check and download', 'file-packs-for-forminator' ); ?></button></div>
@@ -101,6 +117,16 @@ final class Admin {
     <button id="ffp-download" class="button button-primary"><?php esc_html_e( 'Download ZIP', 'file-packs-for-forminator' ); ?></button>
     <details id="ffp-content-review"><summary><?php esc_html_e( 'View included files', 'file-packs-for-forminator' ); ?></summary><div id="ffp-tree"></div></details>
    </section>
+   <section id="ffp-job" class="ffp-confirmation" aria-labelledby="ffp-job-heading" hidden>
+    <h3 id="ffp-job-heading" tabindex="-1"><?php esc_html_e( 'Large export', 'file-packs-for-forminator' ); ?></h3>
+    <p id="ffp-job-status" role="status" aria-live="polite"></p><p id="ffp-job-totals"></p>
+    <p id="ffp-job-background" class="description"><?php esc_html_e( 'Progress is saved on this site. You can return to this page. Background processing may wait for site visits; keeping this page open also advances the task.', 'file-packs-for-forminator' ); ?></p>
+    <div id="ffp-job-review" hidden><p><?php esc_html_e( 'Review the checked submissions and omissions before starting. Large exports are split into independent ZIP files.', 'file-packs-for-forminator' ); ?></p><ul id="ffp-job-review-list"></ul><label id="ffp-job-partial-label" hidden><input id="ffp-job-partial" type="checkbox"> <?php esc_html_e( 'I agree to download without the files listed above.', 'file-packs-for-forminator' ); ?></label><button id="ffp-job-start" class="button button-primary"><?php esc_html_e( 'Start export', 'file-packs-for-forminator' ); ?></button></div>
+    <ul id="ffp-job-parts"></ul><p id="ffp-job-expiry" class="description"></p>
+    <div id="ffp-job-pager" hidden><button id="ffp-job-prev" class="button"><?php esc_html_e( 'Previous', 'file-packs-for-forminator' ); ?></button><span id="ffp-job-page"></span><button id="ffp-job-next" class="button"><?php esc_html_e( 'Next', 'file-packs-for-forminator' ); ?></button></div>
+    <button id="ffp-job-resume" class="button"><?php esc_html_e( 'Refresh progress', 'file-packs-for-forminator' ); ?></button><button id="ffp-job-cancel" class="button"><?php esc_html_e( 'Cancel task and delete its archives', 'file-packs-for-forminator' ); ?></button>
+    <p id="ffp-job-result" hidden><?php esc_html_e( 'Download each ZIP separately. Extract it and open index.html. Each part contains its own register and submission folders.', 'file-packs-for-forminator' ); ?></p>
+   </section>
    <section id="ffp-result" class="ffp-confirmation" aria-labelledby="ffp-result-heading" hidden>
     <h3 id="ffp-result-heading" tabindex="-1"><?php esc_html_e( 'Download started', 'file-packs-for-forminator' ); ?></h3>
     <p id="ffp-result-status"></p><p><strong id="ffp-result-name"></strong></p>
@@ -114,7 +140,7 @@ final class Admin {
     <p><?php esc_html_e( 'Only attachments stored locally on this site are supported. Remote storage and unsupported file types are reported in the preview.', 'file-packs-for-forminator' ); ?></p>
     <p><?php esc_html_e( 'Attachment counts in the list reflect saved file references. Availability is checked before downloading.', 'file-packs-for-forminator' ); ?></p>
     <p><?php esc_html_e( 'Changing the period clears selection after the new list loads. Dates use the site timezone.', 'file-packs-for-forminator' ); ?></p>
-    <p><?php esc_html_e( 'Current safety limits: 100 submissions, 500 attachments, 100 MiB of attachment data per package. Use smaller batches on limited hosting.', 'file-packs-for-forminator' ); ?></p>
+    <p><?php esc_html_e( 'Large exports have no fixed submission-count limit and are split into ZIP parts. Each submission in a large export may contain up to 16 MiB of attachments, 64 attachments and 1 MiB of field data. Smaller selections use the quick ZIP route. Available disk space and hosting resources still limit exports.', 'file-packs-for-forminator' ); ?></p>
     <button id="ffp-check-ready" class="button"><?php esc_html_e( 'Check export requirements', 'file-packs-for-forminator' ); ?></button>
    </details>
   </section></div>
@@ -137,7 +163,8 @@ final class Admin {
   try {
    Adapter::authorize();
    if ( 'POST' !== ( isset( $_SERVER['REQUEST_METHOD'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) : '' ) || ! check_ajax_referer( 'ffp_export', 'nonce', false ) ) { wp_send_json_error( array( 'code' => 'session_expired', 'message' => __( 'Your session expired or the request is invalid. Refresh this page.', 'file-packs-for-forminator' ) ), 403 ); }
-   if ( 'forms' === $action ) { $data = Adapter::forms( isset( $_POST['search'] ) && is_string( $_POST['search'] ) ? sanitize_text_field( wp_unslash( $_POST['search'] ) ) : '' ); $data['readiness'] = Package::readiness(); $data['periods'] = self::periods(); wp_send_json_success( $data ); }
+   if ( 'forms' === $action ) { $data = Adapter::forms( isset( $_POST['search'] ) && is_string( $_POST['search'] ) ? sanitize_text_field( wp_unslash( $_POST['search'] ) ) : '' ); $data['readiness'] = Package::readiness(); $data['periods'] = self::periods(); $data['job'] = Jobs::latest(); wp_send_json_success( $data ); }
+   if ( str_starts_with( $action, 'job_' ) ) { self::job_endpoint( $action ); }
    $form_id = self::id( isset( $_POST['form_id'] ) && is_string( $_POST['form_id'] ) ? sanitize_text_field( wp_unslash( $_POST['form_id'] ) ) : '' );
    if ( 'entries' === $action ) {
     $page = self::id( isset( $_POST['page'] ) && is_string( $_POST['page'] ) ? sanitize_text_field( wp_unslash( $_POST['page'] ) ) : '1' ); if ( $page > 1000000 ) { throw new \RuntimeException( esc_html__( 'Invalid page.', 'file-packs-for-forminator' ) ); }
@@ -179,5 +206,37 @@ final class Admin {
    exit;
   } catch ( \RuntimeException $e ) { wp_send_json_error( array( 'message' => $e->getMessage() ), 400 ); }
   catch ( \Throwable $e ) { wp_send_json_error( array( 'message' => __( 'The export could not be completed. Check the environment and try again.', 'file-packs-for-forminator' ) ), 500 ); }
+ }
+ private static function job_endpoint( $action ) {
+  $id = isset( $_POST['job'] ) && is_string( $_POST['job'] ) ? sanitize_text_field( wp_unslash( $_POST['job'] ) ) : '';
+  if ( 'job_create' === $action ) {
+   $form = self::id( isset( $_POST['form_id'] ) && is_string( $_POST['form_id'] ) ? sanitize_text_field( wp_unslash( $_POST['form_id'] ) ) : '' );
+   $mode = isset( $_POST['mode'] ) && is_string( $_POST['mode'] ) ? sanitize_text_field( wp_unslash( $_POST['mode'] ) ) : '';
+   $from = isset( $_POST['from'] ) && is_string( $_POST['from'] ) ? sanitize_text_field( wp_unslash( $_POST['from'] ) ) : '';
+   $to = isset( $_POST['to'] ) && is_string( $_POST['to'] ) ? sanitize_text_field( wp_unslash( $_POST['to'] ) ) : '';
+   wp_send_json_success( Jobs::create( $form, $mode, $from, $to ) );
+  }
+  if ( 'job_append' === $action ) {
+   // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Bounded JSON list; every identifier strictly validated below.
+   $raw = isset( $_POST['ids'] ) && is_string( $_POST['ids'] ) ? wp_unslash( $_POST['ids'] ) : '';
+   if ( strlen( $raw ) > 4000 ) { throw new \RuntimeException( esc_html__( 'Selection is too large.', 'file-packs-for-forminator' ) ); }
+   $ids = json_decode( $raw, true );
+   if ( ! is_array( $ids ) || ! array_is_list( $ids ) || count( $ids ) > 100 ) { throw new \RuntimeException( esc_html__( 'Invalid submission selection.', 'file-packs-for-forminator' ) ); }
+   $ids = array_map( array( self::class, 'id' ), $ids );
+   $sequence = isset( $_POST['sequence'] ) && is_string( $_POST['sequence'] ) ? sanitize_text_field( wp_unslash( $_POST['sequence'] ) ) : '';
+   if ( ! preg_match( '/^(0|[1-9][0-9]{0,8})$/D', $sequence ) ) { throw new \RuntimeException( esc_html__( 'Invalid identifier.', 'file-packs-for-forminator' ) ); }
+   wp_send_json_success( Jobs::append( $id, (int) $sequence, $ids ) );
+  }
+  if ( in_array( $action, array( 'job_finish', 'job_start', 'job_cancel' ), true ) ) { wp_send_json_success( Jobs::command( $id, substr( $action, 4 ), isset( $_POST['allow_partial'] ) && '1' === $_POST['allow_partial'] ) ); }
+  if ( 'job_status' === $action ) {
+   Jobs::status( $id ); // Authorize ownership before invoking any work.
+   Jobs::run( $id ); // A bounded foreground fallback works even with blocked cron/loopback.
+   wp_send_json_success( Jobs::status( $id ) );
+  }
+  $page = self::id( isset( $_POST['page'] ) && is_string( $_POST['page'] ) ? sanitize_text_field( wp_unslash( $_POST['page'] ) ) : '1' );
+  if ( 'job_review' === $action ) { wp_send_json_success( Jobs::review( $id, $page ) ); }
+  if ( 'job_parts' === $action ) { wp_send_json_success( Jobs::parts( $id, $page ) ); }
+  if ( 'job_file' === $action ) { Jobs::download( $id, $page - 1 ); exit; }
+  throw new \RuntimeException( esc_html__( 'Invalid export task.', 'file-packs-for-forminator' ) );
  }
 }

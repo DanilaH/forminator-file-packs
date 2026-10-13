@@ -23,6 +23,8 @@ require_once __DIR__ . '/includes/class-adapter.php';
 require_once __DIR__ . '/includes/class-planner.php';
 require_once __DIR__ . '/includes/class-package.php';
 require_once __DIR__ . '/includes/class-admin.php';
+require_once __DIR__ . '/includes/class-jobs.php';
+add_action( 'ffp_export_step', array( Jobs::class, 'run' ) );
 // Bundled translations also work when installing the standalone ZIP outside WordPress.org.
 add_action( 'init', static function () {
  load_plugin_textdomain( 'file-packs-for-forminator', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );

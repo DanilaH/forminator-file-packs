@@ -65,6 +65,26 @@ final class Adapter {
   if ( is_wp_error( $entry ) || (int) $entry->entry_id !== (int) $entry_id || (int) $entry->form_id !== (int) $form_id || 'custom-forms' !== $entry->entry_type || $entry->is_spam || 'active' !== $entry->status ) { throw new \RuntimeException( esc_html__( 'A selected submission is unavailable or does not belong to this form. Refresh the list.', 'file-packs-for-forminator' ) ); }
   return $entry;
  }
+ /** Read-only keyset scan. New entries above the captured ceiling are excluded. */
+ public static function scan( $form_id, $from, $to, $after = 0, $ceiling = null ) {
+  self::form( $form_id );
+  foreach ( array( $from, $to ) as $date ) {
+   $parsed = \DateTimeImmutable::createFromFormat( '!Y-m-d', $date );
+   if ( '' !== $date && ( ! $parsed || $parsed->format( 'Y-m-d' ) !== $date ) ) { throw new \RuntimeException( esc_html__( 'Enter valid dates.', 'file-packs-for-forminator' ) ); }
+  }
+  if ( $from && $to && $from > $to ) { throw new \RuntimeException( esc_html__( 'The start date must precede the end date.', 'file-packs-for-forminator' ) ); }
+  global $wpdb;
+  $table = \Forminator_Database_Tables::get_table_name( \Forminator_Database_Tables::FORM_ENTRY );
+  $where = 'form_id = %d AND entry_type = %s AND is_spam = 0 AND status = %s';
+  $args = array( $form_id, 'custom-forms', 'active' );
+  if ( $from ) { $where .= ' AND date_created >= %s'; $args[] = $from . ' 00:00:00'; }
+  if ( $to ) { $where .= ' AND date_created < %s'; $args[] = ( new \DateTimeImmutable( $to ) )->modify( '+1 day' )->format( 'Y-m-d' ) . ' 00:00:00'; }
+  $where_sql = $wpdb->prepare( $where, $args ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Fixed placeholder fragments; all values bound above.
+  if ( null === $ceiling ) {
+   return (int) $wpdb->get_var( $wpdb->prepare( "SELECT MAX(entry_id) FROM %i WHERE {$where_sql}", $table ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,PluginCheck.Security.DirectDB.UnescapedDBParameter -- Read-only Forminator identifier and separately prepared fixed WHERE.
+  }
+  return array_map( 'intval', $wpdb->get_col( $wpdb->prepare( "SELECT entry_id FROM %i WHERE {$where_sql} AND entry_id > %d AND entry_id <= %d ORDER BY entry_id ASC LIMIT 200", $table, $after, $ceiling ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,PluginCheck.Security.DirectDB.UnescapedDBParameter -- Bounded read-only keyset query, identifier and cursor bound.
+ }
  /** Persisted metadata in known upload fields only; no fetching or path guessing. */
  public static function resolve_file( $form_id, $path, $url, $attachment_id ) {
   if ( ! is_string( $path ) || '' === $path || str_contains( $path, "\0" ) || preg_match( '#^[a-z][a-z0-9+.-]*://#i', $path ) ) { throw new \RuntimeException( esc_html__( 'Unsupported or remote file reference.', 'file-packs-for-forminator' ) ); }
