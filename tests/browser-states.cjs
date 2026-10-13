@@ -106,6 +106,9 @@ if(process.env.FFP_TEST_LAB!=='1')throw Error('Disposable lab only');
 
   assert(await page.locator('#ffp-result').isVisible()&&await page.locator('#ffp-result-name').textContent()===downloaded.suggestedFilename()&&(await page.locator('#ffp-result').textContent()).includes('index.html'),'download result identifies the archive and explains extraction');
   assert(await page.locator('#ffp-result-heading').evaluate(e=>e===document.activeElement),'download result heading receives focus');
+  await page.setViewportSize({width:320,height:800});await page.evaluate(()=>document.querySelector('#ffp-result-name').textContent='form-1-'+ 'a'.repeat(150)+'-2026-10-13_12-00-00.zip');
+  assert(!(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)),'long archive filename in download result fits 320px');
+  await page.screenshot({path:path.join(output,'admin-ru-download-result.png'),fullPage:false});
   assert(await page.evaluate(()=>{const e=new Event('beforeunload',{cancelable:true});window.dispatchEvent(e);return !e.defaultPrevented;}),'completed ZIP removes leave-page warning');
   await page.locator('#ffp-clear').click();assert(await page.locator('#ffp-result').isHidden(),'selection change removes obsolete download result');
   assert(errors.length===0,'no JavaScript exceptions');fs.writeFileSync(path.join(output,'browser-state-results.json'),JSON.stringify({checks,count:checks.length},null,2));
