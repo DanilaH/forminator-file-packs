@@ -237,11 +237,12 @@
   $('job').hidden = !job; if (!job) return;
   $('job-heading').textContent = `${jobHeadingLabel} · ${job.form_title || '#' + job.form}`;
   const labels = {discovering: s.discovering, selecting: s.selectingJob, checking: s.checking, review: s.review, building: s.buildingJob, ready: s.readyJob, cancelled: s.cancelledJob, expired: s.expiredJob, error: job.error};
+  $('job-totals').hidden = ['discovering', 'selecting'].includes(job.status);
   const processed = job.status === 'building' || job.status === 'ready' ? job.built : job.checked;
-  $('job-status').textContent = `${labels[job.status] || s.error}${job.total ? ` · ${s.processed}: ${processed} ${s.of} ${job.total}` : ''}`;
+  $('job-status').textContent = `${labels[job.status] || s.error}${job.total ? job.status === 'discovering' ? ` · ${s.submissions}: ${job.total}` : ` · ${s.processed}: ${processed} ${s.of} ${job.total}` : ''}`;
   if (Date.now() / 1000 - job.updated > 120 && activeJob()) $('job-status').textContent += ` · ${s.jobDelay}`;
   $('job-totals').textContent = `${job.from || job.to ? (job.from || '…') + ' — ' + (job.to || '…') : s.allDates} · ${s.submissions}: ${job.total} · ${s.files}: ${job.files} · ${size(job.bytes)}${job.warnings ? ` · ${s.warnings}: ${job.warnings}` : ''}`;
-  $('job-review').hidden = job.status !== 'review'; $('job-result').hidden = job.status !== 'ready';
+  $('job-review').hidden = true; $('job-result').hidden = true;
   $('job-cancel').hidden = ['cancelled', 'expired'].includes(job.status);
   $('job-partial-label').hidden = !job.warnings;
   $('job-parts').replaceChildren(); $('job-review-list').replaceChildren(); $('job-pager').hidden = true; $('job-expiry').textContent = '';
@@ -254,7 +255,7 @@
     $('job-review-list').append(li);
    }
    else {
-    $('job-expiry').textContent = `${s.expires} ${new Date(job.expires * 1000).toLocaleString()}`;
+    $('job-expiry').textContent = `${s.expires} ${expiryDate(job.expires)}`;
     for (const part of data.rows) {
      const li = node('li'); const button = node('button', `${s.downloadFull} · ${s.part} ${part.number + 1} ${s.of} ${job.parts}`, 'button'); button.type = 'button';
      button.addEventListener('click', () => downloadPart(part.number));
@@ -262,8 +263,10 @@
     }
    }
   }
+  $('job-review').hidden = job.status !== 'review'; $('job-result').hidden = job.status !== 'ready';
   refreshButtons();
  }
+ function expiryDate(timestamp) { try { return new Date(timestamp * 1000).toLocaleString((FFP.locale || 'en_US').split('_').slice(0, 2).join('-')); } catch (error) { return new Date(timestamp * 1000).toISOString().slice(0, 16).replace('T', ' ') + ' UTC'; } }
  function jobFailure(error, again) { retry = error.reload ? {label: s.reload, run: () => window.location.reload()} : {label: s.retryLoad, run: again}; message(error.message, true); }
  async function jobCommand(command) {
   if (!job || jobPolling) return;

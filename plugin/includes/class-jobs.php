@@ -10,6 +10,7 @@ final class Jobs {
  const PART_BYTES = 16777216;
  const PART_TEXT = 1048576;
  const RETENTION = 86400;
+ private static function owner_key( $blog = null ) { return '_ffp_export_' . (int) ( $blog ?? get_current_blog_id() ); }
  private static function path( $id ) {
   if ( ! is_string( $id ) || ! preg_match( '/^[a-f0-9]{32}$/D', $id ) ) { throw new \RuntimeException( esc_html__( 'Invalid export task.', 'file-packs-for-forminator' ) ); }
   $path = Package::private_root() . '/export-' . $id;
@@ -44,7 +45,7 @@ final class Jobs {
  private static function save( $path, &$state ) { $state['updated'] = time(); self::write( $path . '/state.json', $state ); }
  private static function owned( $id ) {
   Adapter::authorize(); $path = self::path( $id ); $state = self::read( $path . '/state.json' );
-  if ( (int) $state['owner'] !== get_current_user_id() ) { throw new \RuntimeException( esc_html__( 'Access denied.', 'file-packs-for-forminator' ) ); }
+  if ( (int) $state['owner'] !== get_current_user_id() || (int) ( $state['blog'] ?? 0 ) !== get_current_blog_id() ) { throw new \RuntimeException( esc_html__( 'Access denied.', 'file-packs-for-forminator' ) ); }
   if ( 1 !== $state['schema'] || VERSION !== $state['version'] ) { throw new \RuntimeException( esc_html__( 'The plugin changed during this export. Check the selection again.', 'file-packs-for-forminator' ) ); }
   return array( $path, $state );
  }
@@ -54,9 +55,9 @@ final class Jobs {
  }
  public static function latest() {
   try { self::collect(); } catch ( \RuntimeException $e ) { return null; }
-  Adapter::authorize(); $id = get_user_meta( get_current_user_id(), '_ffp_export', true );
+  Adapter::authorize(); $id = get_user_meta( get_current_user_id(), self::owner_key(), true );
   if ( ! $id ) { return null; }
-  try { return self::status( $id ); } catch ( \RuntimeException $e ) { delete_user_meta( get_current_user_id(), '_ffp_export' ); return null; }
+  try { return self::status( $id ); } catch ( \RuntimeException $e ) { delete_user_meta( get_current_user_id(), self::owner_key() ); return null; }
  }
  /** Also recover expired orphan tasks if a process died before scheduling their cleanup. */
  public static function collect() {
@@ -64,7 +65,7 @@ final class Jobs {
   foreach ( new \DirectoryIterator( $root ) as $item ) {
    if ( microtime( true ) > $deadline ) { break; }
    if ( ! $item->isDir() || $item->isLink() || ! preg_match( '/^export-([a-f0-9]{32})$/D', $item->getFilename(), $match ) ) { continue; }
-   try { $state = self::read( $item->getPathname() . '/state.json' ); if ( $state['expires'] <= time() || 'cancelled' === $state['status'] ) { self::schedule( $match[1] ); } } catch ( \RuntimeException $e ) { /* Corrupt state is never guessed or exposed. */ }
+   try { $state = self::read( $item->getPathname() . '/state.json' ); if ( (int) ( $state['blog'] ?? 0 ) === get_current_blog_id() && ( $state['expires'] <= time() || 'cancelled' === $state['status'] ) ) { self::schedule( $match[1] ); } } catch ( \RuntimeException $e ) { /* Corrupt state is never guessed or exposed. */ }
   }
  }
  public static function uninstall() {
@@ -72,10 +73,11 @@ final class Jobs {
   try {
    foreach ( new \DirectoryIterator( Package::private_root() ) as $item ) {
     if ( ! $item->isDir() || $item->isLink() || ! preg_match( '/^export-[a-f0-9]{32}$/D', $item->getFilename() ) ) { continue; }
+    try { $state = self::read( $item->getPathname() . '/state.json' ); Package::recover_task( $state['id'], $state['owner'] ); delete_user_meta( $state['owner'], self::owner_key( $state['blog'] ?? 0 ), $state['id'] ); } catch ( \RuntimeException $e ) { /* Still remove this plugin-owned flat directory if its checkpoint was lost. */ }
     foreach ( new \DirectoryIterator( $item->getPathname() ) as $file ) { if ( ! $file->isDot() && ( $file->isFile() || $file->isLink() ) ) { unlink( $file->getPathname() ); } }
     rmdir( $item->getPathname() );
    }
-   delete_metadata( 'user', 0, '_ffp_export', '', true ); wp_unschedule_hook( 'ffp_export_step' ); wp_unschedule_hook( 'ffp_export_gc' );
+   delete_metadata( 'user', 0, self::owner_key(), '', true ); delete_metadata( 'user', 0, '_ffp_export', '', true ); wp_unschedule_hook( 'ffp_export_step' ); wp_unschedule_hook( 'ffp_export_gc' );
   } finally { fclose( $lock ); }
  }
  public static function create( $form, $mode, $from = '', $to = '' ) {
@@ -84,7 +86,7 @@ final class Jobs {
   $ceiling = Adapter::scan( $form, $from, $to );
   $lock = self::lock(); if ( ! $lock ) { throw new \RuntimeException( esc_html__( 'Another export step is running. Try again shortly.', 'file-packs-for-forminator' ) ); }
   try {
-   $old = get_user_meta( get_current_user_id(), '_ffp_export', true );
+   $old = get_user_meta( get_current_user_id(), self::owner_key(), true );
    if ( $old ) {
     try { list( $old_path, $old_state ) = self::owned( $old ); }
     catch ( \RuntimeException $e ) { $old_path = ''; }
@@ -98,7 +100,8 @@ final class Jobs {
    if ( ! mkdir( $path, 0700 ) || ! chmod( $path, 0700 ) ) { throw new StorageException( esc_html__( 'Cannot prepare the package.', 'file-packs-for-forminator' ) ); }
    $state = array( 'schema' => 1, 'version' => VERSION, 'id' => $id, 'owner' => get_current_user_id(), 'locale' => determine_locale(), 'form' => (int) $form, 'mode' => $mode, 'from' => $from, 'to' => $to, 'ceiling' => $ceiling, 'cursor' => 0, 'status' => 'all' === $mode ? 'discovering' : 'selecting', 'chunks' => 0, 'total' => 0, 'checked' => 0, 'built' => 0, 'files' => 0, 'bytes' => 0, 'warnings' => 0, 'parts' => 0, 'completed_parts' => 0, 'check_chunk' => 0, 'check_offset' => 0, 'pending' => array(), 'pending_bytes' => 0, 'pending_files' => 0, 'pending_text' => 0, 'partial' => false, 'error' => '', 'created' => time(), 'updated' => time(), 'expires' => time() + self::RETENTION );
    $state['form_title'] = wp_html_excerpt( wp_strip_all_tags( (string) ( $model->settings['formName'] ?? $model->name ) ), 180, '…' );
-   self::save( $path, $state ); update_user_meta( $state['owner'], '_ffp_export', $id ); self::schedule( $id );
+   $state['blog'] = get_current_blog_id();
+   self::save( $path, $state ); update_user_meta( $state['owner'], self::owner_key(), $id ); self::schedule( $id );
    wp_schedule_single_event( $state['expires'], 'ffp_export_step', array( $id ) );
    return self::view( $state );
   } finally { fclose( $lock ); }
@@ -154,6 +157,7 @@ final class Jobs {
   $previous = get_current_user_id(); $switched = false; $state = null;
   try {
    $path = self::path( $id ); $state = self::read( $path . '/state.json' );
+   if ( (int) ( $state['blog'] ?? 0 ) !== get_current_blog_id() ) { return; }
    if ( $state['expires'] <= time() ) { $state['status'] = 'expired'; }
    if ( in_array( $state['status'], array( 'cancelled', 'expired' ), true ) ) { self::purge_step( $path, $state ); return; }
    if ( in_array( $state['status'], array( 'ready', 'review', 'error', 'selecting' ), true ) ) { return; }
@@ -288,7 +292,7 @@ final class Jobs {
    if ( ++$count >= 200 ) { self::save( $path, $state ); self::schedule( $state['id'] ); return; }
   }
   unlink( $path . '/state.json' ); rmdir( $path );
-  if ( get_user_meta( $state['owner'], '_ffp_export', true ) === $state['id'] ) { delete_user_meta( $state['owner'], '_ffp_export' ); }
+  if ( get_user_meta( $state['owner'], self::owner_key(), true ) === $state['id'] ) { delete_user_meta( $state['owner'], self::owner_key() ); }
   wp_clear_scheduled_hook( 'ffp_export_step', array( $state['id'] ) );
  }
 }
