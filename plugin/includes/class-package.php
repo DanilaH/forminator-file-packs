@@ -20,7 +20,7 @@ final class Package {
    $root = self::private_root();
    $probe = $root . '/probe-' . bin2hex( random_bytes( 16 ) );
    $stream = @fopen( $probe, 'xb' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Exclusive probe in verified private storage; no remote filesystem fallback.
-   if ( ! $stream || ! @chmod( $probe, 0600 ) || 3 !== @fwrite( $stream, 'FFP' ) || ! @fflush( $stream ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite -- Check an actual bounded private write, not only an advertised permission bit.
+   if ( ! $stream || ! @chmod( $probe, 0600 ) || 3 !== @fwrite( $stream, 'FFP' ) || ! @fflush( $stream ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_chmod,WordPress.WP.AlternativeFunctions.file_system_operations_fwrite -- Restrict and verify a bounded write in the already validated local private filesystem; remote/FTP fallback cannot verify the same storage.
     throw new StorageException( esc_html__( 'Could not verify private storage. Ask your hosting administrator to check its write permissions.', 'file-packs-for-forminator' ) );
    }
    $result['storage'] = true;
