@@ -87,7 +87,7 @@ final class Admin {
     </details>
     <p id="ffp-applied-period" class="description"></p>
     <div class="ffp-selection-bar"><label><input id="ffp-all" type="checkbox"> <?php esc_html_e( 'Select this page', 'file-packs-for-forminator' ); ?></label><button id="ffp-clear" class="button-link"><?php esc_html_e( 'Clear selection', 'file-packs-for-forminator' ); ?></button></div>
-    <table class="widefat striped ffp-table"><thead><tr><th scope="col"><?php esc_html_e( 'Select', 'file-packs-for-forminator' ); ?></th><th scope="col"><?php esc_html_e( 'Submission', 'file-packs-for-forminator' ); ?></th><th scope="col"><?php esc_html_e( 'Attachments', 'file-packs-for-forminator' ); ?></th></tr></thead><tbody id="ffp-rows"></tbody></table>
+    <table class="widefat striped ffp-table"><thead><tr><th scope="col"><span class="screen-reader-text"><?php esc_html_e( 'Select', 'file-packs-for-forminator' ); ?></span></th><th scope="col"><?php esc_html_e( 'Submission', 'file-packs-for-forminator' ); ?></th><th scope="col"><?php esc_html_e( 'Attachments', 'file-packs-for-forminator' ); ?></th></tr></thead><tbody id="ffp-rows"></tbody></table>
     <div id="ffp-pagination" class="ffp-pagination"><button id="ffp-prev" class="button"><?php esc_html_e( 'Previous', 'file-packs-for-forminator' ); ?></button><span id="ffp-page"></span><button id="ffp-next" class="button"><?php esc_html_e( 'Next', 'file-packs-for-forminator' ); ?></button></div>
     <div class="ffp-action-bar"><strong id="ffp-count" aria-live="polite"></strong><button id="ffp-preview-button" class="button button-primary" disabled><?php esc_html_e( 'Check and download', 'file-packs-for-forminator' ); ?></button></div>
     <p id="ffp-selection-help" class="description"></p>

@@ -53,3 +53,5 @@ Seven explicitly authorized refinements: bounded escaped offline index summaries
 ## Simplified task flow 0.3.5
 
 The user could not understand the 0.3.4 screenshots. Explicitly authorized redesign: one workspace, task-first wording, collapsed optional help/date/content details, failure-only environment block, compact reviewed-contents confirmation and extraction guidance. Backend security, private handling and export contracts remain enforced. List attachment_count counts only saved nonempty paths in recognized upload fields, without resolving or claiming exportability; preview totals still use verified attachments. Preview-only summaries are bounded. Screenshots must show real UI with synthetic persisted records; do not claim first-time human usability testing.
+
+Showcase captures crop the real plugin workspace and hide only the external fixed WordPress toolbar during capture, to avoid toolbar overlap in tall element screenshots. Plugin errors and warnings are never hidden. Offline screenshots open the actual extracted synthetic ZIP.

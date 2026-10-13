@@ -7,7 +7,7 @@
 	const s = FFP.strings;
 	const selected = new Set();
 	const selectedRows = new Map();
-	let retry = null, activeController = null, ready = false, periods = {}, downloading = false;
+	let retry = null, activeController = null, ready = false, periods = {}, downloading = false, currentPeriod = 'all';
  const help = app.querySelector('.ffp-help');
  try { if (localStorage.getItem('ffp.helpOpen') === '1') help.open = true; } catch (e) { /* Storage is optional. */ }
  help.addEventListener('toggle', () => { try { localStorage.setItem('ffp.helpOpen', help.open ? '1' : '0'); } catch (e) { /* Storage is optional. */ } });
@@ -37,6 +37,7 @@
 	function refreshButtons() {
 		app.querySelectorAll('button,input,select').forEach(el => { el.disabled = busy; });
 		$('cancel').hidden = !busy; $('cancel').disabled = !busy || !activeController;
+  for (const [id, period] of [['reset-period', 'all'], ['week', 'week'], ['month', 'month']]) $(id).setAttribute('aria-pressed', String(currentPeriod === period));
   $('week').disabled = busy || !periods.week; $('month').disabled = busy || !periods.month;
 		$('prev').disabled = busy || filterDirty || page <= 1; $('next').disabled = busy || filterDirty || page >= pages;
 		$('preview-button').textContent = preview ? s.recheckSelection : s.checkSelection;
@@ -115,6 +116,7 @@
 			const data = await request('entries', { form_id: $('form').value, page: nextPage, from: $('from').value, to: $('to').value, period: preset });
    if (data.applied_period) { $('from').value = data.applied_period.from; $('to').value = data.applied_period.to; }
 			if (reset) clearSelection();
+   if (preset || reset || (!$('from').value && !$('to').value)) currentPeriod = preset || (!$('from').value && !$('to').value ? 'all' : 'custom');
    filterDirty = false; page = data.page; pages = data.pages; rows = data.entries; $('rows').replaceChildren();
 			for (const row of rows) {
     if (selected.has(row.id)) selectedRows.set(row.id, row);
@@ -125,14 +127,14 @@
 					if (box.checked) { selected.add(row.id); selectedRows.set(row.id, row); } else { selected.delete(row.id); selectedRows.delete(row.id); }
 					invalidate();
 				});
-				const identity = node('td'); identity.append(node('strong', row.summary || `#${row.id}`), node('small', `#${row.id} · ${row.display_date || row.date}`, 'ffp-mobile-date'));
+				const identity = node('td'); identity.id = `ffp-entry-${row.id}`; box.setAttribute('aria-describedby', identity.id); identity.append(node('strong', row.summary || `#${row.id}`), node('small', `#${row.id} · ${row.display_date || row.date}`, 'ffp-mobile-date'), node('small', `${s.files}: ${row.attachment_count}`, 'ffp-mobile-files'));
     const attachments = node('td', String(row.attachment_count)); attachments.setAttribute('aria-label', `${s.attachmentRefs}: ${row.attachment_count}`);
 				td.append(box); tr.append(td, identity, attachments); $('rows').append(tr);
 			}
 			if (!rows.length) { const tr = node('tr'); const td = node('td', $('from').value || $('to').value ? s.noEntries : s.emptyEntries); td.colSpan = 3; tr.append(td); $('rows').append(tr); }
 			$('page').textContent = `${s.page} ${page} ${s.of} ${pages} · ${s.total}: ${data.total}`;
 			$('timezone').textContent = `${s.dateZone} ${data.timezone}`;
-   $('applied-period').textContent = $('from').value || $('to').value ? `${$('from').value || '…'} — ${$('to').value || '…'} · ${data.timezone}` : s.allDates;
+   $('applied-period').textContent = $('from').value || $('to').value ? `${$('from').value || '…'} — ${$('to').value || '…'} · ${data.timezone}` : '';
 			$('selection').hidden = false; $('pagination').hidden = pages <= 1; clearRecovery();
 		}, {label: s.retryLoad, run: () => loadEntries(nextPage, reset, preset)});
 	}

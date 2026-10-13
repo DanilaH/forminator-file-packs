@@ -2,7 +2,7 @@
 const {chromium}=require(process.env.FFP_PLAYWRIGHT_MODULE||'playwright');const fs=require('node:fs');const path=require('node:path');
 if(process.env.FFP_TEST_LAB!=='1')throw Error('Disposable lab only');
 (async()=>{
- const fixture=JSON.parse(fs.readFileSync(process.env.FFP_TEST_FIXTURE,'utf8'));const output=process.env.FFP_TEST_ARTIFACTS;const checks=[];
+ const fixture=JSON.parse(fs.readFileSync(process.env.FFP_TEST_FIXTURE,'utf8'));const output=process.env.FFP_TEST_ARTIFACTS;const checks=[];const screenshotStyle='#wpadminbar{visibility:hidden}';
  const browser=await chromium.launch({headless:true,executablePath:process.env.FFP_CHROMIUM_PATH||undefined});
  const assert=(value,name)=>{if(!value)throw Error(name);checks.push(name);console.log('PASS '+name);};
  try{
@@ -48,6 +48,7 @@ if(process.env.FFP_TEST_LAB!=='1')throw Error('Disposable lab only');
    const event=page.waitForResponse(r=>r.url().includes('admin-ajax.php')&&r.request().postData()?.includes('period='+period));
    await page.locator('#ffp-'+period).click();const body=await(await event).json();await page.waitForFunction(()=>document.querySelector('#ffp-app').getAttribute('aria-busy')==='false');
    assert(await page.locator('#ffp-from').inputValue()===body.data.applied_period.from&&await page.locator('#ffp-to').inputValue()===body.data.applied_period.to,'quick '+period+' period uses server dates despite browser timezone');
+   assert(await page.locator('#ffp-'+period).getAttribute('aria-pressed')==='true','quick '+period+' control reflects the applied period');
    assert((await page.locator('#ffp-count').getAttribute('data-count'))==='0','quick '+period+' application clears selection after loading');
   }
   await page.locator('#ffp-reset-period').click();await page.waitForFunction(()=>document.querySelector('#ffp-app').getAttribute('aria-busy')==='false');await checkbox.check();
@@ -121,19 +122,19 @@ if(process.env.FFP_TEST_LAB!=='1')throw Error('Disposable lab only');
   assert(await page.locator('#ffp-environment').isHidden()&&!await page.locator('.ffp-help').evaluate(e=>e.open)&&!await page.locator('#ffp-custom-period').evaluate(e=>e.open),'successful requirements, optional help and custom dates do not occupy the main flow');
   assert(await page.locator('#ffp-rows td:last-child').allTextContents().then(a=>a.sort().join(',')==='2,3'),'saved attachment counts match real fixture references');
   await page.locator('#ffp-all').check();
-  await page.locator('#ffp-workspace').screenshot({path:path.join(output,'showcase-desktop.png')});
-  await page.setViewportSize({width:390,height:844});assert(!(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)),'compact task flow fits a 390px phone');await page.locator('#ffp-workspace').screenshot({path:path.join(output,'showcase-mobile.png')});
+  await page.locator('#ffp-workspace').screenshot({style:screenshotStyle,path:path.join(output,'showcase-desktop.png')});
+  await page.setViewportSize({width:390,height:844});assert(!(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)),'compact task flow fits a 390px phone');assert(await page.locator('.ffp-mobile-files').first().isVisible(),'phone rows show saved file counts alongside submission details');await page.locator('#ffp-workspace').screenshot({style:screenshotStyle,path:path.join(output,'showcase-mobile.png')});
   await page.setViewportSize({width:1280,height:900});await page.locator('#ffp-preview-button').click();await page.locator('#ffp-preview:not([hidden])').waitFor();
   assert((await page.locator('#ffp-totals').textContent()).includes('5')&&await page.locator('#ffp-download').isEnabled()&&!await page.locator('#ffp-content-review').evaluate(e=>e.open),'compact confirmation shows five verified files and keeps optional contents collapsed');
-  await page.locator('#ffp-workspace').screenshot({path:path.join(output,'showcase-confirmation.png')});
+  await page.locator('#ffp-workspace').screenshot({style:screenshotStyle,path:path.join(output,'showcase-confirmation.png')});
   const taskDownload=page.waitForEvent('download');await page.locator('#ffp-download').click();await(await taskDownload).saveAs(path.join(output,'showcase-package.zip'));await page.waitForFunction(()=>document.querySelector('#ffp-result')?.hidden===false);
   assert(await page.locator('#ffp-preview').isHidden()&&(await page.locator('#ffp-result').textContent()).includes('Список заявок'),'completed download replaces confirmation with extraction guidance');
-  await page.locator('#ffp-workspace').screenshot({path:path.join(output,'showcase-result.png')});
+  await page.locator('#ffp-workspace').screenshot({style:screenshotStyle,path:path.join(output,'showcase-result.png')});
   const extracted=path.join(output,'showcase-extracted');require('node:child_process').execFileSync('python3',['-c','import sys,zipfile; z=zipfile.ZipFile(sys.argv[1]); assert z.testzip() is None; z.extractall(sys.argv[2])',path.join(output,'showcase-package.zip'),extracted]);
   const offline=await browser.newPage({viewport:{width:1100,height:800}});await offline.goto(require('node:url').pathToFileURL(path.join(extracted,'index.html')).href);
   assert((await offline.locator('main').textContent()).includes('Иван Петров')&&(await offline.locator('a[href$="/request.html"]').count())===2,'actual extracted ZIP index shows recognizable submissions offline');
-  await offline.screenshot({path:path.join(output,'showcase-zip-index.png'),fullPage:true});
-  await offline.locator('a[href$="/request.html"]').first().click();assert((await offline.locator('main').textContent()).includes('Смирнова')||(await offline.locator('main').textContent()).includes('Петров'),'actual offline submission card opens from the index');await offline.screenshot({path:path.join(output,'showcase-zip-card.png'),fullPage:true});await offline.close();
+  await offline.screenshot({style:screenshotStyle,path:path.join(output,'showcase-zip-index.png'),fullPage:true});
+  await offline.locator('a[href$="/request.html"]').first().click();assert((await offline.locator('main').textContent()).includes('Смирнова')||(await offline.locator('main').textContent()).includes('Петров'),'actual offline submission card opens from the index');await offline.screenshot({style:screenshotStyle,path:path.join(output,'showcase-zip-card.png'),fullPage:true});await offline.close();
   assert(errors.length===0,'no JavaScript exceptions');fs.writeFileSync(path.join(output,'browser-state-results.json'),JSON.stringify({checks,count:checks.length},null,2));
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
