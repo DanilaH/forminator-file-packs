@@ -68,7 +68,26 @@ final class Planner {
   while ( strlen( $name ) > 150 ) { $name = preg_replace( '/.$/us', '', $name ); }
   return $name;
  }
+ public static function summary( $row ) {
+  $parts = array();
+  foreach ( $row['fields'] as $field ) {
+   if ( ! is_scalar( $field['data'] ) || '' === trim( $field['value'] ) ) { continue; }
+   $parts[] = wp_html_excerpt( wp_strip_all_tags( $field['value'] ), 180, '…' );
+   if ( count( $parts ) >= 2 ) { break; }
+  }
+  return wp_html_excerpt( implode( ' · ', $parts ), 180, '…' );
+ }
+ public static function warning_help( $reason ) {
+  if ( in_array( $reason, array( __( 'Unsupported or remote file reference.', 'file-packs-for-forminator' ), __( 'Remote storage is not supported in this version.', 'file-packs-for-forminator' ), __( 'Upload has no supported local file reference.', 'file-packs-for-forminator' ) ), true ) ) {
+   return __( 'This exporter needs a verified local attachment. Ask the site administrator to check local storage, or accept a package without this file.', 'file-packs-for-forminator' );
+  }
+  if ( __( 'This file type is not supported for safe export.', 'file-packs-for-forminator' ) === $reason ) {
+   return __( 'This type is deliberately excluded. Obtain the file separately from a trusted source, or accept a package without it.', 'file-packs-for-forminator' );
+  }
+  return __( 'Check the original attachment in Forminator with the site administrator, then refresh the preview. You can also accept a package without this file.', 'file-packs-for-forminator' );
+ }
  public static function preview( $plan ) {
+  foreach ( $plan['warnings'] as &$warning ) { $warning['next_step'] = self::warning_help( $warning['reason'] ); } unset( $warning );
   foreach ( $plan['entries'] as &$row ) {
    unset( $row['fields'] ); foreach ( $row['files'] as &$file ) { $file = array_intersect_key( $file, array_flip( array( 'name', 'label', 'size' ) ) ); } unset( $file );
   } unset( $row ); return $plan;

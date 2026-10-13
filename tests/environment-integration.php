@@ -30,4 +30,15 @@ foreach ( array( 'Service requests', 'Заявки на обслуживание
  $name = Admin::download_name( array( 'form_id' => 99, 'form_title' => $title ) );
  $check( 1 === preg_match( '/^form-99-.+-\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.zip$/u', $name ) && strlen( $name ) < 220 && ! preg_match( '/[\x00-\x1f\x7f<>:"\/\\\\|?*]/u', $name ), 'safe, bounded and dated archive filename for title ' . count( $checks ) );
 }
+
+$summary = \ForminatorFilePacks\Planner::summary( array( 'fields' => array(
+ array( 'data' => array( 'nested' ), 'value' => '[nested]' ),
+ array( 'data' => '<b>Иван</b>', 'value' => '<b>Иван</b>' ),
+ array( 'data' => 'Service request', 'value' => 'Service request' ),
+ array( 'data' => 'Third field', 'value' => 'Third field' ),
+) ) );
+$check( 'Иван · Service request' === $summary, 'offline summary uses two scalar fields, strips markup and skips collections' );
+$summary = \ForminatorFilePacks\Planner::summary( array( 'fields' => array( array( 'data' => str_repeat( 'Я', 1000 ), 'value' => str_repeat( 'Я', 1000 ) ) ) ) );
+$check( mb_strlen( $summary ) <= 181, 'offline summary stays bounded for long Unicode values' );
+$check( \ForminatorFilePacks\Planner::warning_help( __( 'Remote storage is not supported in this version.', 'file-packs-for-forminator' ) ) !== \ForminatorFilePacks\Planner::warning_help( __( 'This file type is not supported for safe export.', 'file-packs-for-forminator' ) ), 'remote storage and excluded types provide different next actions' );
 file_put_contents( getenv( 'FFP_TEST_ARTIFACTS' ) . '/environment-check-results.json', wp_json_encode( array( 'count' => count( $checks ), 'checks' => $checks ), JSON_PRETTY_PRINT ) );

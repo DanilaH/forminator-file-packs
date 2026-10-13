@@ -200,7 +200,7 @@ final class Package {
 	private function warnings( $rows ) {
 		if ( ! $rows ) { return ''; }
 		$text = '<div class="warning"><strong>' . esc_html__( 'Incomplete package — some attachments were omitted', 'file-packs-for-forminator' ) . '</strong><ul>';
-		foreach ( $rows as $w ) { $text .= '<li>' . esc_html( '#' . $w['entry'] . ' · ' . $w['field'] . ': ' . $w['reason'] ) . '</li>'; }
+		foreach ( $rows as $w ) { $text .= '<li>' . esc_html( '#' . $w['entry'] . ' · ' . $w['field'] . ': ' . $w['reason'] ) . '<p>' . esc_html( Planner::warning_help( $w['reason'] ) ) . '</p></li>'; }
 		return $text . '</ul></div>';
 	}
 	private function card( $row ) {
@@ -214,7 +214,10 @@ final class Package {
 	private function index() {
 		// translators: %1$d: submission count; %2$d: attachment count.
 		$body = '<p>' . esc_html( sprintf( __( '%1$d submissions · %2$d attachments', 'file-packs-for-forminator' ), count( $this->plan['entries'] ), $this->plan['file_count'] ) ) . '</p>' . $this->warnings( $this->plan['warnings'] ) . '<p><a href="register.csv">' . esc_html__( 'Open CSV register', 'file-packs-for-forminator' ) . '</a> · <a href="data.json">' . esc_html__( 'Open JSON data', 'file-packs-for-forminator' ) . '</a></p><ul>';
-		foreach ( $this->plan['entries'] as $row ) { $body .= '<li><a href="' . esc_attr( $row['folder'] . '/request.html' ) . '">' . esc_html( '#' . $row['id'] . ' · ' . $row['date'] ) . '</a></li>'; }
+		foreach ( $this->plan['entries'] as $row ) {
+   $summary = Planner::summary( $row );
+   $body .= '<li><a href="' . esc_attr( $row['folder'] . '/request.html' ) . '">' . esc_html( '#' . $row['id'] . ' · ' . $row['date'] ) . '</a>' . ( $summary ? '<p>' . esc_html( $summary ) . '</p>' : '' ) . '<p>' . esc_html__( 'Attachments', 'file-packs-for-forminator' ) . ': ' . count( $row['files'] ) . '</p></li>';
+  }
 		return $this->html( $this->plan['form_title'], $body . '</ul>' );
 	}
 	public static function csv_cell( $value ) {

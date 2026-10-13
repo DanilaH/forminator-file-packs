@@ -100,6 +100,11 @@ final class Admin {
    <div id="ffp-tree"></div>
    <label id="ffp-partial-label" class="ffp-partial" hidden><input type="checkbox" id="ffp-partial"> <?php esc_html_e( 'I understand that the package will be incomplete. Export the available files.', 'file-packs-for-forminator' ); ?></label>
    <button id="ffp-download" class="button button-primary"><?php esc_html_e( 'Build and download ZIP', 'file-packs-for-forminator' ); ?></button>
+  </section>
+  <section id="ffp-result" class="ffp-panel" aria-labelledby="ffp-result-heading" hidden>
+   <h2 id="ffp-result-heading" tabindex="-1"><?php esc_html_e( 'Download started', 'file-packs-for-forminator' ); ?></h2>
+   <p id="ffp-result-status"></p><p><strong id="ffp-result-name"></strong></p>
+   <p><?php esc_html_e( 'Find the ZIP in your browser downloads, extract it, then open index.html. Keep the whole extracted folder together so attachment links work.', 'file-packs-for-forminator' ); ?></p>
   </section></div>
   <?php
  }

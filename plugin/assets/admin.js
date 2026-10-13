@@ -7,7 +7,11 @@
 	const s = FFP.strings;
 	const selected = new Set();
 	const selectedRows = new Map();
-	let retry = null, activeController = null, ready = false, periods = {};
+	let retry = null, activeController = null, ready = false, periods = {}, downloading = false;
+ const help = app.querySelector('.ffp-help');
+ try { if (localStorage.getItem('ffp.quickStartCollapsed') === '1') help.open = false; } catch (e) { /* Storage is optional. */ }
+ help.addEventListener('toggle', () => { try { localStorage.setItem('ffp.quickStartCollapsed', help.open ? '0' : '1'); } catch (e) { /* Storage is optional. */ } });
+ window.addEventListener('beforeunload', e => { if (downloading) { e.preventDefault(); e.returnValue = ''; } });
 	let page = 1, pages = 1, rows = [], preview = null, busy = false, filterDirty = false;
 	const node = (tag, text, cls) => { const el = document.createElement(tag); if (text !== undefined) el.textContent = text; if (cls) el.className = cls; return el; };
 	function size(bytes) { return bytes < 1024 ? `${bytes} B` : bytes < 1048576 ? `${(bytes / 1024).toFixed(1)} KiB` : `${(bytes / 1048576).toFixed(2)} MiB`; }
@@ -41,10 +45,11 @@
 		$('rows').querySelectorAll('input').forEach(el => { el.disabled = busy || filterDirty; });
 		$('all').checked = rows.length > 0 && rows.every(row => selected.has(row.id));
 		$('all').indeterminate = rows.some(row => selected.has(row.id)) && !$('all').checked;
-		$('count').textContent = `${s.selected} ${selected.size}`;
+		$('count').textContent = `${s.selected} ${selected.size} ${s.of} ${FFP.maxEntries}`;
+  $('count').dataset.count = String(selected.size);
   reviewSelection();
 	}
-	function invalidate() { preview = null; $('preview').hidden = true; $('partial').checked = false; refreshButtons(); }
+	function invalidate() { $('result').hidden = true; preview = null; $('preview').hidden = true; $('partial').checked = false; refreshButtons(); }
 	async function request(action, extra = {}) {
   const controller = new AbortController(); activeController = controller;
   $('cancel').disabled = false;
@@ -74,13 +79,14 @@
  }
 	async function operation(label, fn, recovery = null) {
 		if (busy) return;
-		retry = recovery; busy = true; app.setAttribute('aria-busy', 'true'); refreshButtons(); message(label);
+		retry = recovery; downloading = label === s.building; if (downloading) $('result').hidden = true; busy = true; app.setAttribute('aria-busy', 'true'); refreshButtons(); message(label);
 		let failed = false;
   try { await fn(); } catch (e) { failed = true; if (e.reload) { retry = {label: s.reload, run: () => window.location.reload()}; invalidate(); }
    message(e.message, true); if (label === s.building) invalidate(); }
-		finally { busy = false; app.setAttribute('aria-busy', 'false'); refreshButtons(); if (failed && label === s.building && !$('retry').hidden) $('retry').focus(); }
+		finally { downloading = false; busy = false; app.setAttribute('aria-busy', 'false'); refreshButtons(); if (failed && label === s.building && !$('retry').hidden) $('retry').focus(); }
 	}
 	async function loadForms() {
+  let autoSelect = false;
 		await operation(s.loading, async () => {
 			const data = await request('forms', { search: $('search').value });
    ready = data.readiness.ready; periods = data.periods;
@@ -92,11 +98,13 @@
    if (!keep) { clearSelection(); invalidate(); $('selection').hidden = true; }
 			$('form').replaceChildren(new Option(s.choose, ''));
 			data.forms.forEach(form => $('form').add(new Option(`${form.title} (#${form.id})`, form.id)));
-			$('form').value = keep ? current : '';
+			autoSelect = !current && !$('search').value.trim() && data.forms.length === 1 && !data.truncated;
+   $('form').value = keep ? current : autoSelect ? String(data.forms[0].id) : '';
    $('form-note').textContent = data.truncated ? s.truncated : data.forms.length ? '' : $('search').value.trim() ? s.noForms : s.emptyForms;
    $('form-help').hidden = data.forms.length > 0;
    message(current && !keep ? s.searchReset : '');
 		}, {label: s.retryLoad, run: loadForms});
+  if (autoSelect) await loadEntries();
 	}
 	async function loadEntries(nextPage = 1, reset = false, preset = '') {
 		await operation(s.loading, async () => {
@@ -108,9 +116,10 @@
     if (selected.has(row.id)) selectedRows.set(row.id, row);
 				const tr = node('tr'); const td = node('td'); const box = node('input'); box.type = 'checkbox'; box.dataset.entry = String(row.id); box.checked = selected.has(row.id); box.setAttribute('aria-label', `${s.selectEntry} #${row.id}`);
 				box.addEventListener('change', () => {
-					if (box.checked && selected.size >= FFP.maxEntries) { box.checked = false; message(s.max, true); return; }
+					clearRecovery();
+     if (box.checked && selected.size >= FFP.maxEntries) { box.checked = false; message(s.max, true); return; }
 					if (box.checked) { selected.add(row.id); selectedRows.set(row.id, row); } else { selected.delete(row.id); selectedRows.delete(row.id); }
-					clearRecovery(); invalidate();
+					invalidate();
 				});
 				const identity = node('td', `#${row.id}`); identity.append(node('small', row.date, 'ffp-mobile-date'));
 				td.append(box); tr.append(td, identity, node('td', row.date), node('td', row.summary || '—')); $('rows').append(tr);
@@ -118,7 +127,7 @@
 			if (!rows.length) { const tr = node('tr'); const td = node('td', $('from').value || $('to').value ? s.noEntries : s.emptyEntries); td.colSpan = 4; tr.append(td); $('rows').append(tr); }
 			$('page').textContent = `${s.page} ${page} ${s.of} ${pages} · ${s.total}: ${data.total}`;
 			$('timezone').textContent = `${s.dateZone} ${data.timezone}`;
-			$('selection').hidden = false; $('pagination').hidden = pages <= 1; message('');
+			$('selection').hidden = false; $('pagination').hidden = pages <= 1; clearRecovery();
 		}, {label: s.retryLoad, run: () => loadEntries(nextPage, reset, preset)});
 	}
 	$('check').addEventListener('click', loadForms);
@@ -147,7 +156,7 @@
 		$('totals').textContent = `${s.submissions}: ${preview.entries.length} · ${s.files}: ${preview.file_count} · ${size(preview.bytes)} · ${s.warnings}: ${preview.warnings.length}`;
 		$('warnings').replaceChildren(); $('warnings').hidden = !preview.warnings.length;
 		if (preview.warnings.length) {
-			const ul = node('ul'); preview.warnings.forEach(w => ul.append(node('li', `#${w.entry} · ${w.field}: ${w.reason}`))); $('warnings').append(ul);
+			const ul = node('ul'); preview.warnings.forEach(w => { const li = node('li', `#${w.entry} · ${w.field}: ${w.reason}`); li.append(node('p', w.next_step, 'description')); ul.append(li); }); $('warnings').append(ul);
 		}
 		$('tree').replaceChildren();
 		preview.entries.forEach(row => {
@@ -168,6 +177,8 @@
 		setTimeout(() => URL.revokeObjectURL(url), 60000);
 		const warnings = response.warnings;
 		message(warnings ? `${s.incomplete} (${s.warnings}: ${warnings})` : s.complete);
+  $('result-name').textContent = response.name; $('result-status').textContent = warnings ? s.incomplete : s.complete;
+  $('result').hidden = false; $('result-heading').focus();
 	}, {label: s.retryPreview, run: showPreview}));
  refreshButtons(); loadForms();
 })();

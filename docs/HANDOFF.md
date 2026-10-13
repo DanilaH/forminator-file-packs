@@ -43,3 +43,8 @@ Plugin-list entry point, bilingual quick start/result instructions, fixed viewpo
 ## Refinement 0.3.3
 
 The independent follow-up reproduced stale session recovery, recovery after clearing selection, stale selected-row summaries and indefinite browser waiting. 0.3.3 fixes those paths, adds authenticated environment readiness in the existing forms endpoint, descriptive RFC 5987 ZIP names and server-computed quick periods in the existing entries endpoint. No new endpoint, public storage or outgoing data transfer is introduced. Readiness probes only this plugin’s private directory and removes its tiny probe; resource suitability is still checked for the actual package. JSON waits are capped at 90 seconds; full ZIP fetch/body consumption at 10 minutes. Stop waiting is deliberately not a claim that PHP has stopped. Native, Docker and VPS suites include new environment/calendar/name and browser regressions. Exact current-commit green checks are required before distributing this version.
+
+
+## Usability pass 0.3.4
+
+Seven explicitly authorized refinements: bounded escaped offline index summaries/counts, selection capacity and stale recovery fix at the row limit, localized omission next steps, an actual browser-download result panel, optional localStorage of only quick-start collapse state, automatic single-form selection after forms loading completes, and beforeunload only during ZIP operation with cleanup after every success/error/abort. JSON schema and warnings manifest keep their existing shape; next_step is preview-only. Original source guards and resource limits are unchanged. Current-commit CI/Docker/VPS and first-time human usability testing are separate requirements.

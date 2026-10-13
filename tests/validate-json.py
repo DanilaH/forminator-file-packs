@@ -1,5 +1,21 @@
 """Independent ZIP reader: validate actual JSON against original fixture and other formats."""
 import csv, hashlib, io, json, os
+from html.parser import HTMLParser
+class IndexReader(HTMLParser):
+    def __init__(self):
+        super().__init__(); self.cards={}; self.card=None; self.paragraph=None
+    def handle_starttag(self, tag, attrs):
+        attrs=dict(attrs)
+        if tag=='li': self.card=None
+        if tag=='a' and attrs.get('href','').endswith('/request.html'):
+            self.card=attrs['href']; self.cards[self.card]=[]
+        if tag=='p' and self.card: self.paragraph=''
+    def handle_data(self, text):
+        if self.paragraph is not None: self.paragraph+=text
+    def handle_endtag(self, tag):
+        if tag=='p' and self.paragraph is not None:
+            self.cards[self.card].append(self.paragraph); self.paragraph=None
+        if tag=='li': self.card=None
 from collections import Counter
 from pathlib import Path
 from zipfile import ZipFile
@@ -16,7 +32,7 @@ for path in sorted(out.glob('*.zip')):
         raw = archive.read('data.json')
         data = json.loads(raw.decode('utf-8'))
         check(not raw.startswith(b'\xef\xbb\xbf') and data['schema_version']==1, path.name+': UTF-8 JSON without BOM, schema 1')
-        check(data['plugin_version']=='0.3.3' and bool(data['timezone']),path.name+': version and site timezone')
+        check(data['plugin_version']=='0.3.4' and bool(data['timezone']),path.name+': version and site timezone')
         names = archive.namelist()
         rows = data['submissions']
         check(data['submission_count']==len(rows) and len({r['id'] for r in rows})==len(rows),path.name+': unique submissions and count')
@@ -25,6 +41,11 @@ for path in sorted(out.glob('*.zip')):
         check(data['attachment_count']==len(attachments) and data['attachment_bytes']==sum(f['bytes'] for f in attachments),path.name+': actual attachment totals')
         check(all(f['path'] in names and archive.getinfo(f['path']).file_size==f['bytes'] and not f['path'].startswith('/') and '..' not in f['path'].split('/') for f in attachments),path.name+': safe relative paths resolve to real ZIP members')
         check(all(r['card'] in names for r in rows) and len(attachments)==len(set(f['path'] for f in attachments)),path.name+': cards and collision-free attachment references')
+        index=IndexReader(); index.feed(archive.read('index.html').decode('utf-8'))
+        check(set(index.cards)=={r['card'] for r in rows},path.name+': offline index links every exported submission exactly')
+        check(all(index.cards[r['card']][-1].endswith(': '+str(len(r['attachments']))) for r in rows),path.name+': offline index shows actual attachment counts')
+        check(all(len(parts)<=2 and (len(parts)<2 or len(parts[0])<=181) for parts in index.cards.values()),path.name+': offline descriptions remain bounded even for maximal metadata')
+
         register=list(csv.DictReader(io.StringIO(archive.read('register.csv').decode('utf-8-sig'))))
         check([int(r['entry_id']) for r in register]==[r['id'] for r in rows] and [int(r['attachment_count']) for r in register]==[len(r['attachments']) for r in rows],path.name+': CSV and JSON entry/attachment counts agree')
         check(not any(key in raw.decode() for key in ['"file_path"','"file_url"','"attachment_id"','"fingerprint"','"mtime"','SYNTHETIC-INTERNAL-SENTINEL','SYNTHETIC-ADDON-SENTINEL']),path.name+': no operational upload metadata or internal sentinel values')

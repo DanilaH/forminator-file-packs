@@ -1,5 +1,5 @@
 msgid ""
-msgstr "Project-Id-Version: File Packs 0.3.3\nLanguage: ru_RU\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+msgstr "Project-Id-Version: File Packs 0.3.4\nLanguage: ru_RU\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 
 msgid "%1$d submissions · %2$d attachments"
 msgstr "Заявки: %1$d · Вложения: %2$d"
@@ -439,3 +439,18 @@ msgstr "Этот месяц"
 
 msgid "Quick periods use the site timezone and replace the current period. Selection is cleared only after the new list loads."
 msgstr "Быстрые периоды используют часовой пояс сайта и заменяют текущий период. Выбор снимается только после загрузки нового списка."
+
+msgid "Download started"
+msgstr "Скачивание началось"
+
+msgid "Find the ZIP in your browser downloads, extract it, then open index.html. Keep the whole extracted folder together so attachment links work."
+msgstr "Найдите ZIP в загрузках браузера, распакуйте его и откройте index.html. Храните распакованную папку целиком, чтобы ссылки на вложения работали."
+
+msgid "This exporter needs a verified local attachment. Ask the site administrator to check local storage, or accept a package without this file."
+msgstr "Для экспорта нужно подтверждённое локальное вложение. Попросите администратора сайта проверить локальное хранение или согласитесь на пакет без этого файла."
+
+msgid "This type is deliberately excluded. Obtain the file separately from a trusted source, or accept a package without it."
+msgstr "Этот тип исключён из безопасного экспорта. Получите файл отдельно из доверенного источника или согласитесь на пакет без него."
+
+msgid "Check the original attachment in Forminator with the site administrator, then refresh the preview. You can also accept a package without this file."
+msgstr "Проверьте исходное вложение в Forminator вместе с администратором сайта, затем обновите предпросмотр. Также можно согласиться на пакет без этого файла."
