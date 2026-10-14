@@ -314,7 +314,6 @@
   $('job-omission-list').replaceChildren();
   for (const row of data.rows) for (const warning of row.warnings) {
    const li = node('li', `#${row.id} · ${warning.field}: ${warning.reason}`);
-   if (warning.next_step) li.append(node('p', warning.next_step, 'description'));
    $('job-omission-list').append(li);
   }
   $('job-omission-note').textContent = s.archiveWarnings;
