@@ -14,7 +14,7 @@
  window.addEventListener('beforeunload', e => { if (downloading) { e.preventDefault(); e.returnValue = ''; } });
 	let page = 1, pages = 1, rows = [], preview = null, busy = false, filterDirty = false, allPeriod = false, totalRows = 0;
  const jobHeadingLabel = $('job-heading').textContent;
- let job = null, jobPage = 1, jobPages = 1, jobTimer = null, jobPolling = false;
+ let job = null, jobPage = 1, jobPages = 1, jobTimer = null, jobPolling = false, omissionPage = 1, omissionPages = 1;
 	const node = (tag, text, cls) => { const el = document.createElement(tag); if (text !== undefined) el.textContent = text; if (cls) el.className = cls; return el; };
 	function size(bytes) {
   const value = bytes < 1024 ? bytes : bytes < 1048576 ? bytes / 1024 : bytes / 1048576;
@@ -65,6 +65,7 @@
   reviewSelection();
   $('job-start').disabled = busy || jobPolling || job?.status !== 'review' || (job.warnings > 0 && !$('job-partial').checked);
   $('job-cancel').disabled = busy || jobPolling;
+  $('job-omission-prev').disabled = busy || jobPolling || omissionPage <= 1; $('job-omission-next').disabled = busy || jobPolling || omissionPage >= omissionPages;
   $('job-prev').disabled = busy || jobPolling || jobPage <= 1; $('job-next').disabled = busy || jobPolling || jobPage >= jobPages;
 	}
 	function invalidate() { $('result').hidden = true; preview = null; $('preview').hidden = true; $('partial').checked = false; refreshButtons(); }
@@ -227,7 +228,7 @@
     for (let i = 0; i < ids.length; i += 100) job = await jobRequest('append', {job: job.id, sequence: i / 100, ids: JSON.stringify(ids.slice(i, i + 100))});
     job = await jobRequest('finish', {job: job.id});
    }
-   await renderJob(); message(''); scheduleJob(); $('job-heading').focus({preventScroll: true}); $('job').scrollIntoView({block: 'nearest'});
+   omissionPage = 1; $('job-omissions').open = false; await renderJob(); message(''); scheduleJob(); $('job-heading').focus({preventScroll: true}); $('job').scrollIntoView({block: 'nearest'});
   });
  }
  function scheduleJob() {
@@ -251,6 +252,9 @@
   if (Date.now() / 1000 - job.updated > 120 && activeJob()) $('job-status').textContent += ` · ${s.jobDelay}`;
   $('job-totals').textContent = `${job.from || job.to ? (job.from || '…') + ' — ' + (job.to || '…') : s.allDates} · ${s.submissions}: ${job.total} · ${s.files}: ${job.files} · ${size(job.bytes)}${job.warnings ? ` · ${s.warnings}: ${job.warnings}` : ''}`;
   $('job-review').hidden = true; $('job-result').hidden = true;
+  $('job-background').hidden = job.status === 'ready'; $('job-resume').hidden = job.status === 'ready';
+  $('job-cancel').textContent = job.status === 'ready' ? s.deleteArchives : s.cancelTask;
+  $('job-omissions').hidden = job.status !== 'ready' || !job.warnings;
   $('job-cancel').hidden = ['cancelled', 'expired'].includes(job.status);
   $('job-partial-label').hidden = !job.warnings; $('job').classList.toggle('ffp-job-incomplete', job.warnings > 0);
   $('job-parts').replaceChildren(); $('job-review-list').replaceChildren(); $('job-pager').hidden = true; $('job-expiry').textContent = '';
@@ -266,12 +270,16 @@
    else {
     $('job-expiry').textContent = `${s.expires} ${expiryDate(job.expires)}`;
     for (const part of data.rows) {
-     const li = node('li'); const button = node('button', `${s.downloadFull} · ${s.part} ${part.number + 1} ${s.of} ${job.parts}`, 'button'); button.type = 'button';
+     const li = node('li', undefined, 'ffp-archive-part');
+     const button = node('button', part.warnings ? s.downloadWithOmissions : s.downloadFull, 'button button-primary'); button.type = 'button';
+     button.setAttribute('aria-label', `${button.textContent} · ${s.part} ${part.number + 1} ${s.of} ${job.parts}`);
      button.addEventListener('click', () => downloadPart(part.number));
-     li.append(button, node('p', `${part.name} · ${s.submissions}: ${part.submissions} · ${s.files}: ${part.files} · ${size(part.size)}${part.warnings ? ` · ${s.warnings}: ${part.warnings}` : ''}`, 'description')); $('job-parts').append(li);
+     const details = node('details'); details.append(node('summary', s.fileDetails), node('p', part.name, 'description'));
+     li.append(node('strong', `${s.part} ${part.number + 1} ${s.of} ${job.parts}`), node('p', `${s.submissions}: ${part.submissions} · ${s.files}: ${part.files} · ${size(part.size)}${part.warnings ? ` · ${s.omissions}: ${part.warnings}` : ''}`, 'description'), button, details); $('job-parts').append(li);
     }
    }
   }
+  if (job.status === 'ready' && job.warnings && $('job-omissions').open) await loadOmissions();
   $('job-review').hidden = job.status !== 'review'; $('job-result').hidden = job.status !== 'ready';
   refreshButtons();
  }
@@ -300,7 +308,22 @@
   } catch (error) { jobFailure(error, () => downloadPart(number)); }
  }
  $('job-start').addEventListener('click', () => jobCommand('start'));
- $('job-cancel').addEventListener('click', () => jobCommand('cancel'));
+ $('job-cancel').addEventListener('click', () => { if (window.confirm(job?.status === 'ready' ? s.confirmDeleteArchives : s.confirmCancelTask)) jobCommand('cancel'); });
+ async function loadOmissions() {
+  const data = await jobRequest('review', {job: job.id, page: omissionPage}); omissionPages = data.pages;
+  $('job-omission-list').replaceChildren();
+  for (const row of data.rows) for (const warning of row.warnings) {
+   const li = node('li', `#${row.id} · ${warning.field}: ${warning.reason}`);
+   if (warning.next_step) li.append(node('p', warning.next_step, 'description'));
+   $('job-omission-list').append(li);
+  }
+  $('job-omission-note').textContent = s.archiveWarnings;
+  $('job-omission-pager').hidden = !data.warnings_only || omissionPages <= 1;
+  $('job-omission-page').textContent = `${s.page} ${omissionPage} ${s.of} ${omissionPages}`;
+  $('job-omission-prev').disabled = omissionPage <= 1; $('job-omission-next').disabled = omissionPage >= omissionPages;
+ }
+ $('job-omissions').addEventListener('toggle', () => { if ($('job-omissions').open && job?.status === 'ready') loadOmissions().catch(error => jobFailure(error, loadOmissions)); });
+ for (const [id, delta] of [['job-omission-prev', -1], ['job-omission-next', 1]]) $(id).addEventListener('click', async () => { omissionPage += delta; try { await loadOmissions(); } catch (error) { omissionPage -= delta; jobFailure(error, loadOmissions); } });
  $('job-resume').addEventListener('click', pollJob);
  $('job-partial').addEventListener('change', refreshButtons);
  for (const [id, delta] of [['job-prev', -1], ['job-next', 1]]) $(id).addEventListener('click', async () => { jobPage += delta; try { await renderJob(); } catch (error) { jobFailure(error, renderJob); } });

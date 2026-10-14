@@ -5,3 +5,5 @@
 
 .ffp #ffp-job-heading{overflow-wrap:anywhere}
 .ffp .ffp-job-incomplete{border-left:4px solid #dba617}
+
+.ffp #ffp-job-parts .ffp-archive-part{background:#fff;border:1px solid #dcdcde;border-radius:4px;padding:14px;margin:12px 0}.ffp .ffp-archive-part>strong{font-size:16px}.ffp .ffp-archive-part details{padding-bottom:0}.ffp #ffp-job-cancel{color:#b32d2e;margin:12px 0}.ffp #ffp-job-omission-pager{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.ffp #ffp-job-omission-list li{overflow-wrap:anywhere}

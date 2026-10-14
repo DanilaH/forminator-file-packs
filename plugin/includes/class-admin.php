@@ -26,6 +26,14 @@ final class Admin {
   wp_enqueue_style( 'ffp-admin', $base . 'assets/admin.css', array(), VERSION );
   wp_enqueue_script( 'ffp-admin', $base . 'assets/admin.js', array(), VERSION, true );
   wp_localize_script( 'ffp-admin', 'FFP', array( 'url' => admin_url( 'admin-ajax.php' ), 'nonce' => wp_create_nonce( 'ffp_export' ), 'locale' => determine_locale(), 'maxEntries' => MAX_ENTRIES, 'requestTimeout' => 90000, 'downloadTimeout' => 600000, 'strings' => array(
+   'fileDetails' => __( 'File details', 'file-packs-for-forminator' ),
+   'downloadWithOmissions' => __( 'Download ZIP with omissions', 'file-packs-for-forminator' ),
+   'cancelTask' => __( 'Cancel task and delete its archives', 'file-packs-for-forminator' ),
+   'deleteArchives' => __( 'Delete archives', 'file-packs-for-forminator' ),
+   'confirmDeleteArchives' => __( 'Delete this export and its archives? Original submissions and attachments will stay unchanged.', 'file-packs-for-forminator' ),
+   'confirmCancelTask' => __( 'Cancel this export and delete its temporary files? Original submissions and attachments will stay unchanged.', 'file-packs-for-forminator' ),
+   'omissions' => __( 'Reported omissions', 'file-packs-for-forminator' ),
+   'archiveWarnings' => __( 'See the warnings in each archive for the complete list of omissions.', 'file-packs-for-forminator' ),
    'bytesUnit' => __( 'B', 'file-packs-for-forminator' ), 'kibUnit' => __( 'KiB', 'file-packs-for-forminator' ), 'mibUnit' => __( 'MiB', 'file-packs-for-forminator' ),
    'loading' => __( 'Loading…', 'file-packs-for-forminator' ), 'choose' => __( 'Choose a form', 'file-packs-for-forminator' ), 'noForms' => __( 'No forms match your search. Clear the search or try another name.', 'file-packs-for-forminator' ),
    'truncated' => __( 'Showing the first 100 matching forms. Refine your search.', 'file-packs-for-forminator' ), 'noEntries' => __( 'No completed submissions match this period. Clear the period to see other submissions.', 'file-packs-for-forminator' ),
@@ -123,11 +131,12 @@ final class Admin {
    <section id="ffp-job" class="ffp-confirmation" aria-labelledby="ffp-job-heading" hidden>
     <h3 id="ffp-job-heading" tabindex="-1"><?php esc_html_e( 'Large export', 'file-packs-for-forminator' ); ?></h3>
     <p id="ffp-job-status" role="status" aria-live="polite"></p><p id="ffp-job-totals"></p>
-    <p id="ffp-job-background" class="description"><?php esc_html_e( 'Progress is saved on this site. You can return to this page. Background processing may wait for site visits; keeping this page open also advances the task.', 'file-packs-for-forminator' ); ?></p>
+    <details id="ffp-job-background"><summary><?php esc_html_e( 'About background processing', 'file-packs-for-forminator' ); ?></summary><p class="description"><?php esc_html_e( 'Progress is saved on this site. You can return to this page. Background processing may wait for site visits; keeping this page open also advances the task.', 'file-packs-for-forminator' ); ?></p></details>
     <div id="ffp-job-review" hidden><p><?php esc_html_e( 'Review the checked submissions and omissions before starting. Large exports are split into independent ZIP files.', 'file-packs-for-forminator' ); ?></p><p id="ffp-job-review-note" class="description" hidden></p><ul id="ffp-job-review-list"></ul><label id="ffp-job-partial-label" hidden><input id="ffp-job-partial" type="checkbox"> <?php esc_html_e( 'I accept all reported omissions, including those on other review pages.', 'file-packs-for-forminator' ); ?></label><button id="ffp-job-start" class="button button-primary"><?php esc_html_e( 'Start export', 'file-packs-for-forminator' ); ?></button></div>
+    <details id="ffp-job-omissions" hidden><summary><?php esc_html_e( 'View omission reasons', 'file-packs-for-forminator' ); ?></summary><ul id="ffp-job-omission-list"></ul><p id="ffp-job-omission-note" class="description"></p><div id="ffp-job-omission-pager" hidden><button id="ffp-job-omission-prev" class="button"><?php esc_html_e( 'Previous', 'file-packs-for-forminator' ); ?></button><span id="ffp-job-omission-page"></span><button id="ffp-job-omission-next" class="button"><?php esc_html_e( 'Next', 'file-packs-for-forminator' ); ?></button></div></details>
     <ul id="ffp-job-parts"></ul><p id="ffp-job-expiry" class="description"></p>
     <div id="ffp-job-pager" hidden><button id="ffp-job-prev" class="button"><?php esc_html_e( 'Previous', 'file-packs-for-forminator' ); ?></button><span id="ffp-job-page"></span><button id="ffp-job-next" class="button"><?php esc_html_e( 'Next', 'file-packs-for-forminator' ); ?></button></div>
-    <button id="ffp-job-resume" class="button"><?php esc_html_e( 'Refresh progress', 'file-packs-for-forminator' ); ?></button><button id="ffp-job-cancel" class="button"><?php esc_html_e( 'Cancel task and delete its archives', 'file-packs-for-forminator' ); ?></button>
+    <button id="ffp-job-resume" class="button"><?php esc_html_e( 'Refresh progress', 'file-packs-for-forminator' ); ?></button><button id="ffp-job-cancel" class="button-link"><?php esc_html_e( 'Cancel task and delete its archives', 'file-packs-for-forminator' ); ?></button>
     <p id="ffp-job-result" hidden><?php esc_html_e( 'Download each ZIP separately. Extract it and open index.html. Each part contains its own register and submission folders.', 'file-packs-for-forminator' ); ?></p>
    </section>
    <section id="ffp-result" class="ffp-confirmation" aria-labelledby="ffp-result-heading" hidden>

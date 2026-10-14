@@ -683,3 +683,30 @@ msgstr "КиБ"
 
 msgid "MiB"
 msgstr "МиБ"
+
+msgid "File details"
+msgstr "Сведения о файле"
+
+msgid "Download ZIP with omissions"
+msgstr "Скачать ZIP с пропусками"
+
+msgid "Delete archives"
+msgstr "Удалить архивы"
+
+msgid "Delete this export and its archives? Original submissions and attachments will stay unchanged."
+msgstr "Удалить эту выгрузку и её архивы? Исходные заявки и вложения останутся без изменений."
+
+msgid "Cancel this export and delete its temporary files? Original submissions and attachments will stay unchanged."
+msgstr "Отменить эту выгрузку и удалить её временные файлы? Исходные заявки и вложения останутся без изменений."
+
+msgid "Reported omissions"
+msgstr "Пропуски"
+
+msgid "See the warnings in each archive for the complete list of omissions."
+msgstr "Полный список пропусков указан в предупреждениях внутри каждого архива."
+
+msgid "About background processing"
+msgstr "О фоновой обработке"
+
+msgid "View omission reasons"
+msgstr "Посмотреть причины пропусков"
