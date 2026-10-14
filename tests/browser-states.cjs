@@ -136,6 +136,25 @@ if(process.env.FFP_TEST_LAB!=='1')throw Error('Disposable lab only');
   assert((await offline.locator('main').textContent()).includes('Иван Петров')&&(await offline.locator('a[href$="/request.html"]').count())===2,'actual extracted ZIP index shows recognizable submissions offline');
   await offline.screenshot({style:screenshotStyle,path:path.join(output,'showcase-zip-index.png'),fullPage:true});
   await offline.locator('a[href$="/request.html"]').first().click();assert((await offline.locator('main').textContent()).includes('Смирнова')||(await offline.locator('main').textContent()).includes('Петров'),'actual offline submission card opens from the index');await offline.screenshot({style:screenshotStyle,path:path.join(output,'showcase-zip-card.png'),fullPage:true});await offline.close();
+  // Directory screenshots: actual English profile and separate persisted English records.
+  const command=JSON.parse(process.env.FFP_WP_COMMAND);const cli=require('node:child_process').execFileSync;
+  cli(command[0],[...command.slice(1),'eval',"update_user_meta(1,'locale','en_US');"]);
+  try {
+   await page.setViewportSize({width:1280,height:1000});await page.reload();await page.waitForFunction(()=>window.FFP&&document.querySelector('#ffp-form')?.disabled===false);
+   await page.locator('#ffp-form').selectOption(String(fixture.showcase_en.form));await page.waitForFunction(()=>document.querySelector('#ffp-app').getAttribute('aria-busy')==='false'&&document.querySelectorAll('#ffp-rows input').length===2);
+   await page.locator('#ffp-all').check();
+   assert(!/[А-Яа-яЁё]/.test((await page.locator('#ffp-main-heading').textContent())+(await page.locator('#ffp-rows').textContent())),'directory selection uses English labels and persisted English sample data');
+   await page.locator('#ffp-workspace').screenshot({style:screenshotStyle,path:path.join(output,'screenshot-1.png')});
+   await page.locator('#ffp-preview-button').click();await page.locator('#ffp-preview:not([hidden])').waitFor();
+   await page.locator('#ffp-workspace').screenshot({style:screenshotStyle,path:path.join(output,'screenshot-2.png')});
+   const englishDownload=page.waitForEvent('download');await page.locator('#ffp-download').click();await(await englishDownload).saveAs(path.join(output,'directory-example.zip'));
+   const englishExtracted=path.join(output,'directory-example');cli('python3',['-c','import sys,zipfile;z=zipfile.ZipFile(sys.argv[1]);assert z.testzip() is None;z.extractall(sys.argv[2])',path.join(output,'directory-example.zip'),englishExtracted]);
+   const example=await browser.newPage({viewport:{width:1100,height:700}});await example.goto(require('node:url').pathToFileURL(path.join(englishExtracted,'index.html')).href);
+   assert(!/[А-Яа-яЁё]/.test(await example.locator('main').textContent())&&await example.locator('a[href$="/request.html"]').count()===2,'directory index is actual English export with working card links');
+   await example.screenshot({path:path.join(output,'screenshot-4.png'),fullPage:true});await example.locator('a[href$="/request.html"]').first().click();
+   assert((await example.locator('main').textContent()).includes('Photos')&&await example.locator('a[href$=".png"]').count()>0,'directory card exposes actual included attachment links');
+   await example.screenshot({path:path.join(output,'screenshot-5.png'),fullPage:true});await example.close();
+  } finally { cli(command[0],[...command.slice(1),'eval',"update_user_meta(1,'locale','ru_RU');"]); }
   assert(errors.length===0,'no JavaScript exceptions');fs.writeFileSync(path.join(output,'browser-state-results.json'),JSON.stringify({checks,count:checks.length},null,2));
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

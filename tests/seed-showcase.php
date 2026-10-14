@@ -24,5 +24,24 @@ foreach ( array( array( 'Иван Петров', 'Холодильник не о
 }
 $fixture = json_decode( file_get_contents( getenv( 'FFP_TEST_FIXTURE' ) ), true );
 $fixture['showcase'] = array( 'form' => $form, 'entries' => $ids );
+// Separate English fixtures for directory captures; existing Russian checks stay intact.
+$english_form = Forminator_API::add_form( 'Repair enquiries', array(), array( 'formName' => 'Repair enquiries', 'form-type' => 'default', 'store_submissions' => '1' ) );
+if ( is_wp_error( $english_form ) ) { throw new RuntimeException( $english_form->get_error_message() ); }
+update_post_meta( $english_form, '_ffp_staging_fixture', '1' );
+Forminator_API::add_form_field( $english_form, 'text', array( 'field_label' => 'Name' ) );
+Forminator_API::add_form_field( $english_form, 'textarea', array( 'field_label' => 'Problem' ) );
+Forminator_API::add_form_field( $english_form, 'upload', array( 'field_label' => 'Photos', 'file-type' => 'multiple', 'upload-method' => 'submission', 'use_library' => 'false' ) );
+$english_root = forminator_get_upload_path( $english_form, 'uploads' ); wp_mkdir_p( $english_root );
+foreach ( array( array( 'Alex Morgan', 'Refrigerator is not cooling', 3 ), array( 'Sam Taylor', 'Washing machine is leaking', 2 ) ) as $i => $sample ) {
+ $paths = array();
+ for ( $n = 1; $n <= $sample[2]; ++$n ) {
+  $path = $english_root . '/photo-' . $i . '-' . $n . '.png';
+  file_put_contents( $path, base64_decode( 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j6i8AAAAASUVORK5CYII=' ) ); $paths[] = $path;
+ }
+ $id = Forminator_API::add_form_entry( $english_form, array( array( 'name' => 'text-1', 'value' => $sample[0] ), array( 'name' => 'textarea-1', 'value' => $sample[1] ), array( 'name' => 'upload-1', 'value' => array( 'file' => array( 'file_path' => $paths, 'file_url' => array_fill( 0, count( $paths ), '' ) ) ) ) ) );
+ if ( is_wp_error( $id ) ) { throw new RuntimeException( $id->get_error_message() ); }
+}
+$fixture['showcase_en'] = array( 'form' => $english_form );
+
 file_put_contents( getenv( 'FFP_TEST_FIXTURE' ), wp_json_encode( $fixture ) );
 echo "PASS persisted synthetic repair submissions for actual UI screenshots\n";

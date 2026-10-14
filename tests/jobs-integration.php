@@ -101,7 +101,7 @@ jobs_check( 'error' === Jobs::status( $too_large['id'] )['status'], 'Oversized s
 
 // Leave a small dedicated form for actual browser background/parts checks.
 $fixture = json_decode( file_get_contents( getenv( 'FFP_TEST_FIXTURE' ) ), true );
-$ui_form = Forminator_API::add_form( 'Заявки на ремонт · 101 заявка', array(), array( 'formName' => 'Заявки на ремонт · 101 заявка', 'store_submissions' => '1' ) );
+$ui_form = Forminator_API::add_form( 'Repair enquiries — 101 submissions', array(), array( 'formName' => 'Repair enquiries — 101 submissions', 'store_submissions' => '1' ) );
 update_post_meta( $ui_form, '_ffp_staging_fixture', '1' );
 Forminator_API::add_form_field( $ui_form, 'text', array( 'field_label' => 'Клиент' ) );
 Forminator_API::add_form_field( $ui_form, 'upload', array( 'field_label' => 'Документы', 'file-type' => 'multiple', 'upload-method' => 'submission' ) );
