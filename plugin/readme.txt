@@ -139,6 +139,14 @@ No. It provides no import or restore operation and does not export a complete Fo
 
 Open an issue at https://github.com/DanilaH/forminator-file-packs/issues with your WordPress, PHP, Forminator and File Packs versions, the error message and steps to reproduce it. Use synthetic examples. Do not upload real submissions, private attachments, credentials or exported archives containing personal data.
 
+== Screenshots ==
+
+1. Choose a form, filter by date and select the submissions you need.
+2. Check the available attachments before downloading your ZIP.
+3. Download large exports as independent ZIP parts, with saved progress and repeat downloads.
+4. Open the extracted index to browse submissions or access CSV and JSON data.
+5. View each submission's details and attachments together in its own folder.
+
 == Changelog ==
 
 = 0.4.0 =

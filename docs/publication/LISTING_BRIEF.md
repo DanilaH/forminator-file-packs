@@ -17,9 +17,11 @@ Audience: site administrators reviewing or handing over uploaded documents from 
 
 Do not advertise unlimited resources, a complete backup, restore/import, cloud uploads, native XLSX, support for every Forminator field/add-on, or guaranteed compatibility with every host. Do not imply an official partnership or directory approval.
 
-## Five planned screenshots
+## Five delivered screenshots
 
-These are capture instructions and captions, not delivered English screenshots. Current evidence captures use synthetic submissions and include Russian UI. Re-capture the final interface in English with neutral English fixture labels; do not replace labels by painting over the screenshot.
+All five PNGs are in `docs/publication/assets`. They were captured from real WordPress 6.5.5 / PHP 8.2 / Forminator 1.58.0 using persisted synthetic English submissions. The offline pages were opened from the actual downloaded ZIP. No interface labels were painted over. Only the external WordPress toolbar was hidden during workspace capture.
+
+Capture source: commit `18f4cb87bd62231f0b8a08cecb12af125814b2ed`, native verification run https://github.com/DanilaH/forminator-file-packs/actions/runs/38530322484, artifact `11877571831`.
 
 | File | Capture | Directory caption |
 |---|---|---|
@@ -31,9 +33,9 @@ These are capture instructions and captions, not delivered English screenshots. 
 
 Optional sixth screenshot: explicit incomplete result with omission reasons expanded. Keep it as support evidence until the five core captures are ready.
 
-Insert the five captions into a `== Screenshots ==` section in readme.txt only when matching files exist. Upload the images to the directory's separate SVN assets folder after approval; do not add promotional assets to the installable plugin ZIP.
+The matching five captions are now included in the `== Screenshots ==` section of readme.txt. Upload the images to the directory's separate SVN assets folder after approval; do not add promotional assets to the installable plugin ZIP.
 
-## Visual direction for the next step
+## Delivered visual assets
 
 A practical document utility: one folder grouping a form card and two attachment sheets. Use an original symbol, deep blue and a light background; avoid WordPress/Forminator logos and tiny lettering inside the icon.
 
@@ -43,13 +45,13 @@ Banner copy:
 - Main message: Submissions and attachments. Together.
 - Supporting line: Organized ZIP exports with HTML, CSV and JSON.
 
-Prepare PNG icon variants at 128×128 and 256×256 and banner variants at 772×250 and 1544×500. Check the icon at its smallest size and check banner text at both supplied resolutions. These are production instructions; no icon/banner is claimed complete.
+Prepare PNG icon variants at 128×128 and 256×256 and banner variants at 772×250 and 1544×500. Check the icon at its smallest size and check banner text at both supplied resolutions. All four PNG variants and the original editable SVG files are delivered in the assets folder. `scripts/build-publication-art.py` reproduces them with CairoSVG and Pillow. The symbol uses original geometric shapes and no third-party product logo.
 
 ## Before submission
 
 - Confirm the WordPress.org contributor username. The existing `Contributors: danilah` header is inherited from the repository and has not been independently verified as the owner's directory account.
 - Confirm directory name/slug availability through the actual submission process. Keep the independent-project statement.
-- Complete and inspect the five real English captures and original icon/banner.
+- Recheck any later screenshot or copy changes against the final interface; the current five captures and original icon/banner have been visually inspected.
 - Validate the readme with the official validator; local package checks do not equal an official validator result.
 - Use an installable ZIP from the exact final commit that passed the required native, Docker and VPS release checks. Changes to shipped readme.txt change that commit and ZIP.
 - Submit from the owner's WordPress.org account. No submission, public publication or account action has been performed by preparing these files.
