@@ -16,7 +16,15 @@
  const jobHeadingLabel = $('job-heading').textContent;
  let job = null, jobPage = 1, jobPages = 1, jobTimer = null, jobPolling = false;
 	const node = (tag, text, cls) => { const el = document.createElement(tag); if (text !== undefined) el.textContent = text; if (cls) el.className = cls; return el; };
-	function size(bytes) { return bytes < 1024 ? `${bytes} B` : bytes < 1048576 ? `${(bytes / 1024).toFixed(1)} KiB` : `${(bytes / 1048576).toFixed(2)} MiB`; }
+	function size(bytes) {
+  const value = bytes < 1024 ? bytes : bytes < 1048576 ? bytes / 1024 : bytes / 1048576;
+  const digits = bytes < 1024 ? 0 : bytes < 1048576 ? 1 : 2;
+  const unit = bytes < 1024 ? s.bytesUnit : bytes < 1048576 ? s.kibUnit : s.mibUnit;
+  let number;
+  try { number = value.toLocaleString((FFP.locale || 'en_US').split('_').slice(0, 2).join('-'), {minimumFractionDigits: digits, maximumFractionDigits: digits, useGrouping: false}); }
+  catch (error) { number = value.toFixed(digits); }
+  return `${number} ${unit}`;
+ }
 	function message(text, error = false) {
   $('status').textContent = text; $('notification').hidden = !text;
   $('notification').classList.toggle('ffp-error', error); $('status').setAttribute('role', error ? 'alert' : 'status');

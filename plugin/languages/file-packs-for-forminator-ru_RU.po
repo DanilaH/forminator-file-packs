@@ -110,19 +110,19 @@ msgid "File cannot be verified as an attachment of this submission."
 msgstr "Не удалось подтвердить, что файл относится к этой заявке."
 
 msgid "File changed during export. Refresh the preview."
-msgstr "Во время экспорта файл изменился. Повторите предпросмотр."
+msgstr "Во время экспорта файл изменился. Повторите проверку состава архива."
 
 msgid "File is missing, unreadable, or outside allowed storage."
 msgstr "Файл отсутствует, недоступен для чтения или находится за пределами разрешённого хранилища."
 
 msgid "File size changed during export. Refresh the preview."
-msgstr "Во время экспорта изменился размер файла. Повторите предпросмотр."
+msgstr "Во время экспорта изменился размер файла. Повторите проверку состава архива."
 
 msgid "File size could not be read."
 msgstr "Не удалось определить размер файла."
 
 msgid "Files grew beyond the export safety limit. Refresh the preview."
-msgstr "Размер файлов превысил предел экспорта. Повторите предпросмотр."
+msgstr "Размер файлов превысил предел экспорта. Повторите проверку состава архива."
 
 msgid "Find a form"
 msgstr "Найти форму"
@@ -260,13 +260,13 @@ msgid "The operation failed. Try again or refresh this page."
 msgstr "Операция не выполнена. Попробуйте ещё раз или обновите страницу."
 
 msgid "The request was interrupted. Check your connection and refresh the preview before retrying."
-msgstr "Запрос прерван. Проверьте подключение и повторите предпросмотр перед новой попыткой."
+msgstr "Запрос прерван. Проверьте подключение и повторите проверку состава архива перед новой попыткой."
 
 msgid "The selected data changed. Refresh the preview before exporting."
-msgstr "Выбранные данные изменились. Повторите предпросмотр перед экспортом."
+msgstr "Выбранные данные изменились. Повторите проверку состава архива перед скачиванием."
 
 msgid "The selected data changed. Refresh the preview."
-msgstr "Выбранные данные изменились. Повторите предпросмотр."
+msgstr "Выбранные данные изменились. Повторите проверку состава архива."
 
 msgid "The selected form is unavailable."
 msgstr "Выбранная форма недоступна."
@@ -287,7 +287,7 @@ msgid "Turn submissions and their attachments into a ready-to-share ZIP. Origina
 msgstr "Соберите заявки и вложения в ZIP для дальнейшей работы. Исходные данные останутся без изменений."
 
 msgid "Unsupported or remote file reference."
-msgstr "Неподдерживаемая или удалённая ссылка на файл."
+msgstr "Ссылка на файл не поддерживается или ведёт во внешнее хранилище."
 
 msgid "Upload has no supported local file reference."
 msgstr "У вложения нет поддерживаемой ссылки на локальный файл."
@@ -390,13 +390,13 @@ msgid "The selected form is outside the search results. The previous selection w
 msgstr "Выбранная форма не вошла в результаты поиска. Предыдущий выбор снят."
 
 msgid "Refresh preview"
-msgstr "Повторить предпросмотр"
+msgstr "Повторить проверку состава"
 
 msgid "Retry loading"
 msgstr "Повторить загрузку"
 
 msgid "Check the omissions below. You can export the available files, or fix the source attachments and refresh the preview. Originals will not be changed."
-msgstr "Проверьте пропуски ниже. Можно выгрузить доступные файлы или исправить исходные вложения и повторить предпросмотр. Оригиналы не изменяются."
+msgstr "Проверьте пропуски ниже. Можно выгрузить доступные файлы или исправить исходные вложения и повторить проверку состава архива. Оригиналы не изменяются."
 
 msgid "Private temporary storage is unavailable. Ask your hosting administrator to configure writable storage outside public web directories."
 msgstr "Закрытое временное хранилище недоступно. Попросите администратора хостинга настроить доступный для записи каталог вне публичных веб-каталогов."
@@ -453,7 +453,7 @@ msgid "This type is deliberately excluded. Obtain the file separately from a tru
 msgstr "Этот тип исключён из безопасного экспорта. Получите файл отдельно из доверенного источника или согласитесь на пакет без него."
 
 msgid "Check the original attachment in Forminator with the site administrator, then refresh the preview. You can also accept a package without this file."
-msgstr "Проверьте исходное вложение в Forminator вместе с администратором сайта, затем обновите предпросмотр. Также можно согласиться на пакет без этого файла."
+msgstr "Проверьте исходное вложение в Forminator вместе с администратором сайта, затем повторите проверку состава архива. Также можно согласиться на пакет без этого файла."
 
 msgid "Download submissions with attachments"
 msgstr "Скачать заявки с вложениями"
@@ -537,7 +537,7 @@ msgid "Large export"
 msgstr "Большая выгрузка"
 
 msgid "Progress is saved on this site. You can return to this page. Background processing may wait for site visits; keeping this page open also advances the task."
-msgstr "Прогресс сохраняется на сайте. Можно вернуться на эту страницу. Фоновая обработка может ждать посещений сайта; открытая страница также продолжает задачу."
+msgstr "Прогресс сохраняется на сайте. Можно вернуться на эту страницу. Фоновая обработка может ждать посещений сайта; пока эта страница открыта, обработка также продолжается."
 
 msgid "Review the checked submissions and omissions before starting. Large exports are split into independent ZIP files."
 msgstr "Перед запуском просмотрите проверенные заявки и пропуски. Большие выгрузки разделяются на самостоятельные ZIP."
@@ -558,7 +558,7 @@ msgid "Download each ZIP separately. Extract it and open index.html. Each part c
 msgstr "Скачайте каждый ZIP отдельно. Распакуйте его и откройте index.html. В каждой части есть свой реестр и папки заявок."
 
 msgid "Large exports have no fixed submission-count limit and are split into ZIP parts. Each submission in a large export may contain up to 100 MiB of attachments, 500 attachments and 1 MiB of field data. Smaller selections use the quick ZIP route. Available disk space and hosting resources still limit exports."
-msgstr "У больших выгрузок нет фиксированного лимита количества заявок: они разделяются на ZIP. Одна заявка в большой выгрузке может содержать до 100 МиБ вложений, 500 файлов и 1 МиБ данных полей. Небольшой выбор скачивается быстрым способом. Объём выгрузки зависит от свободного места и ресурсов хостинга."
+msgstr "У больших выгрузок нет фиксированного лимита количества заявок: они разделяются на ZIP. Одна заявка в большой выгрузке может содержать до 100 МиБ вложений, 500 файлов и 1 МиБ данных полей. Небольшие подборки заявок скачиваются одним ZIP-архивом. Объём выгрузки зависит от свободного места и ресурсов хостинга."
 
 msgid "All submissions in the applied period are selected. New submissions after checking starts are excluded."
 msgstr "Выбраны все заявки за применённый период. Новые заявки после начала проверки не добавляются."
@@ -600,7 +600,7 @@ msgid "More selections are included. Use the checked export review to inspect al
 msgstr "В выбор включены и другие заявки. Все заявки можно просмотреть после проверки выгрузки."
 
 msgid "Progress has not advanced recently. Refresh progress to retry. Background processing can be delayed on this hosting."
-msgstr "Прогресс давно не менялся. Обновите прогресс для повтора. На этом хостинге фоновая обработка может задерживаться."
+msgstr "Прогресс давно не менялся. Нажмите «Обновить прогресс», чтобы повторить попытку. На этом хостинге фоновая обработка может задерживаться."
 
 msgid "Invalid export task."
 msgstr "Некорректная задача выгрузки."
@@ -643,7 +643,7 @@ msgstr "Плагин или владелец выгрузки изменился
 
 #, php-format
 msgid "Submission #%d exceeds the per-submission safety limit: 100 MiB of attachments, 500 attachments or 1 MiB of field data. Export it separately in a small selection."
-msgstr "Заявка #%d превышает предел большой выгрузки: 100 МиБ вложений, 500 файлов или 1 МиБ данных полей. Выгрузите её отдельно небольшим выбором."
+msgstr "Заявка #%d превышает предел большой выгрузки: 100 МиБ вложений, 500 файлов или 1 МиБ данных полей. Выберите только эту заявку и скачайте её отдельно."
 
 msgid "The selected data changed. Cancel this task and check the selection again."
 msgstr "Выбранные данные изменились. Отмените задачу и проверьте выбор заново."
@@ -674,3 +674,12 @@ msgstr "Архивы готовы с пропусками. Просмотрит�
 
 msgid "Only submissions with omissions are shown. Other checked submissions have no reported omissions."
 msgstr "Показаны только заявки с пропусками. У остальных проверенных заявок пропусков не обнаружено."
+
+msgid "B"
+msgstr "Б"
+
+msgid "KiB"
+msgstr "КиБ"
+
+msgid "MiB"
+msgstr "МиБ"

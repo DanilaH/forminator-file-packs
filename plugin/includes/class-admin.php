@@ -26,6 +26,7 @@ final class Admin {
   wp_enqueue_style( 'ffp-admin', $base . 'assets/admin.css', array(), VERSION );
   wp_enqueue_script( 'ffp-admin', $base . 'assets/admin.js', array(), VERSION, true );
   wp_localize_script( 'ffp-admin', 'FFP', array( 'url' => admin_url( 'admin-ajax.php' ), 'nonce' => wp_create_nonce( 'ffp_export' ), 'locale' => determine_locale(), 'maxEntries' => MAX_ENTRIES, 'requestTimeout' => 90000, 'downloadTimeout' => 600000, 'strings' => array(
+   'bytesUnit' => __( 'B', 'file-packs-for-forminator' ), 'kibUnit' => __( 'KiB', 'file-packs-for-forminator' ), 'mibUnit' => __( 'MiB', 'file-packs-for-forminator' ),
    'loading' => __( 'Loading…', 'file-packs-for-forminator' ), 'choose' => __( 'Choose a form', 'file-packs-for-forminator' ), 'noForms' => __( 'No forms match your search. Clear the search or try another name.', 'file-packs-for-forminator' ),
    'truncated' => __( 'Showing the first 100 matching forms. Refine your search.', 'file-packs-for-forminator' ), 'noEntries' => __( 'No completed submissions match this period. Clear the period to see other submissions.', 'file-packs-for-forminator' ),
    'selected' => __( 'Selected submissions:', 'file-packs-for-forminator' ), 'max' => __( 'Select no more than 100 submissions per package.', 'file-packs-for-forminator' ),
