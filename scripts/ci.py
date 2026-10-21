@@ -118,12 +118,8 @@ try:
         if result.stderr:
             print(result.stderr, flush=True)
         result.check_returncode()
-        # Plugin Check prints a FILE heading followed by a JSON array per file.
-        diagnostics = []
-        for block in re.split(r'^FILE: .*\n', result.stdout, flags=re.MULTILINE):
-            block = block.strip()
-            if block:
-                diagnostics.extend(json.loads(block))
+        from plugin_check_output import parse_diagnostics
+        diagnostics = parse_diagnostics(result.stdout)
         (out / 'plugin-check.json').write_text(json.dumps(diagnostics, indent=2))
         assert not any(str(item.get('type', '')).upper() == 'ERROR' for item in diagnostics), 'Plugin Check errors'
         assert not diagnostics, 'Plugin Check diagnostics require review'
