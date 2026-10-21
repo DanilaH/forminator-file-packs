@@ -20,17 +20,18 @@ assert header(readme, 'Stable tag') == version, 'Stable tag matches version'
 for name in ('Requires at least', 'Requires PHP', 'Requires Plugins', 'License URI'):
     assert header(main, name) == header(readme, name), 'Mismatched requirement: ' + name
 assert header(main, 'Requires Plugins') == 'forminator', 'Declare actual dependency'
-assert header(main, 'Text Domain') == slug and header(main, 'Domain Path') == '/languages'
+assert header(main, 'Text Domain') == slug
+assert 'load_plugin_textdomain' not in main, 'Use standard WordPress language packs'
 assert readme.splitlines()[0] == '=== ' + header(main, 'Plugin Name') + ' ==='
 assert len(readme.split('\n\n', 2)[1].strip()) <= 150, 'Directory short description exceeds 150 characters'
 assert len(header(readme, 'Tags').split(',')) <= 5
 assert header(main, 'License') == 'GPL-2.0-or-later'
 assert header(readme, 'License') == 'GPLv2 or later'
-assert (source / 'languages' / (slug + '-ru_RU.po')).is_file()
-assert (source / 'languages' / (slug + '-ru_RU.mo')).is_file()
+assert (repo / 'translations' / (slug + '-ru_RU.po')).is_file()
+assert (repo / 'dist/languages' / (slug + '-ru_RU.mo')).is_file()
 allowed = {slug+'.php', 'readme.txt', 'uninstall.php', 'includes/class-adapter.php', 'includes/class-admin.php',
            'includes/class-planner.php', 'includes/class-package.php', 'includes/class-jobs.php', 'assets/admin.css',
-           'assets/admin.js', 'languages/'+slug+'-ru_RU.po', 'languages/'+slug+'-ru_RU.mo'}
+           'assets/admin.js'}
 files = {p.relative_to(source).as_posix(): p for p in source.rglob('*') if p.is_file()}
 assert set(files) == allowed, 'Unexpected or missing shipped files; review license and purpose'
 expected = {slug+'/'+name: p.read_bytes() for name,p in files.items()}
@@ -44,3 +45,9 @@ with ZipFile(packages[0]) as archive:
     assert archive.testzip() is None
     assert all(archive.read(name) == value for name, value in expected.items())
 print('PASS ZIP CRC, exact source bytes, version/requirements/domain/readme metadata and license')
+
+with ZipFile(repo / 'dist/languages' / (slug + '-ru_RU.zip')) as language_pack:
+    assert set(language_pack.namelist()) == {slug + '-ru_RU.po', slug + '-ru_RU.mo'}
+    assert language_pack.read(slug + '-ru_RU.po') == (repo / 'translations' / (slug + '-ru_RU.po')).read_bytes()
+    assert language_pack.read(slug + '-ru_RU.mo') == (repo / 'dist/languages' / (slug + '-ru_RU.mo')).read_bytes()
+print('PASS separate Russian language pack; no catalogs bundled in plugin ZIP')

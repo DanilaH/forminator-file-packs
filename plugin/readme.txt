@@ -5,7 +5,7 @@ Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.2
 Requires Plugins: forminator
-Stable tag: 0.4.0
+Stable tag: 0.4.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -129,7 +129,7 @@ The plugin does not send submission data to an external export service. Processi
 
 = Which languages are included? =
 
-English and Russian. Interface text follows the WordPress user's language. User-entered submission values and form labels are exported as stored; they are not translated.
+English is included. Translations use standard WordPress language packs. A Russian catalog is maintained separately in the repository; until a directory language pack is available, install the separate Russian pack into wp-content/languages/plugins. Interface text follows the WordPress user's language. User-entered submission values and form labels are exported as stored; they are not translated.
 
 = Is this a backup or migration tool? =
 
@@ -148,6 +148,10 @@ Open an issue at https://github.com/DanilaH/forminator-file-packs/issues with yo
 5. View each submission's details and attachments together in its own folder.
 
 == Changelog ==
+
+= 0.4.1 =
+* Use standard WordPress language packs instead of bundled catalogs and manual textdomain loading.
+* Verify every AJAX action rejects invalid requests; document offline export styling.
 
 = 0.4.0 =
 * Saved large-export tasks, explicit all-period selection, recoverable progress, bounded independent ZIP parts, authorized repeated downloads and task cancellation/expiry.

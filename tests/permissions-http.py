@@ -40,7 +40,7 @@ try:
         check(status==200 and headers.get_content_type()=='application/zip' and raw[:2]==b'PK',mode+': actual ZIP download allowed')
     for mode in ['revoked','excluded']:
         configure(mode)
-        for action in ['forms','entries','preview','download']:
+        for action in ['forms','entries','preview','download','job_create','job_append','job_finish','job_start','job_cancel','job_status','job_review','job_parts','job_file']:
             status, headers, raw=endpoint(action,token,{'fingerprint':preview['fingerprint']})
             data=json.loads(raw)
             check(status==400 and not data['success'] and 'permission' in data['data']['message'].lower() and headers.get_content_type()!='application/zip',mode+': '+action+' denied with existing session and nonce')

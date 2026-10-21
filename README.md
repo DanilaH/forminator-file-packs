@@ -2,7 +2,7 @@
 
 A WordPress plugin that exports selected saved Forminator submissions and local attachments into ZIP packages. Includes readable HTML cards, an HTML index, a CSV register, structured JSON and a warnings manifest. Original records and files remain unchanged.
 
-**Status: v0.4.0 — resumable large exports.** The technical slug is `file-packs-for-forminator`; the GitHub repository keeps its existing address. Complete native, Docker and actual VPS regression passes for 0.3.0 are recorded in [release readiness](docs/RELEASE_READINESS.md). The current 0.4.0 build is releasable only after its own native/Docker/VPS checks succeed. WordPress.org publication and approval have not happened.
+**Status: v0.4.1 candidate — WordPress.org review follow-up.** The technical slug is `file-packs-for-forminator`; the GitHub repository keeps its existing address. Complete native, Docker and actual VPS regression passes for 0.3.0 are recorded in [release readiness](docs/RELEASE_READINESS.md). The 0.4.1 candidate requires its own current-commit verification; historical passes do not certify it. WordPress.org publication and approval have not happened.
 
 ## Use
 
@@ -14,7 +14,7 @@ A WordPress plugin that exports selected saved Forminator submissions and local 
 
 PHP ZIP support and writable private temporary storage outside public web directories are required. Quick synchronous exports retain limits of 100 submissions, 500 attachments and 100 MiB. Larger selections and explicit all-period selection use saved tasks without a fixed total submission-count ceiling. Each independent part is bounded by 1000 submissions, 500 attachments, 100 MiB of attachment bytes and 1 MiB of field data. A single submission exceeding a large-part boundary must be exported through a smaller quick selection. These are safety limits, not a tested capacity guarantee for every hosting provider. No remote uploads are fetched. HTML, SVG and executable attachments are excluded with warnings.
 
-English and Russian UI/package translations are bundled. Dates remain visible on narrow screens. Six native repeater upload configurations are tested on Forminator 1.58.0: single, multiple and AJAX multiple uploads, each with and without Media Library storage. The combined 100-entry / 500-file / 100 MiB ceiling has passed a native lab export and a real browser download; host capacity still varies.
+English UI/package text is included; Russian uses a separate standard WordPress language pack. See [translation installation and review notes](docs/WORDPRESS_REVIEW_2026-10.md). Dates remain visible on narrow screens. Six native repeater upload configurations are tested on Forminator 1.58.0: single, multiple and AJAX multiple uploads, each with and without Media Library storage. The combined 100-entry / 500-file / 100 MiB ceiling has passed a native lab export and a real browser download; host capacity still varies.
 
 ## Development
 
@@ -24,7 +24,7 @@ An isolated Docker/VPS staging workflow is available separately; see [staging se
 
 See [setup and tests](docs/DEVELOPMENT.md), [verification report](docs/TEST_REPORT_2026-10-08.md), [integration notes](docs/ADAPTER.md), [roadmap](ROADMAP.md), [v1 specification](docs/V1_SPEC.md) and [remaining acceptance work](docs/ACCEPTANCE.md).
 
-Build the installable ZIP with `python3 scripts/build.py`. The output is `dist/file-packs-for-forminator-0.4.0-dev.zip`; development tests and fixtures are excluded.
+Build the installable ZIP with `python3 scripts/build.py`. The output is `dist/file-packs-for-forminator-0.4.1-dev.zip`; development tests and fixtures are excluded.
 
 ## Boundaries
 

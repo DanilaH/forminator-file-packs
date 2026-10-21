@@ -92,6 +92,7 @@ if args.action == 'deploy':
         wp('plugin', 'uninstall', 'forminator-file-packs', '--deactivate')
     package, = (repo / 'dist').glob('*.zip')
     wp('plugin', 'install', '/opt/ffp/packages/' + package.name, '--force', '--activate')
+    wp('eval-file', '/opt/ffp/tests/install-language-pack.php')
     wp('eval', "if (!is_dir(WPMU_PLUGIN_DIR)) { wp_mkdir_p(WPMU_PLUGIN_DIR); } file_put_contents(WPMU_PLUGIN_DIR.'/ffp-staging.php', '<?php add_filter(\"pre_wp_mail\", \"__return_true\");');")
     (state / 'installed').write_text('ffp-staging-v1\n')
     (out / 'environment.json').write_text(json.dumps({

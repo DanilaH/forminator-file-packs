@@ -5,7 +5,7 @@ import struct
 from pathlib import Path
 
 
-def compile_catalog(source):
+def compile_catalog(source, destination):
     messages = {}
     key = value = None
     for line in source.read_text().splitlines():
@@ -25,9 +25,17 @@ def compile_catalog(source):
     for key, value in pairs:
         offsets.append((len(value), cursor)); cursor += len(value) + 1
     header = struct.pack('<7I', 0x950412de, 0, count, 28, 28 + count * 8, 0, 0)
-    source.with_suffix('.mo').write_bytes(header + b''.join(struct.pack('<2I', *o) for o in offsets) + originals + translations)
+    destination.write_bytes(header + b''.join(struct.pack('<2I', *o) for o in offsets) + originals + translations)
 
 
 if __name__ == '__main__':
-    for file in (Path(__file__).resolve().parents[1] / 'plugin/languages').glob('*.po'):
-        compile_catalog(file)
+    from zipfile import ZipFile, ZIP_DEFLATED
+    root = Path(__file__).resolve().parents[1]
+    output = root / 'dist/languages'
+    output.mkdir(parents=True, exist_ok=True)
+    for source in sorted((root / 'translations').glob('*.po')):
+        destination = output / source.with_suffix('.mo').name
+        compile_catalog(source, destination)
+        with ZipFile(output / (source.stem + '.zip'), 'w', compression=ZIP_DEFLATED) as archive:
+            archive.write(source, source.name)
+            archive.write(destination, destination.name)

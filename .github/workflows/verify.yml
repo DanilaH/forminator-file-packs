@@ -66,6 +66,7 @@ jobs:
           find plugin tests -name '*.php' -print0 | xargs -0 -n1 php -l
           for script in plugin/assets/*.js tests/*.cjs; do node --check "$script"; done
           python3 -m compileall -q scripts tests
+          python3 tests/test_plugin_check_output.py
           python3 scripts/build.py
           git diff --exit-code -- plugin
       - name: Run real WordPress integration suite
@@ -105,5 +106,12 @@ jobs:
         with:
           name: installable-plugin
           path: dist/*.zip
+          if-no-files-found: error
+          retention-days: 14
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: russian-language-pack
+          path: dist/languages/*.zip
           if-no-files-found: error
           retention-days: 14

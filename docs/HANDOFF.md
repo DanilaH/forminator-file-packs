@@ -16,7 +16,7 @@ The old beta must be deactivated/deleted before installing the new slug. Native 
 
 ## Next milestone
 
-Finish publication materials and confirm the publisher's WordPress.org username. The repo username does not establish the directory account. Plugin Check is pinned to 2.1.0 (latest official version observed 2026-10-10); every unexpected diagnostic blocks CI. The bundled standalone translations legitimately retain one discouraged-function warning; registration now runs on init. Do not suppress it or claim zero warnings.
+Finish publication materials and confirm the publisher's WordPress.org username. The repo username does not establish the directory account. Plugin Check is pinned to 2.1.0 (latest official version observed 2026-10-10); every unexpected diagnostic blocks CI. The 0.4.1 review follow-up removes the manual loader and bundled catalogs. Russian is a separate standard language pack; no Plugin Check warning is allowed. See [review notes](WORDPRESS_REVIEW_2026-10.md) and verify current-commit CI before claiming a pass.
 
 VPS deployments automatically follow successful native/Docker checks for the exact trusted main commit; strict SSH known_hosts and a private loopback/SSH tunnel are used. Caddy/DNS/HTTPS remain optional staging presentation work; no production route has been changed. Broader hosting, offload integrations and screen readers remain outside tested compatibility.
 
