@@ -6,7 +6,7 @@ wp=json.loads(os.environ['FFP_WP_COMMAND'])
 assert isinstance(wp,list) and wp and all(isinstance(x,str) for x in wp)
 root=pathlib.Path(os.environ['FFP_WP_PATH']).resolve()
 output=pathlib.Path(os.environ['FFP_TEST_ARTIFACTS']); output.mkdir(parents=True,exist_ok=True)
-version='0.4.0'; package=repo/'dist'/('file-packs-for-forminator-'+version+'-dev.zip')
+version='0.4.1'; package=repo/'dist'/('file-packs-for-forminator-'+version+'-dev.zip')
 def run(c,**kw): return subprocess.run(c,cwd=repo,check=True,**kw)
 checks=[]
 def check(ok,name):
@@ -49,6 +49,8 @@ check(not (target/'file-packs-for-forminator.php').exists(),'plugin files actual
 check(before==source(),'source intact after plugin uninstall')
 run(wp+['plugin','install',str(package),'--activate'])
 check(before==source(),'source intact after reinstall')
+# WordPress may remove global language packs when uninstalling the plugin.
+run(wp+['eval-file',str(repo/'tests/install-language-pack.php')])
 run(wp+['eval',"wp_set_current_user(1);$f=json_decode(file_get_contents(getenv('FFP_TEST_FIXTURE')),true);$id=Forminator_API::add_form_entry($f['submission']['form'],[['name'=>'upload-1','value'=>['file'=>['file_path'=>forminator_get_upload_path($f['submission']['form'],'uploads').'/missing-ui.txt','file_url'=>'']]]]);$f['submission']['broken_entry']=$id;file_put_contents(getenv('FFP_TEST_FIXTURE'),wp_json_encode($f));update_user_meta(1,'locale','ru_RU');"])
 try:
  run(['node',str(repo/'tests/browser-states.cjs')])

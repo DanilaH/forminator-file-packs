@@ -72,6 +72,7 @@ try:
 finally:
     wp('plugin', 'install', '/opt/ffp/packages/' + package.name, '--force', '--activate')
 intact('source intact after actual plugin reinstall')
+wp('eval-file', '/opt/ffp/tests/install-language-pack.php')
 try:
     wp('eval', "wp_set_current_user(1);$f=json_decode(file_get_contents(getenv('FFP_TEST_FIXTURE')),true);$id=Forminator_API::add_form_entry($f['submission']['form'],[['name'=>'upload-1','value'=>['file'=>['file_path'=>forminator_get_upload_path($f['submission']['form'],'uploads').'/missing-ui.txt','file_url'=>'']]]]);$f['submission']['broken_entry']=$id;file_put_contents(getenv('FFP_TEST_FIXTURE'),wp_json_encode($f));update_user_meta(1,'locale','ru_RU');")
     read_fixture('fixture.json')

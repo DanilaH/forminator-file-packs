@@ -74,3 +74,8 @@ UX прорабатывается уже на этапах 1–2; этап 3 п�
 
 
 Кандидат 0.4.0 `2b7a7c8` прошёл все три native-комбинации с проверкой больших выгрузок, аварий, источников и браузера. Большие части используют уже проверенную границу 100 МиБ вложений; предупреждения выделены в отдельный обзор. Проверки текущего main и фактического VPS остаются автоматическими обязательными воротами. [Запись проверки](docs/LARGE_EXPORT_VERIFICATION_2026-10-14.md).
+
+
+## WordPress.org review follow-up 0.4.1 (2026-10-21)
+
+Implementation candidate: directory-native language packs, retained and explained offline-document CSS, full-action nonce/method/permission regression coverage. Source catalogs are preserved outside the plugin ZIP. Exact-commit CI verification and WordPress.org resubmission are separate pending gates; see [review notes](docs/WORDPRESS_REVIEW_2026-10.md).

@@ -139,6 +139,11 @@ for mode, form in fixture.items():
         check(len(set(n.casefold() for n in z.namelist())) == len(z.namelist()), f'{mode}: no filename collisions')
         html = z.read(f'Request-{form["entry"]}/request.html').decode()
         check('<script>' not in html and 'Synthetic' not in html, f'{mode}: safe card and attachment links')
+        for document in ['index.html', f'Request-{form["entry"]}/request.html']:
+            content = z.read(document).decode()
+            check('<style>' in content and '<link' not in content and '<script' not in content
+                  and 'default-src &#39;none&#39;' in content and 'wp-content' not in content,
+                  f'{mode}: {document} remains self-contained offline with restrictive CSP')
         register = list(csv.reader(io.StringIO(z.read('register.csv').decode('utf-8-sig'))))
         check(len(register) == 3 and register[0][-2:] == ['Serial number [text-1]', 'Description [textarea-1]'], f'{mode}: register fields and rows')
     (artifacts / (mode + '-package.zip')).write_bytes(archive)
@@ -152,9 +157,27 @@ status, _, raw = api('entries', {'form_id': fixture['submission']['form'], 'from
 check(status == 400, 'invalid date rejected')
 status, _, raw = post('/wp-admin/admin-ajax.php', {'action': 'ffp_preview', 'nonce': 'invalid', 'form_id': fixture['submission']['form'], 'ids': '[1]'})
 check(status == 403 and json.loads(raw)['data']['code']=='session_expired', 'invalid nonce rejected with session recovery code')
-for action in ['forms', 'entries', 'preview', 'download']:
+actions = ['forms', 'entries', 'preview', 'download', 'job_create', 'job_append',
+           'job_finish', 'job_start', 'job_cancel', 'job_status', 'job_review', 'job_parts', 'job_file']
+for action in actions:
     status, _, raw = api(action, params, opener=guest)
     check(status != 200 or raw == b'0', f'guest blocked: {action}')
+    for invalid in [None, 'invalid']:
+        payload = {'action': 'ffp_' + action, **params}
+        if invalid is not None:
+            payload['nonce'] = invalid
+        status, _, raw = post('/wp-admin/admin-ajax.php', payload)
+        result = json.loads(raw)
+        check(status == 403 and result['data']['code'] == 'session_expired',
+              f'{action}: {"missing" if invalid is None else "invalid"} nonce blocked before action')
+    request = '/wp-admin/admin-ajax.php?' + urllib.parse.urlencode({'action': 'ffp_' + action, 'nonce': nonce, **params})
+    try:
+        response = client.open(BASE + request)
+    except urllib.error.HTTPError as error:
+        response = error
+    result = json.loads(response.read())
+    check(response.status == 403 and result['data']['code'] == 'session_expired',
+          f'{action}: GET with valid nonce blocked before action')
 FIXTURE.write_text(json.dumps(fixture, indent=2))
 (artifacts / 'http-results.json').write_text(json.dumps({'checks': checks, 'count': len(checks)}, indent=2))
 print('HTTP integration checks:', len(checks))

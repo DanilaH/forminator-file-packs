@@ -173,6 +173,8 @@ final class Admin {
  }
  public static function endpoint( $action ) {
   try {
+   // Shared gate for every registered AJAX action, including task changes/downloads.
+   // Authorization is independent of the nonce and runs before reading request data.
    Adapter::authorize();
    if ( 'POST' !== ( isset( $_SERVER['REQUEST_METHOD'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) : '' ) || ! check_ajax_referer( 'ffp_export', 'nonce', false ) ) { wp_send_json_error( array( 'code' => 'session_expired', 'message' => __( 'Your session expired or the request is invalid. Refresh this page.', 'file-packs-for-forminator' ) ), 403 ); }
    if ( 'forms' === $action ) { $data = Adapter::forms( isset( $_POST['search'] ) && is_string( $_POST['search'] ) ? sanitize_text_field( wp_unslash( $_POST['search'] ) ) : '' ); $data['readiness'] = Package::readiness(); $data['periods'] = self::periods(); $data['job'] = Jobs::latest(); wp_send_json_success( $data ); }

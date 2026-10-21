@@ -15,7 +15,9 @@ Complete verification of `f366a62bc55dd198453d500d91e110b4081c1883` / beta 0.3.0
 
 The full suite includes actual saved frontend uploads and six repeater modes, independently decoded CSV/JSON/ZIP and attachment bytes, source snapshots, 43 HTTP and 32 security checks, 17 resilience cases, 17 permission checks, browser and Russian UI checks, boundary/resource checks and plugin/process lifecycle. Actual VPS maximum: 100 entries / 500 files / 100 MiB under PHP 128M, 3.622 seconds to construct, 76,873,728 bytes peak memory; browser download 12.174 seconds via the test tunnel. These measurements describe one environment.
 
-## Technical audit
+## Historical technical audit (0.3.1)
+
+This table records the earlier submission, not the 0.4.1 candidate. The [WordPress review follow-up](WORDPRESS_REVIEW_2026-10.md) moves Russian catalogs out of the plugin ZIP, removes the manual textdomain loader and its Plugin Check warning exception, and extends negative HTTP coverage to all 13 actions. Its own CI results are required.
 
 | Item | Finding / enforcement |
 |---|---|

@@ -58,6 +58,7 @@ try:
     run(wp + ['plugin', 'install', 'plugin-check', '--version=2.1.0', '--activate'])
     package, = (repo / 'dist').glob('*.zip')
     run(wp + ['plugin', 'install', str(package), '--activate'])
+    eval_file('install-language-pack.php')
     # Installers are finished. Stop vendor background HTTP/email in this lab.
     mu = root / 'wp-content/mu-plugins'
     mu.mkdir(exist_ok=True)
@@ -125,9 +126,7 @@ try:
                 diagnostics.extend(json.loads(block))
         (out / 'plugin-check.json').write_text(json.dumps(diagnostics, indent=2))
         assert not any(str(item.get('type', '')).upper() == 'ERROR' for item in diagnostics), 'Plugin Check errors'
-        allowed_warning = 'PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound'
-        assert all(item.get('code') == allowed_warning and str(item.get('type', '')).upper() == 'WARNING'
-                   for item in diagnostics), 'New Plugin Check diagnostic requires review'
+        assert not diagnostics, 'Plugin Check diagnostics require review'
         # Summarize actual evidence without claiming a hosting or accessibility audit.
         if env.get('GITHUB_STEP_SUMMARY'):
             with open(env['GITHUB_STEP_SUMMARY'], 'a') as summary:

@@ -4,7 +4,7 @@ Use a disposable local WordPress installation and synthetic data. Tests create f
 
 ## GitHub Actions
 
-The [Verify and build plugin workflow](../.github/workflows/verify.yml) runs on pushes, pull requests and manual dispatch. Each matrix job provisions its own disposable MariaDB/WordPress installation, installs the actual development ZIP, and runs the HTTP, security, resilience, Chromium, JSON, six repeater configurations, capacity, permission and lifecycle suites. The previous 0.2.0 package is reconstructed from its exact recorded Git revision for the installer upgrade check. Plugin Check errors fail the job; warnings remain visible in the evidence.
+The [Verify and build plugin workflow](../.github/workflows/verify.yml) runs on pushes, pull requests and manual dispatch. Each matrix job provisions its own disposable MariaDB/WordPress installation, installs the actual development ZIP, and runs the HTTP, security, resilience, Chromium, JSON, six repeater configurations, capacity, permission and lifecycle suites. The previous 0.2.0 package is reconstructed from its exact recorded Git revision for the installer upgrade check. Any Plugin Check diagnostic (error or warning) fails the job.
 
 The matrix specifies WordPress 7.1.3 / PHP 8.3 / Forminator 1.58.0 and WordPress 6.5.5 / PHP 8.2 / Forminator 1.58.0 and 1.57.1. PHP patch versions and the MariaDB 10.11 image can advance; `environment.json` records the actual PHP/core/plugin versions. Browser testing uses Playwright 1.51.1. Action implementations are pinned to commit SHAs, permissions are read-only, and repository credentials are not retained in the checkout. Fork pull requests use `pull_request`, never `pull_request_target`, and need no account secrets.
 
@@ -74,7 +74,7 @@ References: [wp-env](https://developer.wordpress.org/block-editor/reference-guid
 
 `tests/resource-environment.php` runs under `FFP_RESOURCE_MODE=memory` or `nozip`. Memory mode sets a real 80M PHP limit and allocates synthetic pressure before checking the guard. No-ZIP mode requires a PHP configuration with ZIP actually disabled. Keep vendor/bootstrap failures distinct from exporter behavior.
 
-Compile bundled translations with `python3 scripts/compile-translations.py`; the build script runs it automatically. The compiler handles the project's simple singular PO catalog; general plural/context catalogs require a standard gettext compiler.
+Compile the separate language pack with `python3 scripts/compile-translations.py`; the build script runs it automatically. Catalog source is in `translations/`, and the language-pack ZIP is in `dist/languages/`. It is not bundled in the installable plugin. The lab installs the pack into the standard global language directory, without a custom loader; see [review notes](WORDPRESS_REVIEW_2026-10.md). The compiler handles the project's simple singular PO catalog; general plural/context catalogs require a standard gettext compiler.
 
 ## Extended native lab checks
 

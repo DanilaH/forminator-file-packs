@@ -202,6 +202,12 @@ final class Package {
 		}
 		if ( ! $this->archive->addFile( $path, 'data.json' ) ) { throw new StorageException( esc_html__( 'Could not add package metadata.', 'file-packs-for-forminator' ) ); }
 	}
+	/**
+	 * Build standalone documents stored inside the downloaded ZIP, never a WordPress page.
+	 * Inline CSS deliberately keeps extracted cards readable offline. Enqueue APIs need
+	 * a live WordPress request and cannot render assets when this file is opened locally.
+	 * Admin-page assets use Admin::assets() and the WordPress enqueue API instead.
+	 */
 	private function html( $title, $body ) {
 		return '<!doctype html><html lang="' . esc_attr( str_replace( '_', '-', determine_locale() ) ) . '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;"><title>' . esc_html( $title ) . '</title><style>body{font:16px/1.6 system-ui,sans-serif;max-width:1000px;margin:40px auto;padding:0 24px;color:#17212b;background:#f5f7f9}main{background:white;border:1px solid #dce2e8;border-radius:10px;padding:28px}a{color:#145ca3}h1{line-height:1.2;overflow-wrap:anywhere}dl{display:grid;grid-template-columns:minmax(120px,1fr) 3fr;gap:12px}dt{font-weight:600}dd{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}.warning{background:#fff3d9;border-left:4px solid #b46b00;padding:12px}li{overflow-wrap:anywhere}@media(max-width:600px){dl{display:block}dd{margin-bottom:16px}}</style></head><body><main><h1>' . esc_html( $title ) . '</h1>' . $body . '</main></body></html>';
 	}
